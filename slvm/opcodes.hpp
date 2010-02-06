@@ -32,7 +32,10 @@ enum Opcode
     ENTER,
     LEAVE,
     RET,
-    JUMP
+    JUMP,
+
+    INPI,
+    OUTI
 
 };
 

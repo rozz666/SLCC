@@ -17,10 +17,12 @@ int main()
         cg.add(JUMP, 10);
 
         cg.add(ENTER, 4);
-        cg.add(CONST4, 3).add(CONST4, 2).add(CONST4, 1);
-        cg.add(ADDI);
-        cg.add(MULI);
+        cg.add(INPI, -4);
+        cg.add(CONST4, 1);
+        cg.add(LOAD4, -4);
+        cg.add(DIVI);
         cg.add(STORE4, -4);
+        cg.add(OUTI, -4);
         cg.add(LEAVE);
         cg.add(RET);
     }

@@ -1,5 +1,6 @@
 #include <vector>
 #include <cmath>
+#include <iostream>
 #include "opcodes.hpp"
 #include "vm.hpp"
 
@@ -17,8 +18,8 @@ void copy4(const void *src, void *dst)
 #define SLVM_OP4(type, op) \
 { \
     type a, b; \
-    copy4(memory + sp, &a); \
-    copy4(memory + sp + 4, &b); \
+    copy4(memory + sp, &b); \
+    copy4(memory + sp + 4, &a); \
     a = a op b; \
     copy4(&a, memory + sp + 4); \
     sp += 4; \
@@ -27,8 +28,8 @@ void copy4(const void *src, void *dst)
 #define SLVM_FUN4(type, f) \
 { \
     type a, b; \
-    copy4(memory + sp, &a); \
-    copy4(memory + sp + 4, &b); \
+    copy4(memory + sp, &b); \
+    copy4(memory + sp + 4, &a); \
     a = f(a, b); \
     copy4(&a, memory + sp + 4); \
     sp += 4; \
@@ -138,7 +139,7 @@ void Program::execute()
                 int_t s;
                 float_t d;
                 copy4(memory + sp, &s);
-                d = s;
+                d = float_t(s);
                 copy4(&d, memory +sp);
                 break;
             }
@@ -148,7 +149,7 @@ void Program::execute()
                 float_t s;
                 int_t d;
                 copy4(memory + sp, &s);
-                d = s;
+                d = int_t(s);
                 copy4(&d, memory +sp);
                 break;
             }
@@ -200,6 +201,26 @@ void Program::execute()
                 int_t addr;
                 copy4(code + off, &addr);
                 off = addr;
+                break;
+            }
+
+            case INPI:
+            {
+                int_t addr, val;
+                std::cin >> val;
+                copy4(code + off, &addr);
+                off += 4;
+                copy4(&val, memory + bp + addr);
+                break;
+            }
+
+            case OUTI:
+            {
+                int_t addr, val;
+                copy4(code + off, &addr);
+                off += 4;
+                copy4(memory + bp + addr, &val);
+                std::cout << val << std::endl;
                 break;
             }
         }
