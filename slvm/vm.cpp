@@ -34,8 +34,7 @@ void copy4(const void *src, void *dst)
     sp += 4; \
 }
 
-
-void execute(const std::uint8_t *code, std::ptrdiff_t off)
+void Program::execute()
 {
     typedef std::int32_t int_t;
     typedef float float_t;
@@ -43,9 +42,10 @@ void execute(const std::uint8_t *code, std::ptrdiff_t off)
     static_assert(sizeof(int_t) == 4, "int_t must have 4 bytes");
     static_assert(sizeof(float_t) == 4, "float_t must have 4 bytes");
 
-    std::vector<std::uint8_t> memoryBuf(8192, 0);
-    std::uint8_t *memory = &memoryBuf[0];
-    std::ptrdiff_t sp = memoryBuf.size();
+    const std::uint8_t *code = &code_.front();
+    std::ptrdiff_t off = 0;
+    std::uint8_t *memory = &memory_.front();
+    std::ptrdiff_t sp = memory_.size();
     std::ptrdiff_t bp = sp;
 
     while (off != -1)

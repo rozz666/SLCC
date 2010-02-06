@@ -25,5 +25,7 @@ int main()
         cg.add(RET);
     }
 
-    sl::vm::execute(&cg.code()[0], 0);
+    vm::Program prog(64, std::move(cg.code()));
+
+    prog.execute();
 }

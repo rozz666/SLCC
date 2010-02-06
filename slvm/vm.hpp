@@ -10,8 +10,6 @@ namespace sl
 namespace vm
 {
 
-void execute(const std::uint8_t *code, std::ptrdiff_t off);
-
 class CodeGenerator
 {
 public:
@@ -38,19 +36,33 @@ public:
         return *this;
     }
 
-    const std::vector<std::uint8_t> code() const { return code_; }
+    std::vector<std::uint8_t>& code() { return code_; }
 
 private:
 
     std::vector<std::uint8_t> code_;
 };
 
-class Module
+class Program
 {
 public:
 
+    template <typename It>
+    Program(std::size_t memorySize, It first, It last)
+        : memory_(memorySize, 0xac), code_(first, last) { }
 
+    Program(std::size_t memorySize, std::vector<std::uint8_t>&& code)
+        : memory_(memorySize, 0xac), code_(code) { }
+
+    void execute();
+
+private:
+
+    std::vector<std::uint8_t> memory_;
+    std::vector<std::uint8_t> code_;
 };
+
+
 
 }
 }
