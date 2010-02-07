@@ -157,8 +157,10 @@ void Program::execute()
             case CALL:
             {
                 int_t addr;
-                copy4(memory + sp, &addr);
+                copy4(code + off, &addr);
+                off += 4;
                 int_t reta = off;
+                sp -= 4;
                 copy4(&reta, memory + sp);
                 off = addr;
                 break;
@@ -200,6 +202,7 @@ void Program::execute()
             {
                 int_t addr;
                 copy4(code + off, &addr);
+                off += 4;
                 off = addr;
                 break;
             }
