@@ -9,54 +9,100 @@ st::Type expressionType(const st::Expression& expr);
 namespace
 {
 
-std::map<opcodes::Tag, std::string> tagNames = boost::assign::map_list_of
-    (opcodes::MOV, "mov")
-    (opcodes::ADD, "add")
-    (opcodes::SUB, "sub")
-    (opcodes::MUL, "mul")
-    (opcodes::DIV, "div")
-    (opcodes::MOD, "mod")
-    
-    (opcodes::CALL, "call") 
-    (opcodes::ENTER, "enter")
-    (opcodes::LEAVE, "leave")
-    (opcodes::RET, "return")
-    
-    (opcodes::PUSH, "push")
-    (opcodes::INCSP, "incsp")
-    
-    (opcodes::EXIT, "exit")
+class OpcodePrinter
+{
+public:
 
-    (opcodes::INTTOREAL, "inttoreal")
-    (opcodes::REALTOINT, "realtoint");
+    OpcodePrinter() : name_("XXX") { }
+
+    OpcodePrinter(const std::string& name) : name_(name) { }
+    OpcodePrinter(const std::string& name, st::Type arg0) : name_(name), arg0_(arg0) { }
+
+    template <typename It>
+    It operator()(It it, std::ostream& os, const std::vector<std::string>& labels) const
+    {
+        os << name_;
+        ++it;
+
+        if (arg0_)
+        {
+            std::int32_t val = *it++;
+            val |= *it++ << 8;
+            val |= *it++ << 16;
+            val |= *it++ << 24;
+
+            os << " ";
+
+            if (*arg0_ == st::int_)
+            {
+                if (val >= 0 && val < labels.size() && !labels[val].empty()) os << labels[val];
+                else os << val;
+            }
+            else
+            {
+                float f;
+                std::memcpy(&f, &val, 4);
+                os << f;
+            }
+        }
+
+        return it;
+    }
+
+    vm::CodeAddr size() const
+    {
+        return arg0_ ? 5 : 1;
+    }
+
+private:
+
+    std::string name_;
+    boost::optional<st::Type> arg0_;
+};
+
+std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_of
+    (vm::NOP, OpcodePrinter("nop"))
+    (vm::CONST4, OpcodePrinter("const4", st::int_))
+    (vm::LOAD4, OpcodePrinter("load4", st::int_))
+    (vm::STORE4, OpcodePrinter("store4", st::int_))
+    (vm::DEREF4, OpcodePrinter("deref4"))
+    (vm::POP4, OpcodePrinter("pop4"))
+    (vm::ADDI, OpcodePrinter("addi"))
+    (vm::ADDF, OpcodePrinter("addf"))
+    (vm::SUBI, OpcodePrinter("subi"))
+    (vm::SUBF, OpcodePrinter("subf"))
+    (vm::MULI, OpcodePrinter("muli"))
+    (vm::MULF, OpcodePrinter("mulf"))
+    (vm::DIVI, OpcodePrinter("divi"))
+    (vm::DIVF, OpcodePrinter("divf"))
+    (vm::MODI, OpcodePrinter("modi"))
+    (vm::MODF, OpcodePrinter("modf"))
+    (vm::I2F, OpcodePrinter("i2f"))
+    (vm::F2I, OpcodePrinter("f2i"))
+
+    (vm::CALL, OpcodePrinter("call", st::int_))
+    (vm::ENTER, OpcodePrinter("enter", st::int_))
+    (vm::LEAVE, OpcodePrinter("leave"))
+    (vm::RET, OpcodePrinter("ret"))
+    (vm::JUMP, OpcodePrinter("jump", st::int_))
+
+    (vm::INPI, OpcodePrinter("inpi", st::int_))
+    (vm::OUTI, OpcodePrinter("outi", st::int_));
 
 }
 
 typedef std::map<std::string, const st::FunctionDef *> FunctionDefMap;
-typedef std::map<std::string, CodeAddr> FunctionAddrMap;
+typedef std::map<std::string, vm::CodeAddr> FunctionAddrMap;
 
 
-void generateFunction(const st::FunctionDef& f, BytecodeBuffer& bb, FunctionAddrMap& fam);
+void generateFunction(const st::FunctionDef& f, vm::BytecodeBuffer& bb, FunctionAddrMap& fam);
 
-opcodes::Type convertType(st::Type type)
+unsigned typeSize(st::Type type)
 {
     switch (type)
     {
-        case st::int_: return opcodes::INT;
-        case st::float_: return opcodes::REAL;
-    }
-
-    assert(!"Bad type!");
-
-    return opcodes::INT;
-}
-
-unsigned typeSize(opcodes::Type type)
-{
-    switch (type)
-    {
-        case opcodes::INT: return 4;
-        case opcodes::REAL: return 8;
+        case st::int_: return 4;
+        case st::float_: return 4;
     }
 
     assert(!"Bad type!");
@@ -64,29 +110,16 @@ unsigned typeSize(opcodes::Type type)
     return 0;
 }
 
-std::string typeSuffix(opcodes::Type type)
-{
-    switch (type)
-    {
-        case opcodes::INT: return ".i";
-        case opcodes::REAL: return ".r";
-    }
-
-    assert(!"Bad type!");
-
-    return "";
-}
-
 class VariableTable
 {
 public:
 
-    void insert(const st::Variable *var, BPAddr addr)
+    void insert(const st::Variable *var, vm::BPAddr addr)
     {
         addr_.insert(std::make_pair(var, addr));
     }
 
-    BPAddr addrOf(const st::Variable *var)
+    vm::BPAddr addrOf(const st::Variable *var)
     {
         auto it = addr_.find(var);
 
@@ -96,7 +129,7 @@ public:
     }
 
 private:
-    typedef std::map<const st::Variable *, BPAddr> C;
+    typedef std::map<const st::Variable *, vm::BPAddr> C;
     C addr_;
 };
 
@@ -106,13 +139,13 @@ public:
 
     NaiveStackAlloc() : m_total(0) { }
 
-    BPAddr alloc(unsigned size)
+    vm::BPAddr alloc(unsigned size)
     {
         m_total += size;
-        return BPAddr(-int(m_total));
+        return vm::BPAddr(-int(m_total));
     }
 
-    void free(BPAddr) { }
+    void free(vm::BPAddr) { }
 
     unsigned peek() const { return m_total; }
 
@@ -121,44 +154,19 @@ private:
     unsigned m_total;    
 };
 
-struct ConstantType : public boost::static_visitor<opcodes::Type>
-{
-    opcodes::Type operator()(int) const { return opcodes::INT; }
-    opcodes::Type operator()(float) const { return opcodes::REAL; }
-};
+st::Type constantType(const st::Constant& c);
 
-opcodes::Type constantType(const st::Constant& c)
-{
-    ConstantType ct;
-    return c.apply_visitor(ct);
-}
+void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt);
 
-template <typename DestAddr>
-void generateExpression(const st::Expression& e, DestAddr destAddr, BytecodeBuffer& bb, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt);
-
-
-BP bpRef(BPAddr addr)
-{
-    return BP(addr.off);
-}
-
-BPAddr bpRef(BPDeref deref)
-{
-    return BPAddr(deref.off);
-}
-
-template <typename DestAddr>
 class GenerateFunctionCall : public boost::static_visitor<void>
 {
 public:
 
-    GenerateFunctionCall(DestAddr destAddr, const st::FunctionCall::ParamContainer& pc, BytecodeBuffer& bb, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
-        : destAddr_(destAddr), pc_(&pc), bb_(&bb), fam_(&fam), salloc_(&salloc), vt_(&vt) { }
+    GenerateFunctionCall(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+        : pc_(pc), cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
     void operator()(const st::BuiltinFunction *bf) const
     {
-        namespace oc = opcodes;
-
         if (bf->name() == "operator+")
         {
             //BPAddr tmp1 = 
@@ -167,11 +175,9 @@ public:
 
     void operator()(const st::FunctionDef *fd) const
     {
-        namespace oc = opcodes;
-
         std::string fn = st::functionMangledName(*fd);
 
-        auto it = fam_->find(fn);
+        auto it = fam_.find(fn);
 /*        
         if (it == fam_->end())
         {
@@ -180,70 +186,71 @@ public:
             it = fam_->find(fn);
         }*/
 
-        assert(it != fam_->end());
-        unsigned paramTotal = 4; // ret
+        assert(it != fam_.end());
 
-        BOOST_FOREACH(const st::Expression& e, *pc_)
+        BOOST_FOREACH(const st::Expression& e, pc_)
         {
-            oc::Type paramType = convertType(expressionType(e));
-            unsigned paramSize = typeSize(paramType);
-            BPAddr tmp = salloc_->alloc(paramSize);
-            paramTotal += paramSize;
-
-            generateExpression(e, tmp, *bb_, *fam_, *salloc_, *vt_);
-
-            bb_->append(oc::Opcode(oc::PUSH, paramType, tmp));
-
-            salloc_->free(tmp);
+            generateExpression(e, cg_, fam_, salloc_, vt_);
         }
 
-        bb_->append(oc::Opcode(oc::PUSH, oc::INT, bpRef(destAddr_)));
-        bb_->append(oc::Opcode(oc::CALL, it->second));
-        bb_->append(oc::Opcode(oc::INCSP, oc::INT, int(paramTotal)));
+        cg_.add(vm::CALL, std::int32_t(it->second));
     }
 
 private:
 
-    DestAddr destAddr_;
-    const st::FunctionCall::ParamContainer *pc_;
-    BytecodeBuffer *bb_;
-    FunctionAddrMap *fam_;
-    NaiveStackAlloc *salloc_;
-    VariableTable *vt_;
+    const st::FunctionCall::ParamContainer& pc_;
+    vm::CodeGenerator& cg_;
+    FunctionAddrMap& fam_;
+    NaiveStackAlloc& salloc_;
+    VariableTable& vt_;
 };
 
-template <typename DestAddr>
+class GenerateConstant : public boost::static_visitor<void>
+{
+public:
+
+    GenerateConstant(vm::CodeGenerator& cg) : cg_(cg) { }
+
+    void operator()(float f) const
+    {
+        cg_.add(vm::CONST4, f);
+    }
+
+    void operator()(int i) const
+    {
+        cg_.add(vm::CONST4, std::int32_t(i));
+    }
+
+private:
+    vm::CodeGenerator& cg_;
+};
+
 class GenerateExpression : public boost::static_visitor<void>
 {
 public:
 
-    GenerateExpression(DestAddr destAddr, BytecodeBuffer& bb, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
-        : destAddr_(destAddr), bb_(&bb), fam_(&fam), salloc_(&salloc), vt_(&vt) { }
+    GenerateExpression(vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+        : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
     void operator()(const st::Constant& c) const
     {
-        namespace oc = opcodes;
-
-        bb_->append(oc::Opcode(oc::MOV, constantType(c), c, destAddr_));
+        GenerateConstant gc(cg_);
+        c.apply_visitor(gc);
     }
 
     void operator()(const st::Variable *v) const
     {
-        namespace oc = opcodes;
-
-        bb_->append(oc::Opcode(oc::MOV, convertType(v->type()), vt_->addrOf(v), destAddr_));
+        cg_.add(vm::LOAD4, std::int32_t(vt_.addrOf(v)));
     }
 
     void operator()(const st::FunctionCall& fc) const
     {
-        GenerateFunctionCall<DestAddr> gfc(destAddr_, fc.params(), *bb_, *fam_, *salloc_, *vt_);
+        GenerateFunctionCall gfc(fc.params(), cg_, fam_, salloc_, vt_);
         fc.f().apply_visitor(gfc);
     }
 
     void operator()(const st::Cast& c) const
     {
-        namespace oc = opcodes;
-
         st::Type exprType = expressionType(c.expr());
 
         if (c.type() == exprType)
@@ -252,45 +259,39 @@ public:
         }
         else
         {
-            BPAddr tmp = salloc_->alloc(typeSize(convertType(exprType)));
-
-            GenerateExpression<BPAddr> ge(tmp, *bb_, *fam_, *salloc_, *vt_);
+            GenerateExpression ge(cg_, fam_, salloc_, vt_);
             c.expr().apply_visitor(ge);
 
             switch (c.type())
             {
                 case st::int_: // float to int
 
-                    bb_->append(oc::Opcode(oc::REALTOINT, tmp, destAddr_));
+                    cg_.add(vm::F2I);
                     break;
                    
                 case st::float_: // float to int
 
-                    bb_->append(oc::Opcode(oc::INTTOREAL, tmp, destAddr_));
+                    cg_.add(vm::I2F);
                     break;
                    
                 default:
 
                     assert(!"Bad type!");
             }
-
-            salloc_->free(tmp);
         }
     }
 
 private:
 
-    DestAddr destAddr_;
-    BytecodeBuffer *bb_;
-    FunctionAddrMap *fam_;
-    NaiveStackAlloc *salloc_;
-    VariableTable *vt_;
+    vm::CodeGenerator& cg_;
+    FunctionAddrMap& fam_;
+    NaiveStackAlloc& salloc_;
+    VariableTable& vt_;
 };
 
-template <typename DestAddr>
-void generateExpression(const st::Expression& e, DestAddr destAddr, BytecodeBuffer& bb, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
 {
-    GenerateExpression<DestAddr> ge(destAddr, bb, fam, salloc, vt);
+    GenerateExpression ge(cg, fam, salloc, vt);
     e.apply_visitor(ge);
 }
 
@@ -298,8 +299,8 @@ class GenerateStatement : public boost::static_visitor<void>
 {
 public:
 
-    GenerateStatement(BytecodeBuffer& bb, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
-        : bb_(&bb), fam_(&fam), salloc_(&salloc), vt_(&vt) { }
+    GenerateStatement(vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+        : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
     void operator()(const st::CompoundStatement& cs) const
     {
@@ -313,8 +314,8 @@ public:
     {
         assert(a.var().type() == expressionType(a.expr()));
 
-        GenerateExpression<BPAddr> ge(vt_->addrOf(&a.var()), *bb_, *fam_, *salloc_, *vt_);
-        a.expr().apply_visitor(ge);
+        generateExpression(a.expr(), cg_, fam_, salloc_, vt_);
+        cg_.add(vm::STORE4, std::int32_t(vt_.addrOf(&a.var())));
     }
 
     void operator()(const st::FunctionCall& ) const
@@ -324,21 +325,21 @@ public:
 
     void operator()(const st::ReturnStatement& rs) const
     {
-        GenerateExpression<BPDeref> ge(BPDeref(8), *bb_, *fam_, *salloc_, *vt_);
+        GenerateExpression ge(cg_, fam_, salloc_, vt_);
         rs.expr().apply_visitor(ge); // TODO: add cast
     }
 
     void operator()(const st::VariableDecl& vd) const
     {
-        vt_->insert(&vd.var(), salloc_->alloc(typeSize(convertType(vd.var().type()))));
+        vt_.insert(&vd.var(), salloc_.alloc(typeSize(vd.var().type())));
     }
 
 private:
 
-    BytecodeBuffer *bb_;
-    FunctionAddrMap *fam_;
-    NaiveStackAlloc *salloc_;
-    VariableTable *vt_;
+    vm::CodeGenerator& cg_;
+    FunctionAddrMap& fam_;
+    NaiveStackAlloc& salloc_;
+    VariableTable& vt_;
 };
 
 void allocParameters(const st::FunctionDef& f, VariableTable& vt)
@@ -347,17 +348,15 @@ void allocParameters(const st::FunctionDef& f, VariableTable& vt)
 
     BOOST_FOREACH(const std::shared_ptr<st::Variable>& p, f.parameters())
     {
-        vt.insert(&*p, BPAddr(off));
+        vt.insert(&*p, vm::BPAddr(off));
 
-        off += typeSize(convertType(p->type()));
+        off += typeSize(p->type());
     }
 }
 
-void generateFunction(const st::FunctionDef& f, BytecodeBuffer& bb, FunctionAddrMap& fam)
+void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionAddrMap& fam)
 {
-    namespace oc = opcodes;
-
-    CodeAddr addr = bb.append(oc::Opcode(oc::ENTER, 0));
+    vm::CodeAddr addr = cg.add(vm::ENTER, 0);
 
     fam.insert(std::make_pair(functionMangledName(f), addr));
 
@@ -367,19 +366,19 @@ void generateFunction(const st::FunctionDef& f, BytecodeBuffer& bb, FunctionAddr
     allocParameters(f, vt);
 
 
-    GenerateStatement(bb, fam, salloc, vt)(*f.body());
+    GenerateStatement(cg, fam, salloc, vt)(*f.body());
 
-    bb[addr] = oc::Opcode(oc::ENTER, int(salloc.peek()));
+    std::int32_t peek = salloc.peek();
 
-    bb.append(oc::Opcode(oc::LEAVE));
-    bb.append(oc::Opcode(oc::RET));
+    std::memcpy(&cg[addr + 1], &peek, sizeof(peek));
+
+    cg.add(vm::LEAVE);
+    cg.add(vm::RET);
 }
 
-BytecodeBuffer generateBytecode(const st::Module& module)
+vm::BytecodeBuffer generateBytecode(const st::Module& module)
 {
-    namespace oc = opcodes;
-
-    BytecodeBuffer bb;
+    vm::CodeGenerator cg;
     FunctionDefMap fdm;
     FunctionAddrMap fam;
 
@@ -390,109 +389,40 @@ BytecodeBuffer generateBytecode(const st::Module& module)
         fdm[st::functionMangledName(f.name(), f.suffix())] = &f;
     }
 
-    bb.append(oc::Opcode(oc::PUSH, 0));
-    CodeAddr startAddr = bb.append(oc::Opcode(oc::CALL, 0));
-    bb.append(oc::Opcode(oc::EXIT));
+    cg.add(vm::CONST4, 0);
+    cg.add(vm::CONST4, -1);
+    vm::CodeAddr startAddr = cg.add(vm::JUMP, 0);
 
     BOOST_FOREACH(const st::FunctionDef& f, module.functions())
     {
         std::string fmn = st::functionMangledName(f);
 
-        if (fam.find(fmn) == fam.end()) generateFunction(f, bb, fam);
+        if (fam.find(fmn) == fam.end()) generateFunction(f, cg, fam);
     }
 
-    bb[startAddr] = oc::Opcode(oc::CALL, fam.find("main$")->second);
+    vm::CodeAddr faddr = fam.find("main$")->second;
 
-    return bb;
+    std::memcpy(&cg[startAddr + 1], &faddr, sizeof(faddr));
+
+    return cg.code();
 }
 
-class PrintArg : public boost::static_visitor<void>
+void exportToAsm(const vm::BytecodeBuffer& bb, std::ostream& os)
 {
-public:
-
-    PrintArg(std::ostream& os, const std::vector<std::string>& labels) : os_(&os), labels_(&labels) { }
-
-    void operator()(const DataAddr& da) const
-    {
-        *os_ << da.off;
-    }
-
-    void operator()(const CodeAddr& ca) const
-    {
-        assert(!(*labels_)[ca.off].empty());
-
-        *os_ << (*labels_)[ca.off];
-    }
-
-    void operator()(const BP& bp) const
-    {
-        *os_ << '#';
-
-        (*this)(BPAddr(bp.off));
-    }
-
-    void operator()(const BPAddr& bp) const
-    {
-        *os_ << "BP";
-        
-        if (bp.off > 0) *os_ << '+';
-        
-        *os_ << bp.off;
-    }
-
-    void operator()(const BPDeref& bp) const
-    {
-        *os_ << '*';
-
-        (*this)(BPAddr(bp.off));
-    }
-
-    void operator()(int i) const
-    {
-        *os_ << '#' << i;
-    }
-
-    void operator()(float f) const
-    {
-        *os_ << '#' << f;
-    }
-
-private:
-
-    std::ostream *os_;
-    const std::vector<std::string> *labels_;
-};
-
-void printOpcode(const opcodes::Opcode& oc, std::ostream& os, const std::vector<std::string>& labels)
-{
-    PrintArg pa(os, labels);
-
-    os << tagNames[oc.tag()];
-
-    if (oc.type()) os << typeSuffix(*oc.type());
-
-    os << "\t";
-
-    for (int i = 0; i < 3 && oc.arg(i); ++i)
-    {
-        if (i != 0) os << ", ";
-        oc.arg(i)->apply_visitor(pa);
-    }
-}
-
-void exportToAsm(const BytecodeBuffer& bb, std::ostream& os)
-{
-    namespace oc = opcodes;
-
     // find labels
 
     std::vector<std::string> labels;
 
     labels.resize(bb.size());
 
-    for (unsigned i = 0; i != bb.size(); ++i)
+    for (vm::CodeAddr i = 0; i != bb.size(); i += opcodePrinters[bb[i]].size())
     {
-        if (bb[CodeAddr(i)].tag() == oc::CALL) labels[boost::get<CodeAddr>(*bb[CodeAddr(i)].arg(0)).off] = "f";
+        if (bb[i] == vm::CALL || bb[i] == vm::JUMP)
+        {
+            std::uint32_t off;
+            std::memcpy(&off, &bb[i + 1], sizeof(off));
+            labels[off] = "f";
+        }
     }
 
     {
@@ -509,8 +439,9 @@ void exportToAsm(const BytecodeBuffer& bb, std::ostream& os)
         }
     }
 
-    for (unsigned i = 0; i != bb.size(); ++i)
+    for (auto it = bb.begin(); it != bb.end(); )
     {
+        std::ptrdiff_t i = it - bb.begin();
         if (!labels[i].empty())
         {
             os << labels[i] << ":" << std::endl;
@@ -518,7 +449,7 @@ void exportToAsm(const BytecodeBuffer& bb, std::ostream& os)
 
         os << "\t";
 
-        printOpcode(bb[CodeAddr(i)], os, labels);
+        it = opcodePrinters[*it](it, os, labels);
         
         os << std::endl;
     }

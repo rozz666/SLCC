@@ -10,37 +10,46 @@ namespace sl
 namespace vm
 {
 
+typedef std::vector<std::uint8_t> BytecodeBuffer;
+typedef std::uint32_t CodeAddr;
+typedef std::uint32_t BPAddr;
+
 class CodeGenerator
 {
 public:
 
-    CodeGenerator& add(Opcode oc)
+    CodeAddr add(Opcode oc)
     {
         code_.push_back(oc);
-        return *this;
+        return code_.size() - 1;
     }
 
-    CodeGenerator& add(Opcode oc, std::int32_t arg)
-    {
-        code_.push_back(oc);
-        code_.resize(code_.size() + 4);
-        std::memcpy(&code_[code_.size() - 4], &arg, 4);
-        return *this;
-    }
-
-    CodeGenerator& add(Opcode oc, float arg)
+    CodeAddr add(Opcode oc, std::int32_t arg)
     {
         code_.push_back(oc);
         code_.resize(code_.size() + 4);
         std::memcpy(&code_[code_.size() - 4], &arg, 4);
-        return *this;
+        return code_.size() - 5;
     }
 
-    std::vector<std::uint8_t>& code() { return code_; }
+    CodeAddr add(Opcode oc, float arg)
+    {
+        code_.push_back(oc);
+        code_.resize(code_.size() + 4);
+        std::memcpy(&code_[code_.size() - 4], &arg, 4);
+        return code_.size() - 5;
+    }
+
+    std::uint8_t& operator[](CodeAddr addr)
+    {
+        return code_[addr];
+    }
+
+    BytecodeBuffer& code() { return code_; }
 
 private:
 
-    std::vector<std::uint8_t> code_;
+    BytecodeBuffer code_;
 };
 
 class Program
@@ -51,7 +60,7 @@ public:
     Program(std::size_t memorySize, It first, It last)
         : memory_(memorySize, 0xac), code_(first, last) { }
 
-    Program(std::size_t memorySize, std::vector<std::uint8_t>&& code)
+    Program(std::size_t memorySize, BytecodeBuffer&& code)
         : memory_(memorySize, 0xac), code_(code) { }
 
     void execute();
@@ -59,7 +68,7 @@ public:
 private:
 
     std::vector<std::uint8_t> memory_;
-    std::vector<std::uint8_t> code_;
+    BytecodeBuffer code_;
 };
 
 
