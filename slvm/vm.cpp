@@ -10,6 +10,18 @@ namespace sl
 namespace vm
 {
 
+void copy1(const void *src, void *dst)
+{
+    std::memcpy(dst, src, 1);
+}
+
+
+void copy2(const void *src, void *dst)
+{
+    std::memcpy(dst, src, 2);
+}
+
+
 void copy4(const void *src, void *dst)
 {
     std::memcpy(dst, src, 4);
@@ -64,9 +76,9 @@ void Program::execute()
 
             case LOAD4:
             {
-                int_t addr;
-                copy4(code + off, &addr);
-                off += 4;
+                std::int16_t addr;
+                copy2(code + off, &addr);
+                off += 2;
                 sp -= 4;
                 copy4(memory + bp + addr, memory + sp);
                 break;
@@ -74,25 +86,13 @@ void Program::execute()
 
             case STORE4:
             {
-                int_t addr;
-                copy4(code + off, &addr);
-                off += 4;
+                std::int16_t addr;
+                copy2(code + off, &addr);
+                off += 2;
                 copy4(memory + sp, memory + bp + addr);
                 sp += 4;
                 break;
             }
-
-            case DEREF4:
-            {
-                int_t addr;
-                copy4(memory + sp, &addr);
-                copy4(memory + addr, memory + sp);
-                break;
-            }
-
-            case POP4:
-                sp += 4;
-                break;
 
             case ADDI:
                 SLVM_OP4(int_t, +);
@@ -134,6 +134,24 @@ void Program::execute()
                 SLVM_FUN4(float_t, std::fmod);
                 break;
 
+            case NEGI:
+            {
+                int_t v;
+                copy4(memory + sp, &v);
+                v = -v;
+                copy4(&v, memory + sp);
+                break;
+            }
+                
+            case NEGF:
+            {
+                float_t v;
+                copy4(memory + sp, &v);
+                v = -v;
+                copy4(&v, memory + sp);
+                break;
+            }
+                
             case I2F:
             {
                 int_t s;
@@ -154,13 +172,20 @@ void Program::execute()
                 break;
             }
 
+            case JUMP:
+            {
+                int_t addr;
+                copy4(memory + sp, &addr);
+                sp += 4;
+                off = addr;
+                break;
+            }
+
             case CALL:
             {
                 int_t addr;
-                copy4(code + off, &addr);
-                off += 4;
+                copy4(memory + sp, &addr);
                 int_t reta = off;
-                sp -= 4;
                 copy4(&reta, memory + sp);
                 off = addr;
                 break;
@@ -172,9 +197,9 @@ void Program::execute()
                 sp -= 4;
                 copy4(&ibp, memory + sp);
                 bp = sp;
-                int_t d;
-                copy4(code + off, &d);
-                off += 4;
+                std::uint16_t d;
+                copy2(code + off, &d);
+                off += 2;
                 sp -= d;
                 break;
             }
@@ -198,30 +223,33 @@ void Program::execute()
                 break;
             }
 
-            case JUMP:
+            case POP:
             {
-                int_t addr;
-                copy4(code + off, &addr);
-                off += 4;
-                off = addr;
+                std::uint8_t n;
+                copy1(code + off, &n);
+                ++off;
+                sp += n;
+
                 break;
             }
 
             case INPI:
             {
-                int_t addr, val;
+                std::int16_t addr;
+                int_t val;
                 std::cin >> val;
-                copy4(code + off, &addr);
-                off += 4;
+                copy2(code + off, &addr);
+                off += 2;
                 copy4(&val, memory + bp + addr);
                 break;
             }
 
             case OUTI:
             {
-                int_t addr, val;
-                copy4(code + off, &addr);
-                off += 4;
+                std::int16_t addr;
+                int_t val;
+                copy2(code + off, &addr);
+                off += 2;
                 copy4(memory + bp + addr, &val);
                 std::cout << val << std::endl;
                 break;

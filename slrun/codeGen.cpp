@@ -15,8 +15,8 @@ public:
 
     OpcodePrinter() : name_("XXX") { }
 
-    OpcodePrinter(const std::string& name) : name_(name) { }
-    OpcodePrinter(const std::string& name, st::Type arg0) : name_(name), arg0_(arg0) { }
+    OpcodePrinter(const std::string& name) : name_(name), argSize_(0) { }
+    OpcodePrinter(const std::string& name, unsigned argSize) : name_(name), argSize_(argSize) { }
 
     template <typename It>
     It operator()(It it, std::ostream& os, const std::vector<std::string>& labels) const
@@ -24,26 +24,29 @@ public:
         os << name_;
         ++it;
 
-        if (arg0_)
+        if (argSize_)
         {
             std::int32_t val = *it++;
-            val |= *it++ << 8;
-            val |= *it++ << 16;
-            val |= *it++ << 24;
+
+            if (argSize_ > 1)
+            {
+                val |= *it++ << 8;
+
+                if (argSize_ > 2)
+                {
+                    val |= *it++ << 16;
+                    val |= *it++ << 24;
+                }
+                else
+                {
+                    val = std::int16_t(val);
+                }
+            }
 
             os << " ";
 
-            if (*arg0_ == st::int_)
-            {
-                if (val >= 0 && val < labels.size() && !labels[val].empty()) os << labels[val];
-                else os << val;
-            }
-            else
-            {
-                float f;
-                std::memcpy(&f, &val, 4);
-                os << f;
-            }
+            if (val >= 0 && val < std::int32_t(labels.size()) && !labels[val].empty()) os << labels[val];
+            else os << val;
         }
 
         return it;
@@ -51,22 +54,20 @@ public:
 
     vm::CodeAddr size() const
     {
-        return arg0_ ? 5 : 1;
+        return argSize_ + 1;
     }
 
 private:
 
     std::string name_;
-    boost::optional<st::Type> arg0_;
+    unsigned argSize_;
 };
 
 std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_of
     (vm::NOP, OpcodePrinter("nop"))
-    (vm::CONST4, OpcodePrinter("const4", st::int_))
-    (vm::LOAD4, OpcodePrinter("load4", st::int_))
-    (vm::STORE4, OpcodePrinter("store4", st::int_))
-    (vm::DEREF4, OpcodePrinter("deref4"))
-    (vm::POP4, OpcodePrinter("pop4"))
+    (vm::CONST4, OpcodePrinter("const4", 4))
+    (vm::LOAD4, OpcodePrinter("load4", 2))
+    (vm::STORE4, OpcodePrinter("store4", 2))
     (vm::ADDI, OpcodePrinter("addi"))
     (vm::ADDF, OpcodePrinter("addf"))
     (vm::SUBI, OpcodePrinter("subi"))
@@ -77,17 +78,20 @@ std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_o
     (vm::DIVF, OpcodePrinter("divf"))
     (vm::MODI, OpcodePrinter("modi"))
     (vm::MODF, OpcodePrinter("modf"))
+    (vm::NEGI, OpcodePrinter("negi"))
+    (vm::NEGF, OpcodePrinter("negf"))
     (vm::I2F, OpcodePrinter("i2f"))
     (vm::F2I, OpcodePrinter("f2i"))
 
-    (vm::CALL, OpcodePrinter("call", st::int_))
-    (vm::ENTER, OpcodePrinter("enter", st::int_))
+    (vm::JUMP, OpcodePrinter("jump"))
+    (vm::CALL, OpcodePrinter("call"))
+    (vm::ENTER, OpcodePrinter("enter", 2))
     (vm::LEAVE, OpcodePrinter("leave"))
     (vm::RET, OpcodePrinter("ret"))
-    (vm::JUMP, OpcodePrinter("jump", st::int_))
+    (vm::POP, OpcodePrinter("pop", 1))
 
-    (vm::INPI, OpcodePrinter("inpi", st::int_))
-    (vm::OUTI, OpcodePrinter("outi", st::int_));
+    (vm::INPI, OpcodePrinter("inpi", 2))
+    (vm::OUTI, OpcodePrinter("outi", 2));
 
 }
 
@@ -188,12 +192,17 @@ public:
 
         assert(it != fam_.end());
 
+        cg_.emit(vm::CONST4);
+        cg_.emit(std::int32_t(0)); // return value placeholder
+
         BOOST_FOREACH(const st::Expression& e, pc_)
         {
             generateExpression(e, cg_, fam_, salloc_, vt_);
         }
 
-        cg_.add(vm::CALL, std::int32_t(it->second));
+        cg_.emit(vm::CONST4);
+        cg_.emit<std::int32_t>(it->second);
+        cg_.emit(vm::CALL);
     }
 
 private:
@@ -213,12 +222,14 @@ public:
 
     void operator()(float f) const
     {
-        cg_.add(vm::CONST4, f);
+        cg_.emit(vm::CONST4);
+        cg_.emit(f);
     }
 
     void operator()(int i) const
     {
-        cg_.add(vm::CONST4, std::int32_t(i));
+        cg_.emit(vm::CONST4);
+        cg_.emit<std::int32_t>(i);
     }
 
 private:
@@ -240,7 +251,8 @@ public:
 
     void operator()(const st::Variable *v) const
     {
-        cg_.add(vm::LOAD4, std::int32_t(vt_.addrOf(v)));
+        cg_.emit(vm::LOAD4);
+        cg_.emit(std::int16_t(vt_.addrOf(v)));
     }
 
     void operator()(const st::FunctionCall& fc) const
@@ -266,12 +278,12 @@ public:
             {
                 case st::int_: // float to int
 
-                    cg_.add(vm::F2I);
+                    cg_.emit(vm::F2I);
                     break;
                    
                 case st::float_: // float to int
 
-                    cg_.add(vm::I2F);
+                    cg_.emit(vm::I2F);
                     break;
                    
                 default:
@@ -315,7 +327,8 @@ public:
         assert(a.var().type() == expressionType(a.expr()));
 
         generateExpression(a.expr(), cg_, fam_, salloc_, vt_);
-        cg_.add(vm::STORE4, std::int32_t(vt_.addrOf(&a.var())));
+        cg_.emit(vm::STORE4);
+        cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
     }
 
     void operator()(const st::FunctionCall& ) const
@@ -327,6 +340,8 @@ public:
     {
         GenerateExpression ge(cg_, fam_, salloc_, vt_);
         rs.expr().apply_visitor(ge); // TODO: add cast
+        cg_.emit(vm::STORE4);
+        cg_.emit(std::int16_t(0)); // TODO: return value address
     }
 
     void operator()(const st::VariableDecl& vd) const
@@ -356,7 +371,8 @@ void allocParameters(const st::FunctionDef& f, VariableTable& vt)
 
 void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionAddrMap& fam)
 {
-    vm::CodeAddr addr = cg.add(vm::ENTER, 0);
+    vm::CodeAddr addr = cg.emit(vm::ENTER);
+    cg.emit<std::uint16_t>(0);
 
     fam.insert(std::make_pair(functionMangledName(f), addr));
 
@@ -370,10 +386,10 @@ void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionA
 
     std::int32_t peek = salloc.peek();
 
-    std::memcpy(&cg[addr + 1], &peek, sizeof(peek));
+    cg.emit(addr + 1, std::uint16_t(peek));
 
-    cg.add(vm::LEAVE);
-    cg.add(vm::RET);
+    cg.emit(vm::LEAVE);
+    cg.emit(vm::RET);
 }
 
 vm::BytecodeBuffer generateBytecode(const st::Module& module)
@@ -389,9 +405,13 @@ vm::BytecodeBuffer generateBytecode(const st::Module& module)
         fdm[st::functionMangledName(f.name(), f.suffix())] = &f;
     }
 
-    cg.add(vm::CONST4, 0);
-    cg.add(vm::CONST4, -1);
-    vm::CodeAddr startAddr = cg.add(vm::JUMP, 0);
+    cg.emit(vm::CONST4);
+    cg.emit<std::int32_t>(0);
+    cg.emit(vm::CONST4);
+    cg.emit<std::int32_t>(-1);
+    cg.emit(vm::CONST4);
+    vm::CodeAddr startAddr = cg.emit<std::int32_t>(0);
+    cg.emit(vm::JUMP);
 
     BOOST_FOREACH(const st::FunctionDef& f, module.functions())
     {
@@ -402,7 +422,7 @@ vm::BytecodeBuffer generateBytecode(const st::Module& module)
 
     vm::CodeAddr faddr = fam.find("main$")->second;
 
-    std::memcpy(&cg[startAddr + 1], &faddr, sizeof(faddr));
+    cg.emit<std::int32_t>(startAddr, faddr);
 
     return cg.code();
 }
@@ -417,11 +437,14 @@ void exportToAsm(const vm::BytecodeBuffer& bb, std::ostream& os)
 
     for (vm::CodeAddr i = 0; i != bb.size(); i += opcodePrinters[bb[i]].size())
     {
-        if (bb[i] == vm::CALL || bb[i] == vm::JUMP)
+        if (bb[i] == vm::CONST4 && (i + 6) <= bb.size())
         {
-            std::uint32_t off;
-            std::memcpy(&off, &bb[i + 1], sizeof(off));
-            labels[off] = "f";
+            if (bb[i + 5] == vm::CALL || bb[i + 5] == vm::JUMP)
+            {
+                std::uint32_t off;
+                std::memcpy(&off, &bb[i + 1], sizeof(off));
+                labels[off] = "f";
+            }
         }
     }
 

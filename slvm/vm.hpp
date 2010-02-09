@@ -18,26 +18,34 @@ class CodeGenerator
 {
 public:
 
-    CodeAddr add(Opcode oc)
+    CodeAddr emit(Opcode oc)
     {
-        code_.push_back(oc);
+        code_.push_back(std::uint8_t(oc));
         return code_.size() - 1;
     }
 
-    CodeAddr add(Opcode oc, std::int32_t arg)
+    template <typename T>
+    CodeAddr emit(T val)
     {
-        code_.push_back(oc);
-        code_.resize(code_.size() + 4);
-        std::memcpy(&code_[code_.size() - 4], &arg, 4);
-        return code_.size() - 5;
+        code_.resize(code_.size() + sizeof(val));
+        std::memcpy(&code_[code_.size() - sizeof(val)], &val, sizeof(val));
+        return code_.size() - sizeof(val);
     }
 
-    CodeAddr add(Opcode oc, float arg)
+    template <typename T>
+    void emit(CodeAddr addr, T val)
     {
-        code_.push_back(oc);
-        code_.resize(code_.size() + 4);
-        std::memcpy(&code_[code_.size() - 4], &arg, 4);
-        return code_.size() - 5;
+        assert(addr + sizeof(val) <= code_.size());
+        std::memcpy(&code_[addr], &val, sizeof(val));
+    }
+
+    template <typename T>
+    T read(CodeAddr addr)
+    {
+        T val;
+        assert(addr + sizeof(val) <= code_.size());
+        std::memcpy(&val, &code_[addr], sizeof(val));
+        return val;
     }
 
     std::uint8_t& operator[](CodeAddr addr)
