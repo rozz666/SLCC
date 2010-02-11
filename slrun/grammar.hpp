@@ -122,9 +122,9 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         returnStatement = "return" > expression > ';';
         statement =
             compoundStatement |
+            returnStatement |
             (assignment > ';') |
             (functionCall > ';') |
-            returnStatement |
             variableDecl;
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
         function = identifier > '(' >> -(functionParameter % ',') > ')' > "->" > type > compoundStatement;

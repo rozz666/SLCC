@@ -74,6 +74,10 @@ int main(int argc, char **argv)
             sl::vm::BytecodeBuffer bb = generateBytecode(parsed);
 
             exportToAsm(bb, fout);
+
+            std::ofstream bc((fn + "bin").c_str(), std::ios::binary);
+            bc.write((const char *) &bb.front(), bb.size());
+
         }
         else
         {

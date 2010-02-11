@@ -1,5 +1,7 @@
 #include <boost/assign/list_of.hpp>
+#include <boost/function.hpp>
 #include "codeGen.hpp"
+#include "builtin.hpp"
 
 namespace sl
 {
@@ -15,8 +17,9 @@ public:
 
     OpcodePrinter() : name_("XXX") { }
 
-    OpcodePrinter(const std::string& name) : name_(name), argSize_(0) { }
-    OpcodePrinter(const std::string& name, unsigned argSize) : name_(name), argSize_(argSize) { }
+    OpcodePrinter(const std::string& name) : name_(name), argSize_(0), useLabels_(false) { }
+    OpcodePrinter(const std::string& name, unsigned argSize, bool useLabels = false)
+        : name_(name), argSize_(argSize), useLabels_(useLabels) { }
 
     template <typename It>
     It operator()(It it, std::ostream& os, const std::vector<std::string>& labels) const
@@ -45,7 +48,7 @@ public:
 
             os << " ";
 
-            if (val >= 0 && val < std::int32_t(labels.size()) && !labels[val].empty()) os << labels[val];
+            if (useLabels_ && val >= 0 && val < std::int32_t(labels.size()) && !labels[val].empty()) os << labels[val];
             else os << val;
         }
 
@@ -61,11 +64,12 @@ private:
 
     std::string name_;
     unsigned argSize_;
+    bool useLabels_;
 };
 
 std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_of
     (vm::NOP, OpcodePrinter("nop"))
-    (vm::CONST4, OpcodePrinter("const4", 4))
+    (vm::CONST4, OpcodePrinter("const4", 4, true))
     (vm::LOAD4, OpcodePrinter("load4", 2))
     (vm::STORE4, OpcodePrinter("store4", 2))
     (vm::ADDI, OpcodePrinter("addi"))
@@ -118,12 +122,17 @@ class VariableTable
 {
 public:
 
+    VariableTable(st::Type returnType) : addrOfReturn_(8), returnType_(returnType) { }
+
     void insert(const st::Variable *var, vm::BPAddr addr)
     {
         addr_.insert(std::make_pair(var, addr));
+        
+        vm::BPAddr aor = addr + typeSize(var->type());
+        if (aor > addrOfReturn_) addrOfReturn_ = aor;
     }
 
-    vm::BPAddr addrOf(const st::Variable *var)
+    vm::BPAddr addrOf(const st::Variable *var) const
     {
         auto it = addr_.find(var);
 
@@ -132,9 +141,14 @@ public:
         return it->second;
     }
 
+    vm::BPAddr addrOfReturn() const { return addrOfReturn_; }
+    st::Type returnType() const { return returnType_; }
+
 private:
     typedef std::map<const st::Variable *, vm::BPAddr> C;
     C addr_;
+    vm::BPAddr addrOfReturn_;
+    st::Type returnType_;
 };
 
 class NaiveStackAlloc
@@ -158,9 +172,107 @@ private:
     unsigned m_total;    
 };
 
+
+
+
 st::Type constantType(const st::Constant& c);
 
 void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt);
+
+void gen_operator_minus_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::NEGI);
+}
+
+void gen_operator_minus_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::NEGF);
+}
+
+#define SL_GEN_OPERATORS(name, opcode) \
+void gen_operator_##name##_ii(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+{ \
+    assert(pc.size() == 2); \
+    generateExpression(pc[0], cg, fam, salloc, vt); \
+    generateExpression(pc[1], cg, fam, salloc, vt); \
+    cg.emit(vm::opcode##F); \
+} \
+ \
+void gen_operator_##name##_fi(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+{ \
+    assert(pc.size() == 2); \
+    generateExpression(pc[0], cg, fam, salloc, vt); \
+    generateExpression(pc[1], cg, fam, salloc, vt); \
+    cg.emit(vm::I2F); \
+    cg.emit(vm::opcode##F); \
+} \
+ \
+void gen_operator_##name##_if(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+{ \
+    assert(pc.size() == 2); \
+    generateExpression(pc[0], cg, fam, salloc, vt); \
+    cg.emit(vm::I2F); \
+    generateExpression(pc[1], cg, fam, salloc, vt); \
+    cg.emit(vm::opcode##F); \
+}  \
+ \
+void gen_operator_##name##_ff(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+{ \
+    assert(pc.size() == 2); \
+    generateExpression(pc[0], cg, fam, salloc, vt); \
+    generateExpression(pc[1], cg, fam, salloc, vt); \
+    cg.emit(vm::opcode##F); \
+}
+
+SL_GEN_OPERATORS(plus, ADD)
+SL_GEN_OPERATORS(minus, SUB)
+SL_GEN_OPERATORS(mul, MUL)
+SL_GEN_OPERATORS(div, DIV)
+SL_GEN_OPERATORS(mod, MOD)
+
+typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)> BuiltinFunctionGen;
+typedef std::map<const st::BuiltinFunction *, BuiltinFunctionGen> BuiltinFunctionGenerators;
+
+BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
+    (&builtin::operator_minus_i, &gen_operator_minus_i)
+    (&builtin::operator_minus_f, &gen_operator_minus_f)
+    (&builtin::operator_plus_ii, &gen_operator_plus_ii)
+    (&builtin::operator_plus_fi, &gen_operator_plus_fi)
+    (&builtin::operator_plus_if, &gen_operator_plus_if)
+    (&builtin::operator_plus_ff, &gen_operator_plus_ff)
+    (&builtin::operator_minus_ii, &gen_operator_minus_ii)
+    (&builtin::operator_minus_fi, &gen_operator_minus_fi)
+    (&builtin::operator_minus_if, &gen_operator_minus_if)
+    (&builtin::operator_minus_ff, &gen_operator_minus_ff)
+    (&builtin::operator_mul_ii, &gen_operator_mul_ii)
+    (&builtin::operator_mul_fi, &gen_operator_mul_fi)
+    (&builtin::operator_mul_if, &gen_operator_mul_if)
+    (&builtin::operator_mul_ff, &gen_operator_mul_ff)
+    (&builtin::operator_div_ii, &gen_operator_div_ii)
+    (&builtin::operator_div_fi, &gen_operator_div_fi)
+    (&builtin::operator_div_if, &gen_operator_div_if)
+    (&builtin::operator_div_ff, &gen_operator_div_ff)
+    (&builtin::operator_mod_ii, &gen_operator_mod_ii)
+    (&builtin::operator_mod_fi, &gen_operator_mod_fi)
+    (&builtin::operator_mod_if, &gen_operator_mod_if)
+    (&builtin::operator_mod_ff, &gen_operator_mod_ff);
+
+
+std::uint8_t parametersTotalSize(const st::FunctionDef& fd)
+{
+    std::uint8_t size = 0;
+
+    BOOST_FOREACH(const std::shared_ptr<st::Variable>& p, fd.parameters())
+    {
+        size += typeSize(p->type());
+    }
+
+    return size;
+}
 
 class GenerateFunctionCall : public boost::static_visitor<void>
 {
@@ -171,10 +283,9 @@ public:
 
     void operator()(const st::BuiltinFunction *bf) const
     {
-        if (bf->name() == "operator+")
-        {
-            //BPAddr tmp1 = 
-        }
+        assert(builtinFunctionGen.find(bf) != builtinFunctionGen.end());
+
+        builtinFunctionGen[bf](pc_, cg_, fam_, salloc_, vt_);
     }
 
     void operator()(const st::FunctionDef *fd) const
@@ -203,6 +314,8 @@ public:
         cg_.emit(vm::CONST4);
         cg_.emit<std::int32_t>(it->second);
         cg_.emit(vm::CALL);
+        cg_.emit(vm::POP);
+        cg_.emit<std::uint8_t>(parametersTotalSize(*fd));
     }
 
 private:
@@ -307,12 +420,14 @@ void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, Function
     e.apply_visitor(ge);
 }
 
+typedef std::vector<vm::CodeAddr> ReturnAddresses;
+
 class GenerateStatement : public boost::static_visitor<void>
 {
 public:
 
-    GenerateStatement(vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
-        : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
+    GenerateStatement(vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt, ReturnAddresses& ra)
+        : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt), ra_(ra) { }
 
     void operator()(const st::CompoundStatement& cs) const
     {
@@ -338,10 +453,20 @@ public:
 
     void operator()(const st::ReturnStatement& rs) const
     {
-        GenerateExpression ge(cg_, fam_, salloc_, vt_);
-        rs.expr().apply_visitor(ge); // TODO: add cast
+        if (expressionType(rs.expr()) != vt_.returnType())
+        {
+            generateExpression(st::Cast(rs.expr(), vt_.returnType()), cg_, fam_, salloc_, vt_);
+        }
+        else
+        {
+            generateExpression(rs.expr(), cg_, fam_, salloc_, vt_);
+        }
+
         cg_.emit(vm::STORE4);
-        cg_.emit(std::int16_t(0)); // TODO: return value address
+        cg_.emit(std::int16_t(vt_.addrOfReturn()));
+        cg_.emit(vm::CONST4);
+        ra_.push_back(cg_.emit<std::int32_t>(0xbadabada));
+        cg_.emit(vm::JUMP);
     }
 
     void operator()(const st::VariableDecl& vd) const
@@ -355,17 +480,18 @@ private:
     FunctionAddrMap& fam_;
     NaiveStackAlloc& salloc_;
     VariableTable& vt_;
+    ReturnAddresses& ra_;
 };
 
 void allocParameters(const st::FunctionDef& f, VariableTable& vt)
 {
-    int off = 12;
+    int off = 4 + 4; // old BP, return address
 
-    BOOST_FOREACH(const std::shared_ptr<st::Variable>& p, f.parameters())
+    for (auto it = f.parameters().rbegin(); it != f.parameters().rend(); ++it)
     {
-        vt.insert(&*p, vm::BPAddr(off));
+        vt.insert(&**it, vm::BPAddr(off));
 
-        off += typeSize(p->type());
+        off += typeSize((*it)->type());
     }
 }
 
@@ -377,19 +503,25 @@ void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionA
     fam.insert(std::make_pair(functionMangledName(f), addr));
 
     NaiveStackAlloc salloc;
-    VariableTable vt;
+    VariableTable vt(f.type());
 
     allocParameters(f, vt);
 
+    ReturnAddresses ra;
 
-    GenerateStatement(cg, fam, salloc, vt)(*f.body());
+    GenerateStatement(cg, fam, salloc, vt, ra)(*f.body());
 
     std::int32_t peek = salloc.peek();
 
     cg.emit(addr + 1, std::uint16_t(peek));
 
-    cg.emit(vm::LEAVE);
+    vm::CodeAddr retAddr = cg.emit(vm::LEAVE);
     cg.emit(vm::RET);
+
+    BOOST_FOREACH(vm::CodeAddr a, ra)
+    {
+        cg.emit(a, std::int32_t(retAddr));
+    }
 }
 
 vm::BytecodeBuffer generateBytecode(const st::Module& module)
@@ -443,22 +575,29 @@ void exportToAsm(const vm::BytecodeBuffer& bb, std::ostream& os)
             {
                 std::uint32_t off;
                 std::memcpy(&off, &bb[i + 1], sizeof(off));
-                labels[off] = "f";
+                labels[off] = (bb[i + 5] == vm::CALL) ? "f" : "l";
             }
         }
     }
 
     {
-        unsigned n = 1;
+        unsigned fn = 1;
+        unsigned ln = 1;
     
         for (auto it = labels.begin(); it != labels.end(); ++it)
         {
-            if (!it->empty())
+            std::ostringstream os;
+            os << *it;
+            if (*it == "f")
             {
-                std::ostringstream os;
-                os << *it << n++;
-                *it = os.str();
+                os << fn++;
             }
+            else if (*it == "l")
+            {
+                os << ln++;
+            }
+
+            *it = os.str();
         }
     }
 
