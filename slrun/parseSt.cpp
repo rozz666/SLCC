@@ -341,6 +341,9 @@ void registerBuiltinFunctions(st::FunctionTable& ft)
 {
     using namespace builtin;
 
+    ft.insert(&operator_minus_i);
+    ft.insert(&operator_minus_f);
+
     ft.insert(&operator_plus_ii);
     ft.insert(&operator_plus_fi);
     ft.insert(&operator_plus_if);

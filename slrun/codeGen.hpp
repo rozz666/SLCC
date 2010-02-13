@@ -13,7 +13,9 @@
 namespace sl
 {
 
-vm::BytecodeBuffer generateBytecode(const st::Module& module);
+typedef std::map<std::string, vm::CodeAddr> FunctionAddrMap;
+
+vm::BytecodeBuffer generateBytecode(const st::Module& module, FunctionAddrMap& fam);
 
 void exportToAsm(const vm::BytecodeBuffer& bb, std::ostream& os);
 

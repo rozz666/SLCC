@@ -41,7 +41,6 @@ extern const st::BuiltinFunction operator_mod_fi;
 extern const st::BuiltinFunction operator_mod_if;
 extern const st::BuiltinFunction operator_mod_ff;
 
-
 }
 }
 

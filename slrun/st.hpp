@@ -187,6 +187,8 @@ class BuiltinFunction
 {
 public:
 
+    BuiltinFunction(const std::string& name, Type type) : name_(name), type_(type) { }
+
     BuiltinFunction(const std::string& name, Type arg0, Type type) : name_(name), suffix_(typeSuffix(arg0)), type_(type) { }
 
     BuiltinFunction(const std::string& name, Type arg0, Type arg1, Type type) : name_(name), type_(type)

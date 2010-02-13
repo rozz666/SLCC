@@ -71,7 +71,9 @@ int main(int argc, char **argv)
 
             std::ofstream fout((fn + "asm").c_str());
 
-            sl::vm::BytecodeBuffer bb = generateBytecode(parsed);
+            sl::FunctionAddrMap fam;
+
+            sl::vm::BytecodeBuffer bb = generateBytecode(parsed, fam);
 
             exportToAsm(bb, fout);
 

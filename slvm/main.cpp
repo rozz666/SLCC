@@ -40,7 +40,9 @@ int main()
         bc.write((const char *) &cg.code().front(), cg.code().size());
     }
 
-    vm::Program prog(64, std::move(cg.code()));
+    vm::Module module(std::move(cg.code()));
+    vm::Environment env(64);
+    vm::Program prog(std::move(module), std::move(env));
 
     prog.execute();
 }

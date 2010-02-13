@@ -91,6 +91,35 @@ struct MulOp : qi::symbols<char, ast::MulOp>
 
 }
 
+struct position_impl
+{
+    template <typename It1, typename It2>
+    struct result { typedef std::string type; };
+
+    template <typename It1, typename It2>
+    std::string operator()(It1 first, It2 pos) const
+    {
+        unsigned line = 1, col = 1;
+        for (; first != pos; ++first)
+        {
+            if (*first == '\n')
+            {
+                ++line;
+                col = 1;
+            }
+            else ++col;
+        }
+
+        std::ostringstream ss;
+
+        ss << "(" << line << ", " << col << ")";
+
+        return ss.str();
+    }
+};
+
+boost::phoenix::function<position_impl> position;
+
 template <typename Iterator>
 struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type> 
 {
@@ -151,10 +180,8 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         (
             module,
             std::cout
-                << val("Error! Expecting ")
+                << val("Error") << position(_1, _3) << val(": expected \"")
                 << _4                               // what failed?
-                << val(" here: \"")
-                << construct<std::string>(_3, _2)   // iterators to error-pos, end
                 << val("\"")
                 << std::endl
         );

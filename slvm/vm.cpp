@@ -47,7 +47,7 @@ void copy4(const void *src, void *dst)
     sp += 4; \
 }
 
-void Program::execute()
+void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 {
     typedef std::int32_t int_t;
     typedef float float_t;
@@ -55,11 +55,10 @@ void Program::execute()
     static_assert(sizeof(int_t) == 4, "int_t must have 4 bytes");
     static_assert(sizeof(float_t) == 4, "float_t must have 4 bytes");
 
-    const std::uint8_t *code = &code_.front();
-    std::ptrdiff_t off = 0;
+    std::ptrdiff_t off = addr;
     std::uint8_t *memory = &memory_.front();
-    std::ptrdiff_t sp = memory_.size();
-    std::ptrdiff_t bp = sp;
+    std::ptrdiff_t sp = sp_;
+    std::ptrdiff_t bp = bp_;
 
     while (off != -1)
     {
@@ -256,6 +255,9 @@ void Program::execute()
             }
         }
     }
+
+    sp_ = sp;
+    bp_ = bp;
 }
 
 }

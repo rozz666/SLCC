@@ -100,7 +100,6 @@ std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_o
 }
 
 typedef std::map<std::string, const st::FunctionDef *> FunctionDefMap;
-typedef std::map<std::string, vm::CodeAddr> FunctionAddrMap;
 
 
 void generateFunction(const st::FunctionDef& f, vm::BytecodeBuffer& bb, FunctionAddrMap& fam);
@@ -199,7 +198,7 @@ void gen_operator_##name##_ii(const st::FunctionCall::ParamContainer& pc, vm::Co
     assert(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
     generateExpression(pc[1], cg, fam, salloc, vt); \
-    cg.emit(vm::opcode##F); \
+    cg.emit(vm::opcode##I); \
 } \
  \
 void gen_operator_##name##_fi(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
@@ -524,11 +523,10 @@ void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionA
     }
 }
 
-vm::BytecodeBuffer generateBytecode(const st::Module& module)
+vm::BytecodeBuffer generateBytecode(const st::Module& module, FunctionAddrMap& fam)
 {
     vm::CodeGenerator cg;
     FunctionDefMap fdm;
-    FunctionAddrMap fam;
 
     BOOST_FOREACH(const st::FunctionDef& f, module.functions())
     {
