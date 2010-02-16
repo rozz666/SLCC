@@ -144,7 +144,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         signedFactor = sign >> factor;
         term = factor >> *(mulOp > factor);
         expression = term >> *(sign > term);
-        variableDecl = /*"var" > */type > identifier > ';';
+        variableDecl = /*"var" > */(type | "auto") > identifier > -('=' > expression) > ';';
         functionParameter = type > identifier;
         assignment = identifier >> '=' > expression;
         functionCall = identifier >> '(' >> -(expression % ',') > ')';
@@ -180,9 +180,8 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         (
             module,
             std::cout
-                << val("Error") << position(_1, _3) << val(": expected \"")
+                << val("Error") << position(_1, _3) << val(": expected ")
                 << _4                               // what failed?
-                << val("\"")
                 << std::endl
         );
     }

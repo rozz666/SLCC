@@ -471,6 +471,14 @@ public:
     void operator()(const st::VariableDecl& vd) const
     {
         vt_.insert(&vd.var(), salloc_.alloc(typeSize(vd.var().type())));
+
+        if (vd.expr())
+        {
+            generateExpression(*vd.expr(), cg_, fam_, salloc_, vt_);
+
+            cg_.emit(vm::STORE4);
+            cg_.emit(std::int16_t(vt_.addrOf(&vd.var())));
+        }
     }
 
 private:

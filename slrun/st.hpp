@@ -161,13 +161,17 @@ class VariableDecl
 public:
 
     VariableDecl(const std::string& name, Type type) : var_(new Variable(name, type)) { }
+    VariableDecl(const std::string& name, Type type, const Expression& expr) : var_(new Variable(name, type)), expr_(expr) { }
 
     Variable& var() { return *var_; }
     const Variable& var() const { return *var_; }
 
+    const boost::optional<Expression>& expr() const { return expr_; }
+
 private:
 
     std::shared_ptr<Variable> var_;
+    boost::optional<Expression> expr_;
 };
 
 typedef boost::variant<

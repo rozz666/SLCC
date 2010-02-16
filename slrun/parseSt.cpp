@@ -324,11 +324,42 @@ public:
 
     boost::optional<st::Statement> operator()(const ast::VariableDecl& decl) const
     {
-        st::VariableDecl out(decl.name, convertType(decl.type));
+        if (decl.type)
+        {
+            if (decl.expr)
+            {
+                boost::optional<st::Expression> expr = parseExpression(*decl.expr, *vts_, *ft_);
 
-        vts_->insert(out.var());
+                if (!expr) return boost::none;
 
-        return out;
+                st::Type type = convertType(*decl.type);
+
+                st::VariableDecl out(decl.name, type, type != expressionType(*expr) ? st::Cast(*expr, type) : *expr);
+                vts_->insert(out.var());
+
+                return out;
+            }
+            else
+            {   
+                st::VariableDecl out(decl.name, convertType(*decl.type));
+                vts_->insert(out.var());
+
+                return out;
+            }
+        }   
+        else
+        {
+            if (!decl.expr) return boost::none;
+
+            boost::optional<st::Expression> expr = parseExpression(*decl.expr, *vts_, *ft_);
+
+            if (!expr) return boost::none;
+
+            st::VariableDecl out(decl.name, expressionType(*expr), *expr);
+            vts_->insert(out.var());
+
+            return out;
+        }
     }
 
 private:

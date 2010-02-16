@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <boost/variant.hpp>
+#include <boost/optional.hpp>
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 
 namespace sl
@@ -81,8 +82,9 @@ struct Expression
 
 struct VariableDecl
 {
-    Type type;
+    boost::optional<Type> type;
     std::string name;
+    boost::optional<Expression> expr;
 };
 
 struct FunctionParameter
@@ -180,8 +182,9 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::VariableDecl,
-    (::sl::ast::Type, type)
+    (boost::optional<::sl::ast::Type>, type)
     (std::string, name)
+    (boost::optional<::sl::ast::Expression>, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
