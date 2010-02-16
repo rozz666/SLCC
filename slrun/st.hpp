@@ -218,15 +218,16 @@ public:
 
     typedef std::vector<std::shared_ptr<Variable> > ParameterContainer;
    
-    FunctionDef(const std::string& name, Type type, ParameterContainer&& parameters) 
-        : name_(name), suffix_(functionSuffix(parameters)), type_(type)
+    FunctionDef(const std::string& name, ParameterContainer&& parameters) 
+        : name_(name), suffix_(functionSuffix(parameters))
     {
         parameters.swap(parameters_);
     }
 
     const std::string& name() const { return name_; }
     const std::string& suffix() const { return suffix_; }
-    Type type() const { return type_; }
+    Type type() const { return *type_; }
+    void type(st::Type val) { type_ = val; }
 
     const ParameterContainer& parameters() const { return parameters_; }
 
@@ -241,7 +242,7 @@ private:
 
     std::string name_;
     std::string suffix_;     
-    Type type_;
+    boost::optional<Type> type_;
     ParameterContainer parameters_;
     boost::optional<CompoundStatement> body_;
 };

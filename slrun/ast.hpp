@@ -128,11 +128,13 @@ struct CompoundStatement
     CompoundStatement(const std::vector<Statement>& s) : statements(s) { }
 };
 
+typedef boost::variant<Type, Expression> FunctionReturnType;
+
 struct Function
 {
     std::string name;
     std::vector<FunctionParameter> parameters;
-    Type type;
+    FunctionReturnType type;
     CompoundStatement body;
 };
 
@@ -219,7 +221,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Function,
     (std::string, name)
     (std::vector<::sl::ast::FunctionParameter>, parameters)
-    (::sl::ast::Type, type)
+    (::sl::ast::FunctionReturnType, type)
     (::sl::ast::CompoundStatement, body)
 )
 

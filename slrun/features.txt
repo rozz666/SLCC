@@ -1,5 +1,11 @@
+To Do:
+Overloaded functions matching
+Order independent functions
+Public functions
+typeof
+
+Done:
 Basic operators: +, -, *, /, =
 Functions
 Function overloading
-Order independent functions
-Public functions
+auto

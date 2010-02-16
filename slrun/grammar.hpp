@@ -128,6 +128,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         using qi::int_;
         using qi::float_;
         using qi::char_;
+        using qi::lit;
         using qi::lexeme;
         using qi::on_error;
         using qi::fail;
@@ -156,7 +157,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
             (functionCall > ';') |
             variableDecl;
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
-        function = identifier > '(' >> -(functionParameter % ',') > ')' > "->" > type > compoundStatement;
+        function = identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (type | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
         module = "module" > identifier > ';' >> *function >> qi::eoi;
 
         identifier.name("identifier");

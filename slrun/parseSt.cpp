@@ -368,6 +368,37 @@ private:
     const st::FunctionTable *ft_;
 };
 
+class ParseReturnType : public boost::static_visitor<boost::optional<st::Type> >
+{
+public:
+    ParseReturnType(st::VariableTableStack& vts, const st::FunctionTable& ft) : vts_(vts), ft_(ft) { }
+
+    boost::optional<st::Type> operator()(const ast::Type& t) const
+    {
+        return convertType(t);
+    }
+
+    boost::optional<st::Type> operator()(const ast::Expression& e) const
+    {
+        boost::optional<st::Expression> expr = parseExpression(e, vts_, ft_);
+
+        if (!expr) return boost::none;
+
+        return expressionType(*expr);
+    }
+
+private:
+
+    st::VariableTableStack& vts_;
+    const st::FunctionTable& ft_;
+};
+
+boost::optional<st::Type> parseReturnType(const ast::FunctionReturnType frt, st::VariableTableStack& vts, const st::FunctionTable& ft)
+{
+    ParseReturnType prt(vts, ft);
+    return frt.apply_visitor(prt);
+}
+
 void registerBuiltinFunctions(st::FunctionTable& ft)
 {
     using namespace builtin;
@@ -424,7 +455,7 @@ st::Module parseModule(const sl::ast::Module& module)
             pc.push_back(v);
         }
 
-        std::auto_ptr<st::FunctionDef> cf(new st::FunctionDef(f.name, convertType(f.type), std::move(pc)));
+        std::auto_ptr<st::FunctionDef> cf(new st::FunctionDef(f.name, std::move(pc)));
 
         if (!functionTable.insert(&*cf))
         {
@@ -444,7 +475,7 @@ st::Module parseModule(const sl::ast::Module& module)
 
     // now, parse the functions
 
-    BOOST_FOREACH(FF::const_reference f, ff)
+    BOOST_FOREACH(FF::reference f, ff)
     {
         st::FunctionDef& df = *f.first;
         const ast::Function& sf = *f.second;
@@ -455,6 +486,12 @@ st::Module parseModule(const sl::ast::Module& module)
         {
             vts.insert(*p);
         }
+
+        boost::optional<st::Type> fType = parseReturnType(f.second->type, vts, functionTable);
+
+        if (!fType) return m;
+
+        f.first->type(*fType);
 
         st::CompoundStatement cs;
 
