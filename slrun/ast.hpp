@@ -89,6 +89,7 @@ struct VariableDecl
 
 struct FunctionParameter
 {
+    bool ref;
     Type type;
     std::string name;
 };
@@ -191,6 +192,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::FunctionParameter,
+    (bool, ref)
     (::sl::ast::Type, type)
     (std::string, name)
 )

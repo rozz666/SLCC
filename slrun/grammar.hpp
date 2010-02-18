@@ -129,6 +129,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         using qi::float_;
         using qi::char_;
         using qi::lit;
+        using qi::attr;
         using qi::lexeme;
         using qi::on_error;
         using qi::fail;
@@ -146,7 +147,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         term = factor >> *(mulOp > factor);
         expression = term >> *(sign > term);
         variableDecl = /*"var" > */(type | "auto") > identifier > -('=' > expression) > ';';
-        functionParameter = type > identifier;
+        functionParameter = (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
         assignment = identifier >> '=' > expression;
         functionCall = identifier >> '(' >> -(expression % ',') > ')';
         returnStatement = "return" > expression > ';';

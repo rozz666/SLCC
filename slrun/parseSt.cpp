@@ -473,7 +473,7 @@ st::Module parseModule(const sl::ast::Module& module)
         m.insertFunction(cf);
     }
 
-    // now, parse the functions
+    // parameters and return types
 
     BOOST_FOREACH(FF::reference f, ff)
     {
@@ -492,6 +492,22 @@ st::Module parseModule(const sl::ast::Module& module)
         if (!fType) return m;
 
         f.first->type(*fType);
+    }
+
+
+    // now, parse the functions
+
+    BOOST_FOREACH(FF::reference f, ff)
+    {
+        st::FunctionDef& df = *f.first;
+        const ast::Function& sf = *f.second;
+
+        st::VariableTableStack vts;
+
+        BOOST_FOREACH(const std::shared_ptr<st::Variable>& p, df.parameters())
+        {
+            vts.insert(*p);
+        }
 
         st::CompoundStatement cs;
 

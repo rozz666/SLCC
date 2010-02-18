@@ -3,9 +3,12 @@ Overloaded functions matching
 Order independent functions
 Public functions
 typeof
+passing by references
+swap
 
 Done:
 Basic operators: +, -, *, /, =
 Functions
 Function overloading
 auto
+typeof for return types
