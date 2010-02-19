@@ -12,12 +12,13 @@ namespace sl
 namespace ast
 {
 
-typedef boost::variant<int, float> Constant;
+typedef boost::variant<int, float, bool> Constant;
 
 enum Type
 {
     int_,
-    float_
+    float_,
+    bool_
 };
 
 enum Sign

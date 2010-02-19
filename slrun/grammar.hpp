@@ -64,7 +64,8 @@ struct Type : qi::symbols<char, ast::Type>
     {
         add
             ("int", ast::int_)
-            ("float", ast::float_);
+            ("float", ast::float_)
+            ("bool", ast::bool_);
     }
 };
 
@@ -86,6 +87,16 @@ struct MulOp : qi::symbols<char, ast::MulOp>
             ("*", ast::mul_)
             ("/", ast::div_)
             ("%", ast::mod_);
+    }
+};
+
+struct BoolLit : qi::symbols<char, bool>
+{
+    BoolLit()
+    {
+        add
+            ("true", true)
+            ("false", false);
     }
 };
 
@@ -140,7 +151,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         using namespace qi::labels;            
 
         identifier %= lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
-        constant %= (int_ >> !char_('.')) | float_;
+        constant %= (int_ >> !char_('.')) | float_ | boolLit;
         variable %= identifier;
         factor %= constant | functionCall | variable | ('(' >> expression >> ')') | signedFactor;
         signedFactor = sign >> factor;
@@ -191,6 +202,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     detail::Type type;
     detail::Sign sign;
     detail::MulOp mulOp;
+    detail::BoolLit boolLit;
     qi::rule<Iterator, std::string(), ascii::space_type> identifier;
     qi::rule<Iterator, ast::Constant(), ascii::space_type> constant;
     qi::rule<Iterator, ast::Variable(), ascii::space_type> variable;

@@ -13,6 +13,7 @@ st::Type convertType(ast::Type type)
     {
         case ast::int_: return st::int_;
         case ast::float_: return st::float_;
+        case ast::bool_: return st::bool_;
     }
 
     assert(!"Invalid type");
@@ -30,6 +31,11 @@ struct ConstantType : public boost::static_visitor<st::Type>
     st::Type operator()(const float& ) const
     {
         return st::float_;
+    }
+
+    st::Type operator()(const bool& ) const
+    {
+        return st::bool_;
     }
 };
 
@@ -289,8 +295,12 @@ public:
 
         if (!expr) return boost::none;
 
-        if (expressionType(*expr) != var->type())
+        st::Type exprType = expressionType(*expr);
+
+        if (exprType != var->type())
         {
+            if (!isConvertible(exprType, var->type())) return boost::none;
+
             return st::Assignment(*var, st::Cast(*expr, var->type()));
         }
         else
@@ -334,7 +344,11 @@ public:
 
                 st::Type type = convertType(*decl.type);
 
-                st::VariableDecl out(decl.name, type, type != expressionType(*expr) ? st::Cast(*expr, type) : *expr);
+                st::Type exprType = expressionType(*expr);
+
+                if (!isConvertible(exprType, type)) return boost::none;
+
+                st::VariableDecl out(decl.name, type, type != exprType ? st::Cast(*expr, type) : *expr);
                 vts_->insert(out.var());
 
                 return out;
@@ -478,7 +492,6 @@ st::Module parseModule(const sl::ast::Module& module)
     BOOST_FOREACH(FF::reference f, ff)
     {
         st::FunctionDef& df = *f.first;
-        const ast::Function& sf = *f.second;
 
         st::VariableTableStack vts;
 

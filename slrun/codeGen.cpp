@@ -110,6 +110,7 @@ unsigned typeSize(st::Type type)
     {
         case st::int_: return 4;
         case st::float_: return 4;
+        case st::bool_: return 4;
     }
 
     assert(!"Bad type!");
@@ -342,6 +343,12 @@ public:
     {
         cg_.emit(vm::CONST4);
         cg_.emit<std::int32_t>(i);
+    }
+
+    void operator()(bool b) const
+    {
+        cg_.emit(vm::CONST4);
+        cg_.emit<std::int32_t>(b);
     }
 
 private:

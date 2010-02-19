@@ -5,6 +5,8 @@ Public functions
 typeof
 passing by references
 swap
+if
+while
 
 Done:
 Basic operators: +, -, *, /, =
@@ -12,3 +14,4 @@ Functions
 Function overloading
 auto
 typeof for return types
+bool

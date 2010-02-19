@@ -19,7 +19,8 @@ namespace st
 enum Type
 {
     int_,
-    float_
+    float_,
+    bool_
 };
 
 inline const char *typeSuffix(Type type)
@@ -28,6 +29,7 @@ inline const char *typeSuffix(Type type)
     {
         case int_: return "i";
         case float_: return "f";
+        case bool_: return "b";
     }
 
     assert(!"Invalid type");
@@ -41,11 +43,17 @@ inline const char *typeName(Type type)
     {
         case int_: return "int";
         case float_: return "float";
+        case bool_: return "bool";
     }
 
     assert(!"Invalid type");
 
     return "";
+}
+
+inline bool isConvertible(Type from, Type to)
+{
+    return from == to || (from != st::bool_ && to != st::bool_);
 }
 
 class Variable;
@@ -84,7 +92,7 @@ functionMangledName(const std::string& name, const Container& params)
     return functionMangledName(name, functionSuffix(params));
 }
 
-typedef boost::variant<int, float> Constant;
+typedef boost::variant<int, float, bool> Constant;
 
 class Variable
 {

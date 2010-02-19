@@ -84,7 +84,7 @@ public:
     }
 
     const std::uint8_t *params() const { return &params_.front(); }
-    std::uint16_t paramSize() const { return params_.size(); }
+    std::uint16_t paramSize() const { return std::uint16_t(params_.size()); }
 
 private:
     
