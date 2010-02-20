@@ -182,12 +182,26 @@ private:
     boost::optional<Expression> expr_;
 };
 
+class VariableDelete
+{
+public:
+
+    VariableDelete(const Variable& var) : var_(&var) { }
+
+    const Variable& var() const { return *var_; }
+
+private:
+
+    const Variable *var_;
+};
+
 typedef boost::variant<
     boost::recursive_wrapper<CompoundStatement>, 
     Assignment, 
     FunctionCall, 
     ReturnStatement,
-    VariableDecl
+    VariableDecl,
+    VariableDelete
 > Statement;
 
 struct CompoundStatement
@@ -354,6 +368,11 @@ public:
         return (it != vars_.end()) ? it->second : nullptr;
     }
 
+    void erase(const std::string& name)
+    {
+        vars_.erase(name);        
+    }
+
 private:
 
     C vars_;
@@ -383,6 +402,16 @@ public:
         }
 
         return nullptr;
+    }
+
+    const Variable *findInScope(const std::string& name) const
+    {
+        return stack_.back().find(name);
+    }
+
+    void eraseInScope(const std::string& name)
+    {
+        stack_.back().erase(name);
     }
 
     void push()

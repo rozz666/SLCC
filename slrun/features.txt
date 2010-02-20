@@ -15,3 +15,5 @@ Function overloading
 auto
 typeof for return types
 bool
+new variable syntax
+delete variable in the same scope

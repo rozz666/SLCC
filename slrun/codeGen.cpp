@@ -132,6 +132,11 @@ public:
         if (aor > addrOfReturn_) addrOfReturn_ = aor;
     }
 
+    bool erase(const st::Variable *var)
+    {
+        return addr_.erase(var) > 0;
+    }
+
     vm::BPAddr addrOf(const st::Variable *var) const
     {
         auto it = addr_.find(var);
@@ -172,21 +177,64 @@ private:
     unsigned m_total;    
 };
 
+class NormalStackAlloc
+{
+    typedef std::vector<std::uint8_t> C;
+
+public:
+
+    NormalStackAlloc() : peek_(0) { }
+
+    vm::BPAddr alloc(unsigned size)
+    {
+        C::size_type i = 0;
+        
+        while (i < mem_.size() && mem_[i])
+        {
+            i += mem_[i];
+        }
+
+        if ((i + size) > mem_.size()) mem_.resize(i + size, 0);
+
+        mem_[i] = size;
+
+        if (peek_ < mem_.size()) peek_ = mem_.size();
+
+        return vm::BPAddr(-int(i));
+    }
+
+    void free(vm::BPAddr addr)
+    {
+        addr = -addr;
+        assert(addr < mem_.size() && mem_[addr] != 0);
+        mem_[addr] = 0;
+    }
+
+    unsigned peek() const { return peek_; }
+
+private:
+
+    C mem_;
+    unsigned peek_;
+};
+
+typedef NormalStackAlloc StackAlloc;
+
 
 
 
 st::Type constantType(const st::Constant& c);
 
-void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt);
+void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
 
-void gen_operator_minus_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+void gen_operator_minus_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
     assert(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::NEGI);
 }
 
-void gen_operator_minus_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+void gen_operator_minus_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
     assert(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
@@ -194,7 +242,7 @@ void gen_operator_minus_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGe
 }
 
 #define SL_GEN_OPERATORS(name, opcode) \
-void gen_operator_##name##_ii(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+void gen_operator_##name##_ii(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
     assert(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
@@ -202,7 +250,7 @@ void gen_operator_##name##_ii(const st::FunctionCall::ParamContainer& pc, vm::Co
     cg.emit(vm::opcode##I); \
 } \
  \
-void gen_operator_##name##_fi(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+void gen_operator_##name##_fi(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
     assert(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
@@ -211,7 +259,7 @@ void gen_operator_##name##_fi(const st::FunctionCall::ParamContainer& pc, vm::Co
     cg.emit(vm::opcode##F); \
 } \
  \
-void gen_operator_##name##_if(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+void gen_operator_##name##_if(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
     assert(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
@@ -220,7 +268,7 @@ void gen_operator_##name##_if(const st::FunctionCall::ParamContainer& pc, vm::Co
     cg.emit(vm::opcode##F); \
 }  \
  \
-void gen_operator_##name##_ff(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt) \
+void gen_operator_##name##_ff(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
     assert(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
@@ -234,7 +282,7 @@ SL_GEN_OPERATORS(mul, MUL)
 SL_GEN_OPERATORS(div, DIV)
 SL_GEN_OPERATORS(mod, MOD)
 
-typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)> BuiltinFunctionGen;
+typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)> BuiltinFunctionGen;
 typedef std::map<const st::BuiltinFunction *, BuiltinFunctionGen> BuiltinFunctionGenerators;
 
 BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
@@ -278,7 +326,7 @@ class GenerateFunctionCall : public boost::static_visitor<void>
 {
 public:
 
-    GenerateFunctionCall(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+    GenerateFunctionCall(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
         : pc_(pc), cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
     void operator()(const st::BuiltinFunction *bf) const
@@ -323,7 +371,7 @@ private:
     const st::FunctionCall::ParamContainer& pc_;
     vm::CodeGenerator& cg_;
     FunctionAddrMap& fam_;
-    NaiveStackAlloc& salloc_;
+    StackAlloc& salloc_;
     VariableTable& vt_;
 };
 
@@ -359,7 +407,7 @@ class GenerateExpression : public boost::static_visitor<void>
 {
 public:
 
-    GenerateExpression(vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+    GenerateExpression(vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
         : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
     void operator()(const st::Constant& c) const
@@ -416,11 +464,11 @@ private:
 
     vm::CodeGenerator& cg_;
     FunctionAddrMap& fam_;
-    NaiveStackAlloc& salloc_;
+    StackAlloc& salloc_;
     VariableTable& vt_;
 };
 
-void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt)
+void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
     GenerateExpression ge(cg, fam, salloc, vt);
     e.apply_visitor(ge);
@@ -432,7 +480,7 @@ class GenerateStatement : public boost::static_visitor<void>
 {
 public:
 
-    GenerateStatement(vm::CodeGenerator& cg, FunctionAddrMap& fam, NaiveStackAlloc& salloc, VariableTable& vt, ReturnAddresses& ra)
+    GenerateStatement(vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt, ReturnAddresses& ra)
         : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt), ra_(ra) { }
 
     void operator()(const st::CompoundStatement& cs) const
@@ -488,11 +536,18 @@ public:
         }
     }
 
+    void operator()(const st::VariableDelete& vd) const
+    {
+        // TODO: should be remove it from VT?
+        //vt_.erase(&vd.var());
+        salloc_.free(vt_.addrOf(&vd.var()));
+    }
+
 private:
 
     vm::CodeGenerator& cg_;
     FunctionAddrMap& fam_;
-    NaiveStackAlloc& salloc_;
+    StackAlloc& salloc_;
     VariableTable& vt_;
     ReturnAddresses& ra_;
 };
@@ -516,7 +571,7 @@ void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionA
 
     fam.insert(std::make_pair(functionMangledName(f), addr));
 
-    NaiveStackAlloc salloc;
+    StackAlloc salloc;
     VariableTable vt(f.type());
 
     allocParameters(f, vt);

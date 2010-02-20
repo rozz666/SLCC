@@ -88,6 +88,11 @@ struct VariableDecl
     boost::optional<Expression> expr;
 };
 
+struct VariableDelete
+{
+    std::string name;
+};
+
 struct FunctionParameter
 {
     bool ref;
@@ -119,7 +124,8 @@ typedef boost::variant<
     Assignment, 
     FunctionCall, 
     ReturnStatement,
-    VariableDecl
+    VariableDecl,
+    VariableDelete
 > Statement;
 
 struct CompoundStatement
@@ -189,6 +195,11 @@ BOOST_FUSION_ADAPT_STRUCT(
     (boost::optional<::sl::ast::Type>, type)
     (std::string, name)
     (boost::optional<::sl::ast::Expression>, expr)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::VariableDelete,
+    (std::string, name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(

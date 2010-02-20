@@ -376,6 +376,22 @@ public:
         }
     }
 
+    boost::optional<st::Statement> operator()(const ast::VariableDelete& del) const
+    {
+        if (const st::Variable *v = vts_->findInScope(del.name))
+        {
+            vts_->eraseInScope(del.name);
+
+            return st::VariableDelete(*v);
+        }
+        else
+        {
+            std::cerr << "Unknown identifier " << del.name << std::endl;
+        }
+
+        return boost::none;
+    }
+
 private:
 
     st::VariableTableStack *vts_;

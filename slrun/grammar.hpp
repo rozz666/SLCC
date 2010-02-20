@@ -157,7 +157,8 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         signedFactor = sign >> factor;
         term = factor >> *(mulOp > factor);
         expression = term >> *(sign > term);
-        variableDecl = /*"var" > */(type | "auto") > identifier > -('=' > expression) > ';';
+        variableDecl = "new" > -type > identifier > -('=' > expression) > ';';
+        variableDelete = "delete" > identifier > ';';
         functionParameter = (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
         assignment = identifier >> '=' > expression;
         functionCall = identifier >> '(' >> -(expression % ',') > ')';
@@ -167,7 +168,8 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
             returnStatement |
             (assignment > ';') |
             (functionCall > ';') |
-            variableDecl;
+            variableDecl |
+            variableDelete;
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
         function = identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (type | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
         module = "module" > identifier > ';' >> *function >> qi::eoi;
@@ -211,6 +213,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     qi::rule<Iterator, ast::Term(), ascii::space_type> term;
     qi::rule<Iterator, ast::Expression(), ascii::space_type> expression;
     qi::rule<Iterator, ast::VariableDecl(), ascii::space_type> variableDecl;
+    qi::rule<Iterator, ast::VariableDelete(), ascii::space_type> variableDelete;
     qi::rule<Iterator, ast::FunctionParameter(), ascii::space_type> functionParameter;
     qi::rule<Iterator, ast::Assignment(), ascii::space_type> assignment;
     qi::rule<Iterator, ast::FunctionCall(), ascii::space_type> functionCall;
