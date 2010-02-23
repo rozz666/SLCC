@@ -34,12 +34,26 @@ enum MulOp
     mod_
 };
 
+enum RelOp
+{
+    less_,
+    lessEqual_,
+    greater_,
+    greaterEqual_
+};
+
+enum EqOp
+{
+    equal_,
+    notEqual_
+};
+
 struct Variable
 {
     std::string name;
 };
 
-struct SignedFactor;
+struct SignedUnaryExpression;
 struct FunctionCall;
 struct Expression;
 
@@ -48,37 +62,73 @@ typedef boost::variant<
     Variable, 
     boost::recursive_wrapper<FunctionCall>,
     boost::recursive_wrapper<Expression>,
-    boost::recursive_wrapper<SignedFactor>
-> Factor;
+    boost::recursive_wrapper<SignedUnaryExpression>
+> UnaryExpression;
 
-struct SignedFactor
+struct SignedUnaryExpression
 {
     Sign sign;
-    Factor factor;
+    UnaryExpression expr;
 };
 
-struct MulOpFactor
+struct MulOpUnaryExpression
 {
     MulOp op;
-    Factor factor;
+    UnaryExpression expr;
 };
 
-struct Term
+struct MultiplicativeExpression
 {
-    Factor first;
-    std::vector<MulOpFactor> next;
+    UnaryExpression first;
+    std::vector<MulOpUnaryExpression> next;
 };
 
-struct SignTerm
+struct SignMultiplicativeExpression
 {
     Sign sign;
-    Term term;
+    MultiplicativeExpression expr;
+};
+
+struct AdditiveExpression
+{
+    MultiplicativeExpression first;
+    std::vector<SignMultiplicativeExpression> next;
+};
+
+struct RelOpAdditiveExpression
+{
+    RelOp op;
+    AdditiveExpression expr;
+};
+
+struct RelationalExpression
+{
+    AdditiveExpression first;
+    std::vector<RelOpAdditiveExpression> next;
+};
+
+struct EqOpRelationalExpression
+{
+    EqOp op;
+    RelationalExpression expr;
+};
+
+struct EqualityExpression
+{
+    RelationalExpression first;
+    std::vector<EqOpRelationalExpression> next;
+};
+
+struct LogicalAndExpression
+{
+    EqualityExpression first;
+    std::vector<EqualityExpression> next;
 };
 
 struct Expression
 {
-    Term first;
-    std::vector<SignTerm> next;
+    LogicalAndExpression first;
+    std::vector<LogicalAndExpression> next;
 };
 
 struct VariableDecl
@@ -161,33 +211,69 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::SignedFactor,
+    ::sl::ast::SignedUnaryExpression,
     (::sl::ast::Sign, sign)
-    (::sl::ast::Factor, factor)
+    (::sl::ast::UnaryExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::MulOpFactor,
+    ::sl::ast::MulOpUnaryExpression,
     (::sl::ast::MulOp, op)
-    (::sl::ast::Factor, factor)
+    (::sl::ast::UnaryExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Term,
-    (::sl::ast::Factor, first)
-    (std::vector<::sl::ast::MulOpFactor>, next)
+    ::sl::ast::MultiplicativeExpression,
+    (::sl::ast::UnaryExpression, first)
+    (std::vector<::sl::ast::MulOpUnaryExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::SignTerm,
+    ::sl::ast::SignMultiplicativeExpression,
     (::sl::ast::Sign, sign)
-    (::sl::ast::Term, term)
+    (::sl::ast::MultiplicativeExpression, expr)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::AdditiveExpression,
+    (::sl::ast::MultiplicativeExpression, first)
+    (std::vector<::sl::ast::SignMultiplicativeExpression>, next)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::RelOpAdditiveExpression,
+    (::sl::ast::RelOp, op)
+    (::sl::ast::AdditiveExpression, expr)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::RelationalExpression,
+    (::sl::ast::AdditiveExpression, first)
+    (std::vector<::sl::ast::RelOpAdditiveExpression>, next)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::EqOpRelationalExpression,
+    (::sl::ast::EqOp, op)
+    (::sl::ast::RelationalExpression, expr)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::EqualityExpression,
+    (::sl::ast::RelationalExpression, first)
+    (std::vector<::sl::ast::EqOpRelationalExpression>, next)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::LogicalAndExpression,
+    (::sl::ast::EqualityExpression, first)
+    (std::vector<::sl::ast::EqualityExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Expression,
-    (::sl::ast::Term, first)
-    (std::vector<::sl::ast::SignTerm>, next)
+    (::sl::ast::LogicalAndExpression, first)
+    (std::vector<::sl::ast::LogicalAndExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(

@@ -94,11 +94,11 @@ boost::optional<st::FunctionCall> makeUnaryOperatorCall(const std::string& opNam
     }
 }
 
-class ParseFactor : public boost::static_visitor<boost::optional<st::Expression> >
+class ParseUnaryExpression : public boost::static_visitor<boost::optional<st::Expression> >
 {
 public:
 
-    ParseFactor(st::VariableTableStack& vts, const st::FunctionTable& ft) : vts_(&vts), ft_(&ft) { }
+    ParseUnaryExpression(st::VariableTableStack& vts, const st::FunctionTable& ft) : vts_(&vts), ft_(&ft) { }
 
     boost::optional<st::Expression> operator()(const ast::Constant& c) const
     {
@@ -153,15 +153,15 @@ public:
         return parseExpression(e, *vts_, *ft_);
     }
 
-    boost::optional<st::Expression> operator()(const ast::SignedFactor& sf) const
+    boost::optional<st::Expression> operator()(const ast::SignedUnaryExpression& sf) const
     {
         switch (sf.sign)
         {
-            case ast::plus_: return sf.factor.apply_visitor(*this);
+            case ast::plus_: return sf.expr.apply_visitor(*this);
 
             default:
 
-                if (boost::optional<st::Expression> e = sf.factor.apply_visitor(*this))
+                if (boost::optional<st::Expression> e = sf.expr.apply_visitor(*this))
                 {
                     if (boost::optional<st::FunctionCall> fc = makeUnaryOperatorCall(builtin::operatorName(sf.sign), *e, *ft_))
                     {
@@ -179,9 +179,9 @@ private:
     const st::FunctionTable *ft_;
 };
 
-boost::optional<st::Expression> parseFactor(const ast::Factor& f, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseUnaryExpression(const ast::UnaryExpression& f, st::VariableTableStack& vts, const st::FunctionTable& ft)
 {
-    ParseFactor pf(vts, ft);
+    ParseUnaryExpression pf(vts, ft);
     return f.apply_visitor(pf);
 }
 
@@ -208,15 +208,111 @@ boost::optional<st::FunctionCall> makeBinaryOperatorCall(const std::string& opNa
     }
 }
 
-boost::optional<st::Expression> parseTerm(const ast::Term& term, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseMultiplicativeExpression(const ast::MultiplicativeExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
 {
-    if (boost::optional<st::Expression> left = parseFactor(term.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseUnaryExpression(expr.first, vts, ft))
     {
-        BOOST_FOREACH(const ast::MulOpFactor& mf, term.next)
+        BOOST_FOREACH(const ast::MulOpUnaryExpression& mf, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseFactor(mf.factor, vts, ft))
+            if (boost::optional<st::Expression> right = parseUnaryExpression(mf.expr, vts, ft))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(mf.op), *left, *right,ft);
+                left = makeBinaryOperatorCall(builtin::operatorName(mf.op), *left, *right, ft);
+
+                if (!left) return boost::none;
+            }
+            else
+            {
+                return boost::none;
+            }
+        }
+
+        return *left;
+    }
+
+    return boost::none;
+}
+
+boost::optional<st::Expression> parseAdditiveExpression(const ast::AdditiveExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+{
+    if (boost::optional<st::Expression> left = parseMultiplicativeExpression(expr.first, vts, ft))
+    {
+        BOOST_FOREACH(const ast::SignMultiplicativeExpression& st, expr.next)
+        {
+            if (boost::optional<st::Expression> right = parseMultiplicativeExpression(st.expr, vts, ft))
+            {
+                left = makeBinaryOperatorCall(builtin::operatorName(st.sign), *left, *right, ft);
+
+                if (!left) return boost::none;
+            }
+            else
+            {
+                return boost::none;
+            }
+        }
+
+        return *left;
+    }
+
+    return boost::none;
+}
+
+boost::optional<st::Expression> parseRelationalExpression(const ast::RelationalExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+{
+    if (boost::optional<st::Expression> left = parseAdditiveExpression(expr.first, vts, ft))
+    {
+        BOOST_FOREACH(const ast::RelOpAdditiveExpression& st, expr.next)
+        {
+            if (boost::optional<st::Expression> right = parseAdditiveExpression(st.expr, vts, ft))
+            {
+                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft);
+
+                if (!left) return boost::none;
+            }
+            else
+            {
+                return boost::none;
+            }
+        }
+
+        return *left;
+    }
+
+    return boost::none;
+}
+
+boost::optional<st::Expression> parseEqualityExpression(const ast::EqualityExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+{
+    if (boost::optional<st::Expression> left = parseRelationalExpression(expr.first, vts, ft))
+    {
+        BOOST_FOREACH(const ast::EqOpRelationalExpression& st, expr.next)
+        {
+            if (boost::optional<st::Expression> right = parseRelationalExpression(st.expr, vts, ft))
+            {
+                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft);
+
+                if (!left) return boost::none;
+            }
+            else
+            {
+                return boost::none;
+            }
+        }
+
+        return *left;
+    }
+
+    return boost::none;
+}
+
+boost::optional<st::Expression> parseLogicalAndExpression(const ast::LogicalAndExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+{
+    if (boost::optional<st::Expression> left = parseEqualityExpression(expr.first, vts, ft))
+    {
+        BOOST_FOREACH(const ast::EqualityExpression& st, expr.next)
+        {
+            if (boost::optional<st::Expression> right = parseEqualityExpression(st, vts, ft))
+            {
+                left = makeBinaryOperatorCall("operator&&", *left, *right, ft);
 
                 if (!left) return boost::none;
             }
@@ -234,13 +330,13 @@ boost::optional<st::Expression> parseTerm(const ast::Term& term, st::VariableTab
 
 boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
 {
-    if (boost::optional<st::Expression> left = parseTerm(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseLogicalAndExpression(expr.first, vts, ft))
     {
-        BOOST_FOREACH(const ast::SignTerm& st, expr.next)
+        BOOST_FOREACH(const ast::LogicalAndExpression& st, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseTerm(st.term, vts, ft))
+            if (boost::optional<st::Expression> right = parseLogicalAndExpression(st, vts, ft))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.sign), *left, *right,ft);
+                left = makeBinaryOperatorCall("operator||", *left, *right, ft);
 
                 if (!left) return boost::none;
             }
@@ -311,7 +407,7 @@ public:
 
     boost::optional<st::Statement> operator()(const ast::FunctionCall& fc) const
     {
-        ParseFactor pf(*vts_, *ft_);
+        ParseUnaryExpression pf(*vts_, *ft_);
 
         if (boost::optional<st::Expression> e = pf(fc))
         {
@@ -460,6 +556,41 @@ void registerBuiltinFunctions(st::FunctionTable& ft)
     ft.insert(&operator_mod_fi);
     ft.insert(&operator_mod_if);
     ft.insert(&operator_mod_ff);
+
+    ft.insert(&operator_lt_ii);
+    ft.insert(&operator_lt_fi);
+    ft.insert(&operator_lt_if);
+    ft.insert(&operator_lt_ff);
+
+    ft.insert(&operator_le_ii);
+    ft.insert(&operator_le_fi);
+    ft.insert(&operator_le_if);
+    ft.insert(&operator_le_ff);
+
+    ft.insert(&operator_gt_ii);
+    ft.insert(&operator_gt_fi);
+    ft.insert(&operator_gt_if);
+    ft.insert(&operator_gt_ff);
+
+    ft.insert(&operator_ge_ii);
+    ft.insert(&operator_ge_fi);
+    ft.insert(&operator_ge_if);
+    ft.insert(&operator_ge_ff);
+
+    ft.insert(&operator_eq_ii);
+    ft.insert(&operator_eq_fi);
+    ft.insert(&operator_eq_if);
+    ft.insert(&operator_eq_ff);
+    ft.insert(&operator_eq_bb);
+
+    ft.insert(&operator_neq_ii);
+    ft.insert(&operator_neq_fi);
+    ft.insert(&operator_neq_if);
+    ft.insert(&operator_neq_ff);
+    ft.insert(&operator_neq_bb);
+
+    ft.insert(&operator_land_bb);
+    ft.insert(&operator_lor_bb);
 }
 
 st::Module parseModule(const sl::ast::Module& module)

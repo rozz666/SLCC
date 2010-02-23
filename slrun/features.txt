@@ -5,6 +5,7 @@ Public functions
 typeof
 passing by references
 swap
+logical not
 if
 while
 
@@ -17,3 +18,5 @@ typeof for return types
 bool
 new variable syntax
 delete variable in the same scope
+relational ops
+logical and, or

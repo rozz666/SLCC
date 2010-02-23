@@ -84,6 +84,11 @@ std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_o
     (vm::MODF, OpcodePrinter("modf"))
     (vm::NEGI, OpcodePrinter("negi"))
     (vm::NEGF, OpcodePrinter("negf"))
+    (vm::ANDI, OpcodePrinter("andi"))
+    (vm::ORI, OpcodePrinter("ori"))
+    (vm::XORI, OpcodePrinter("xori"))
+    (vm::NOTI, OpcodePrinter("noti"))
+
     (vm::I2F, OpcodePrinter("i2f"))
     (vm::F2I, OpcodePrinter("f2i"))
 
@@ -93,6 +98,21 @@ std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_o
     (vm::LEAVE, OpcodePrinter("leave"))
     (vm::RET, OpcodePrinter("ret"))
     (vm::POP, OpcodePrinter("pop", 1))
+
+    (vm::CJUMP, OpcodePrinter("cjump"))
+
+    (vm::LTI, OpcodePrinter("lti"))
+    (vm::LTF, OpcodePrinter("ltf"))
+    (vm::LEI, OpcodePrinter("lei"))
+    (vm::LEF, OpcodePrinter("lef"))
+    (vm::GTI, OpcodePrinter("gti"))
+    (vm::GTF, OpcodePrinter("gtf"))
+    (vm::GEI, OpcodePrinter("gei"))
+    (vm::GEF, OpcodePrinter("gef"))
+    (vm::EQI, OpcodePrinter("eqi"))
+    (vm::EQF, OpcodePrinter("eqf"))
+    (vm::NEQI, OpcodePrinter("neqi"))
+    (vm::NEQF, OpcodePrinter("neqf"))
 
     (vm::INPI, OpcodePrinter("inpi", 2))
     (vm::OUTI, OpcodePrinter("outi", 2));
@@ -281,6 +301,49 @@ SL_GEN_OPERATORS(minus, SUB)
 SL_GEN_OPERATORS(mul, MUL)
 SL_GEN_OPERATORS(div, DIV)
 SL_GEN_OPERATORS(mod, MOD)
+SL_GEN_OPERATORS(lt, LT)
+SL_GEN_OPERATORS(le, LE)
+SL_GEN_OPERATORS(gt, GT)
+SL_GEN_OPERATORS(ge, GE)
+SL_GEN_OPERATORS(eq, EQ)
+SL_GEN_OPERATORS(neq, NEQ)
+
+void gen_operator_land_bb(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 2);
+    cg.emit(vm::CONST4);
+    vm::CodeAddr c1 = cg.emit<std::int32_t>(0xdeadbeef);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::CJUMP);
+    cg.emit(vm::CONST4);
+    cg.emit<std::int32_t>(0);
+    cg.emit(vm::CONST4);
+    vm::CodeAddr c2 = cg.emit<std::int32_t>(0xdeadbeef);
+    cg.emit(vm::JUMP);
+    cg.emit<std::int32_t>(c1, cg.code().size());
+    generateExpression(pc[1], cg, fam, salloc, vt);
+    cg.emit<std::int32_t>(c2, cg.code().size());
+}
+
+void gen_operator_lor_bb(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 2);
+    cg.emit(vm::CONST4);
+    vm::CodeAddr c1 = cg.emit<std::int32_t>(0xdeadbeef);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::CONST4);
+    cg.emit<std::int32_t>(1);
+    cg.emit(vm::XORI);
+    cg.emit(vm::CJUMP);
+    cg.emit(vm::CONST4);
+    cg.emit<std::int32_t>(1);
+    cg.emit(vm::CONST4);
+    vm::CodeAddr c2 = cg.emit<std::int32_t>(0xdeadbeef);
+    cg.emit(vm::JUMP);
+    cg.emit<std::int32_t>(c1, cg.code().size());
+    generateExpression(pc[1], cg, fam, salloc, vt);
+    cg.emit<std::int32_t>(c2, cg.code().size());
+}
 
 typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)> BuiltinFunctionGen;
 typedef std::map<const st::BuiltinFunction *, BuiltinFunctionGen> BuiltinFunctionGenerators;
@@ -307,8 +370,42 @@ BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
     (&builtin::operator_mod_ii, &gen_operator_mod_ii)
     (&builtin::operator_mod_fi, &gen_operator_mod_fi)
     (&builtin::operator_mod_if, &gen_operator_mod_if)
-    (&builtin::operator_mod_ff, &gen_operator_mod_ff);
+    (&builtin::operator_mod_ff, &gen_operator_mod_ff)
 
+    (&builtin::operator_lt_ii, &gen_operator_lt_ii)
+    (&builtin::operator_lt_fi, &gen_operator_lt_fi)
+    (&builtin::operator_lt_if, &gen_operator_lt_if)
+    (&builtin::operator_lt_ff, &gen_operator_lt_ff)
+
+    (&builtin::operator_le_ii, &gen_operator_le_ii)
+    (&builtin::operator_le_fi, &gen_operator_le_fi)
+    (&builtin::operator_le_if, &gen_operator_le_if)
+    (&builtin::operator_le_ff, &gen_operator_le_ff)
+
+    (&builtin::operator_gt_ii, &gen_operator_gt_ii)
+    (&builtin::operator_gt_fi, &gen_operator_gt_fi)
+    (&builtin::operator_gt_if, &gen_operator_gt_if)
+    (&builtin::operator_gt_ff, &gen_operator_gt_ff)
+
+    (&builtin::operator_ge_ii, &gen_operator_ge_ii)
+    (&builtin::operator_ge_fi, &gen_operator_ge_fi)
+    (&builtin::operator_ge_if, &gen_operator_ge_if)
+    (&builtin::operator_ge_ff, &gen_operator_ge_ff)
+
+    (&builtin::operator_eq_ii, &gen_operator_eq_ii)
+    (&builtin::operator_eq_fi, &gen_operator_eq_fi)
+    (&builtin::operator_eq_if, &gen_operator_eq_if)
+    (&builtin::operator_eq_ff, &gen_operator_eq_ff)
+    (&builtin::operator_eq_bb, &gen_operator_eq_ii)
+
+    (&builtin::operator_neq_ii, &gen_operator_neq_ii)
+    (&builtin::operator_neq_fi, &gen_operator_neq_fi)
+    (&builtin::operator_neq_if, &gen_operator_neq_if)
+    (&builtin::operator_neq_ff, &gen_operator_neq_ff)
+    (&builtin::operator_neq_bb, &gen_operator_neq_ii)
+    
+    (&builtin::operator_land_bb, &gen_operator_land_bb)
+    (&builtin::operator_lor_bb, &gen_operator_lor_bb);
 
 std::uint8_t parametersTotalSize(const st::FunctionDef& fd)
 {

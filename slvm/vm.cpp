@@ -47,6 +47,17 @@ void copy4(const void *src, void *dst)
     sp += 4; \
 }
 
+#define SLVM_REL_OP4(type, op) \
+{ \
+    type a, b; \
+    copy4(memory + sp, &b); \
+    copy4(memory + sp + 4, &a); \
+    int_t r = a op b; \
+    copy4(&r, memory + sp + 4); \
+    sp += 4; \
+}
+
+
 void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 {
     typedef std::int32_t int_t;
@@ -150,7 +161,28 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 copy4(&v, memory + sp);
                 break;
             }
-                
+
+            case ANDI:
+                SLVM_OP4(int_t, &);
+                break;
+
+            case ORI:
+                SLVM_OP4(int_t, &);
+                break;
+
+            case XORI:
+                SLVM_OP4(int_t, &);
+                break;
+
+            case NOTI:
+            {
+                int_t v;
+                copy4(memory + sp, &v);
+                v = ~v;
+                copy4(&v, memory + sp);
+                break;
+            }
+
             case I2F:
             {
                 int_t s;
@@ -231,6 +263,65 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 
                 break;
             }
+
+            case CJUMP:
+            {
+                int_t addr;
+                int_t cond;
+                copy4(memory + sp, &cond);
+                copy4(memory + sp + 4, &addr);
+                sp += 8;
+                if (cond) off = addr;
+                break;
+            }
+
+            case LTI:
+                SLVM_REL_OP4(int_t, <);
+                break;
+
+            case LTF:
+                SLVM_REL_OP4(float_t, <);
+                break;
+
+            case LEI:
+                SLVM_REL_OP4(int_t, <=);
+                break;
+
+            case LEF:
+                SLVM_REL_OP4(float_t, <=);
+                break;
+
+            case GTI:
+                SLVM_REL_OP4(int_t, >);
+                break;
+
+            case GTF:
+                SLVM_REL_OP4(float_t, >);
+                break;
+
+            case GEI:
+                SLVM_REL_OP4(int_t, >=);
+                break;
+
+            case GEF:
+                SLVM_REL_OP4(float_t, >=);
+                break;
+
+            case EQI:
+                SLVM_REL_OP4(int_t, ==);
+                break;
+
+            case EQF:
+                SLVM_REL_OP4(float_t, ==);
+                break;
+
+            case NEQI:
+                SLVM_REL_OP4(int_t, !=);
+                break;
+
+            case NEQF:
+                SLVM_REL_OP4(float_t, !=);
+                break;
 
             case INPI:
             {

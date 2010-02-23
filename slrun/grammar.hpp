@@ -90,6 +90,28 @@ struct MulOp : qi::symbols<char, ast::MulOp>
     }
 };
 
+struct RelOp : qi::symbols<char, ast::RelOp>
+{
+    RelOp()
+    {
+        add
+            ("<", ast::less_)
+            ("<=", ast::lessEqual_)
+            (">", ast::greater_)
+            (">=", ast::greaterEqual_);
+    }
+};
+
+struct EqOp : qi::symbols<char, ast::EqOp>
+{
+    EqOp()
+    {
+        add
+            ("==", ast::equal_)
+            ("!=", ast::notEqual_);
+    }
+};
+
 struct BoolLit : qi::symbols<char, bool>
 {
     BoolLit()
@@ -153,17 +175,21 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         identifier %= lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
         constant %= (int_ >> !char_('.')) | float_ | boolLit;
         variable %= identifier;
-        factor %= constant | functionCall | variable | ('(' >> expression >> ')') | signedFactor;
-        signedFactor = sign >> factor;
-        term = factor >> *(mulOp > factor);
-        expression = term >> *(sign > term);
-        variableDecl = "new" > -type > identifier > -('=' > expression) > ';';
-        variableDelete = "delete" > identifier > ';';
-        functionParameter = (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
-        assignment = identifier >> '=' > expression;
-        functionCall = identifier >> '(' >> -(expression % ',') > ')';
-        returnStatement = "return" > expression > ';';
-        statement =
+        unaryExpression %= constant | functionCall | variable | ('(' >> expression >> ')') | signedUnaryExpression;
+        signedUnaryExpression %= sign >> unaryExpression;
+        multiplicativeExpression %= unaryExpression >> *(mulOp > unaryExpression);
+        additiveExpression %= multiplicativeExpression >> *(sign > multiplicativeExpression);
+        relationalExpression %= additiveExpression >> *(relOp > additiveExpression);
+        equalityExpression %= relationalExpression >> *(eqOp > relationalExpression); 
+        andExpression = equalityExpression >> *(lit("&&") >> equalityExpression); 
+        expression = andExpression >> *(lit("||") > andExpression); 
+        variableDecl %= "new" > -type > identifier > -('=' > expression) > ';';
+        variableDelete %= "delete" > identifier > ';';
+        functionParameter %= (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
+        assignment %= identifier >> '=' > expression;
+        functionCall %= identifier >> '(' >> -(expression % ',') > ')';
+        returnStatement %= "return" > expression > ';';
+        statement %=
             compoundStatement |
             returnStatement |
             (assignment > ';') |
@@ -171,15 +197,15 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
             variableDecl |
             variableDelete;
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
-        function = identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (type | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
-        module = "module" > identifier > ';' >> *function >> qi::eoi;
+        function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (type | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
+        module %= "module" > identifier > ';' >> *function >> qi::eoi;
 
         identifier.name("identifier");
         constant.name("constant");
         variable.name("variable");
-        factor.name("factor");
-        signedFactor.name("signedFactor");
-        term.name("term");
+        unaryExpression.name("unaryExpression");
+        signedUnaryExpression.name("signedUnaryExpression");
+        multiplicativeExpression.name("multiplicativeExpression");
         expression.name("expression");
         variableDecl.name("variable declaration");
         functionParameter.name("function parameter");
@@ -204,13 +230,19 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     detail::Type type;
     detail::Sign sign;
     detail::MulOp mulOp;
+    detail::RelOp relOp;
+    detail::EqOp eqOp;
     detail::BoolLit boolLit;
     qi::rule<Iterator, std::string(), ascii::space_type> identifier;
     qi::rule<Iterator, ast::Constant(), ascii::space_type> constant;
     qi::rule<Iterator, ast::Variable(), ascii::space_type> variable;
-    qi::rule<Iterator, ast::Factor(), ascii::space_type> factor;
-    qi::rule<Iterator, ast::SignedFactor(), ascii::space_type> signedFactor;
-    qi::rule<Iterator, ast::Term(), ascii::space_type> term;
+    qi::rule<Iterator, ast::UnaryExpression(), ascii::space_type> unaryExpression;
+    qi::rule<Iterator, ast::SignedUnaryExpression(), ascii::space_type> signedUnaryExpression;
+    qi::rule<Iterator, ast::MultiplicativeExpression(), ascii::space_type> multiplicativeExpression;
+    qi::rule<Iterator, ast::AdditiveExpression(), ascii::space_type> additiveExpression;
+    qi::rule<Iterator, ast::RelationalExpression(), ascii::space_type> relationalExpression;
+    qi::rule<Iterator, ast::EqualityExpression(), ascii::space_type> equalityExpression;
+    qi::rule<Iterator, ast::LogicalAndExpression(), ascii::space_type> andExpression;
     qi::rule<Iterator, ast::Expression(), ascii::space_type> expression;
     qi::rule<Iterator, ast::VariableDecl(), ascii::space_type> variableDecl;
     qi::rule<Iterator, ast::VariableDelete(), ascii::space_type> variableDelete;
