@@ -611,7 +611,7 @@ st::Module parseModule(const sl::ast::Module& module)
 
         BOOST_FOREACH(const ast::FunctionParameter& fp, f.parameters)
         {
-            std::auto_ptr<st::Variable> v(new st::Variable(fp.name, convertType(fp.type)));
+            std::auto_ptr<st::Variable> v(new st::Variable(fp.name, convertType(fp.type), fp.ref));
 
             pc.push_back(v);
         }

@@ -84,7 +84,26 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 off += 4;
                 break;
 
+            case LADDR:
+            {
+                std::int16_t laddr;
+                copy2(code + off, &laddr);
+                off += 2;
+                sp -= 4;
+                std::int32_t addr = bp + laddr;
+                copy4(&addr, memory + sp);
+                break;
+            }
+
             case LOAD4:
+            {
+                std::int32_t addr;
+                copy4(memory + sp, &addr);
+                copy4(memory + addr, memory + sp);
+                break;
+            }
+
+            case LLOAD4:
             {
                 std::int16_t addr;
                 copy2(code + off, &addr);
@@ -95,6 +114,15 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
             }
 
             case STORE4:
+            {
+                std::int32_t addr, value;
+                copy4(memory + sp + 4, &addr);
+                copy4(memory + sp, memory + addr);
+                sp += 8;
+                break;
+            }
+
+            case LSTORE4:
             {
                 std::int16_t addr;
                 copy2(code + off, &addr);

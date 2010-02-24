@@ -70,8 +70,11 @@ private:
 std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_of
     (vm::NOP, OpcodePrinter("nop"))
     (vm::CONST4, OpcodePrinter("const4", 4, true))
-    (vm::LOAD4, OpcodePrinter("load4", 2))
-    (vm::STORE4, OpcodePrinter("store4", 2))
+    (vm::LADDR, OpcodePrinter("laddr", 2))
+    (vm::LOAD4, OpcodePrinter("load4"))
+    (vm::LLOAD4, OpcodePrinter("lload4", 2))
+    (vm::STORE4, OpcodePrinter("store4"))
+    (vm::LSTORE4, OpcodePrinter("lstore4", 2))
     (vm::ADDI, OpcodePrinter("addi"))
     (vm::ADDF, OpcodePrinter("addf"))
     (vm::SUBI, OpcodePrinter("subi"))
@@ -246,6 +249,7 @@ typedef NormalStackAlloc StackAlloc;
 st::Type constantType(const st::Constant& c);
 
 void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
+void generateExpressionRef(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
 
 void gen_operator_minus_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
@@ -451,9 +455,24 @@ public:
         cg_.emit(vm::CONST4);
         cg_.emit(std::int32_t(0)); // return value placeholder
 
-        BOOST_FOREACH(const st::Expression& e, pc_)
+        assert(pc_.size() == fd->parameters().size());
+
+        auto pd = fd->parameters().begin();
+        auto e = pc_.begin();
+
+        while (e != pc_.end())
         {
-            generateExpression(e, cg_, fam_, salloc_, vt_);
+            if ((*pd)->ref())
+            {
+                generateExpressionRef(*e, cg_, fam_, salloc_, vt_);
+            }
+            else
+            {
+                generateExpression(*e, cg_, fam_, salloc_, vt_);
+            }
+
+            ++e;
+            ++pd;
         }
 
         cg_.emit(vm::CONST4);
@@ -515,8 +534,17 @@ public:
 
     void operator()(const st::Variable *v) const
     {
-        cg_.emit(vm::LOAD4);
-        cg_.emit(std::int16_t(vt_.addrOf(v)));
+        if (v->ref())
+        {
+            cg_.emit(vm::LADDR);
+            cg_.emit(std::int16_t(vt_.addrOf(v)));
+            cg_.emit(vm::LOAD4);
+        }
+        else
+        {
+            cg_.emit(vm::LLOAD4);
+            cg_.emit(std::int16_t(vt_.addrOf(v)));
+        }
     }
 
     void operator()(const st::FunctionCall& fc) const
@@ -571,6 +599,40 @@ void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, Function
     e.apply_visitor(ge);
 }
 
+class GenerateExpressionRef : public boost::static_visitor<void>
+{
+public:
+
+    GenerateExpressionRef(vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+        : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
+
+    template <typename T>
+    void operator()(const T& ) const
+    {
+        assert(!"Not an lvalue");
+    }
+
+    void operator()(const st::Variable *v) const
+    {
+        cg_.emit(vm::LADDR);
+        cg_.emit(std::int16_t(vt_.addrOf(v)));
+    }
+
+private:
+
+    vm::CodeGenerator& cg_;
+    FunctionAddrMap& fam_;
+    StackAlloc& salloc_;
+    VariableTable& vt_;
+};
+
+void generateExpressionRef(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    GenerateExpressionRef ge(cg, fam, salloc, vt);
+    e.apply_visitor(ge);
+}
+
+
 typedef std::vector<vm::CodeAddr> ReturnAddresses;
 
 class GenerateStatement : public boost::static_visitor<void>
@@ -592,9 +654,23 @@ public:
     {
         assert(a.var().type() == expressionType(a.expr()));
 
+        if (a.var().ref())
+        {
+            cg_.emit(vm::LADDR);
+            cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
+        }
+
         generateExpression(a.expr(), cg_, fam_, salloc_, vt_);
-        cg_.emit(vm::STORE4);
-        cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
+
+        if (a.var().ref())
+        {
+            cg_.emit(vm::STORE4);
+        }
+        else
+        {
+            cg_.emit(vm::LSTORE4);
+            cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
+        }
     }
 
     void operator()(const st::FunctionCall& ) const
@@ -613,7 +689,7 @@ public:
             generateExpression(rs.expr(), cg_, fam_, salloc_, vt_);
         }
 
-        cg_.emit(vm::STORE4);
+        cg_.emit(vm::LSTORE4);
         cg_.emit(std::int16_t(vt_.addrOfReturn()));
         cg_.emit(vm::CONST4);
         ra_.push_back(cg_.emit<std::int32_t>(0xbadabada));
@@ -628,7 +704,7 @@ public:
         {
             generateExpression(*vd.expr(), cg_, fam_, salloc_, vt_);
 
-            cg_.emit(vm::STORE4);
+            cg_.emit(vm::LSTORE4);
             cg_.emit(std::int16_t(vt_.addrOf(&vd.var())));
         }
     }

@@ -98,15 +98,17 @@ class Variable
 {
 public:
 
-    Variable(const std::string& name, Type type) : name_(name), type_(type) { }
+    Variable(const std::string& name, Type type, bool ref) : name_(name), type_(type), ref_(ref) { }
 
     const std::string& name() const { return name_; }
     Type type() const { return type_; }
+    bool ref() const { return ref_; }
 
 private:
 
     std::string name_;
     Type type_;
+    bool ref_;
 };
 
 class FunctionCall;
@@ -118,6 +120,21 @@ typedef boost::variant<
     boost::recursive_wrapper<FunctionCall>,
     boost::recursive_wrapper<Cast>
 > Expression;
+
+
+struct IsLValue : public boost::static_visitor<bool>
+{
+    bool operator()(const Variable *) const { return true; }
+
+    template <typename T>
+    bool operator()(const T& ) const { return false; }
+};
+
+inline bool isLValue(const Expression& e)
+{
+    IsLValue v;
+    return e.apply_visitor(v);
+}
 
 struct CompoundStatement;
 
@@ -168,8 +185,8 @@ class VariableDecl
 {
 public:
 
-    VariableDecl(const std::string& name, Type type) : var_(new Variable(name, type)) { }
-    VariableDecl(const std::string& name, Type type, const Expression& expr) : var_(new Variable(name, type)), expr_(expr) { }
+    VariableDecl(const std::string& name, Type type) : var_(new Variable(name, type, false)) { }
+    VariableDecl(const std::string& name, Type type, const Expression& expr) : var_(new Variable(name, type, false)), expr_(expr) { }
 
     Variable& var() { return *var_; }
     const Variable& var() const { return *var_; }

@@ -26,10 +26,10 @@ int main()
         cg.emit<std::int16_t>(-4);
         cg.emit(CONST4);
         cg.emit<std::int32_t>(1);
-        cg.emit(LOAD4);
+        cg.emit(LLOAD4);
         cg.emit<std::int16_t>(-4);
         cg.emit(DIVI);
-        cg.emit(STORE4);
+        cg.emit(LSTORE4);
         cg.emit<std::int16_t>(-4);
         cg.emit(OUTI);
         cg.emit<std::int16_t>(-4);

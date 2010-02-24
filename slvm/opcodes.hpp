@@ -11,8 +11,11 @@ enum Opcode
 {
     NOP         = 0x00,
     CONST4      = 0x0a,
-    LOAD4       = 0x12,
-    STORE4      = 0x1a,
+    LADDR       = 0x10,
+    LOAD4       = 0x11,
+    LLOAD4      = 0x12,
+    STORE4      = 0x13,
+    LSTORE4     = 0x14,
     ADDI        = 0x30,
     ADDF        = 0x31,
     SUBI        = 0x38,
