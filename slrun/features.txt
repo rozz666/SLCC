@@ -4,7 +4,6 @@ Order independent functions
 Public functions
 typeof
 passing by references
-swap
 logical not
 if
 while
@@ -20,3 +19,5 @@ new variable syntax
 delete variable in the same scope
 relational ops
 logical and, or
+swap
+void functions
