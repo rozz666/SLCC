@@ -349,6 +349,17 @@ void gen_operator_lor_bb(const st::FunctionCall::ParamContainer& pc, vm::CodeGen
     cg.emit<std::int32_t>(c2, cg.code().size());
 }
 
+void gen_function_swap4(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 2);
+    generateExpressionRef(pc[0], cg, fam, salloc, vt);
+    generateExpression(pc[1], cg, fam, salloc, vt);
+    generateExpressionRef(pc[1], cg, fam, salloc, vt);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::STORE4);
+    cg.emit(vm::STORE4);
+}
+
 typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)> BuiltinFunctionGen;
 typedef std::map<const st::BuiltinFunction *, BuiltinFunctionGen> BuiltinFunctionGenerators;
 
@@ -409,7 +420,11 @@ BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
     (&builtin::operator_neq_bb, &gen_operator_neq_ii)
     
     (&builtin::operator_land_bb, &gen_operator_land_bb)
-    (&builtin::operator_lor_bb, &gen_operator_lor_bb);
+    (&builtin::operator_lor_bb, &gen_operator_lor_bb)
+
+    (&builtin::function_swap_ii, &gen_function_swap4)
+    (&builtin::function_swap_ff, &gen_function_swap4)
+    (&builtin::function_swap_bb, &gen_function_swap4);
 
 std::uint8_t parametersTotalSize(const st::FunctionDef& fd)
 {
@@ -427,14 +442,20 @@ class GenerateFunctionCall : public boost::static_visitor<void>
 {
 public:
 
-    GenerateFunctionCall(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
-        : pc_(pc), cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
+    GenerateFunctionCall(const st::FunctionCall::ParamContainer& pc, bool discardReturnValue, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+        : pc_(pc), discardReturnValue_(discardReturnValue), cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
     void operator()(const st::BuiltinFunction *bf) const
     {
         assert(builtinFunctionGen.find(bf) != builtinFunctionGen.end());
 
         builtinFunctionGen[bf](pc_, cg_, fam_, salloc_, vt_);
+
+        if (discardReturnValue_ && bf->type() != st::void_)
+        {
+            cg_.emit(vm::POP);
+            cg_.emit<std::uint8_t>(typeSize(bf->type()));
+        }
     }
 
     void operator()(const st::FunctionDef *fd) const
@@ -442,18 +463,15 @@ public:
         std::string fn = st::functionMangledName(*fd);
 
         auto it = fam_.find(fn);
-/*        
-        if (it == fam_->end())
-        {
-            generateFunction(*fd, *bb_, *fam_); 
-
-            it = fam_->find(fn);
-        }*/
 
         assert(it != fam_.end());
 
-        cg_.emit(vm::CONST4);
-        cg_.emit(std::int32_t(0)); // return value placeholder
+        if (fd->type() != st::void_)
+        {
+            cg_.emit(vm::CONST4);
+            assert(typeSize(fd->type()) == sizeof(std::int32_t));
+            cg_.emit(std::int32_t(0)); // return value placeholder
+        }
 
         assert(pc_.size() == fd->parameters().size());
 
@@ -479,12 +497,21 @@ public:
         cg_.emit<std::int32_t>(it->second);
         cg_.emit(vm::CALL);
         cg_.emit(vm::POP);
-        cg_.emit<std::uint8_t>(parametersTotalSize(*fd));
+
+        if (discardReturnValue_ && fd->type() != st::void_)
+        {
+            cg_.emit<std::uint8_t>(parametersTotalSize(*fd) + typeSize(fd->type()));
+        }
+        else
+        {
+            cg_.emit<std::uint8_t>(parametersTotalSize(*fd));
+        }
     }
 
 private:
 
     const st::FunctionCall::ParamContainer& pc_;
+    bool discardReturnValue_;
     vm::CodeGenerator& cg_;
     FunctionAddrMap& fam_;
     StackAlloc& salloc_;
@@ -549,7 +576,7 @@ public:
 
     void operator()(const st::FunctionCall& fc) const
     {
-        GenerateFunctionCall gfc(fc.params(), cg_, fam_, salloc_, vt_);
+        GenerateFunctionCall gfc(fc.params(), false, cg_, fam_, salloc_, vt_);
         fc.f().apply_visitor(gfc);
     }
 
@@ -673,9 +700,10 @@ public:
         }
     }
 
-    void operator()(const st::FunctionCall& ) const
+    void operator()(const st::FunctionCall& fc) const
     {
-        assert(!"No function calls supported yet!");
+        GenerateFunctionCall gfc(fc.params(), false, cg_, fam_, salloc_, vt_);
+        fc.f().apply_visitor(gfc);
     }
 
     void operator()(const st::ReturnStatement& rs) const

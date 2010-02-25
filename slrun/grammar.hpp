@@ -69,6 +69,18 @@ struct Type : qi::symbols<char, ast::Type>
     }
 };
 
+struct ReturnType : qi::symbols<char, ast::Type>
+{
+    ReturnType()
+    {
+        add
+            ("int", ast::int_)
+            ("float", ast::float_)
+            ("bool", ast::bool_)
+            ("void", ast::void_);
+    }
+};
+
 struct Sign : qi::symbols<char, ast::Sign>
 {
     Sign()
@@ -188,7 +200,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         functionParameter %= (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
         assignment %= identifier >> '=' > expression;
         functionCall %= identifier >> '(' >> -(expression % ',') > ')';
-        returnStatement %= "return" > expression > ';';
+        returnStatement %= "return" > -expression > ';';
         statement %=
             compoundStatement |
             returnStatement |
@@ -197,7 +209,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
             variableDecl |
             variableDelete;
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
-        function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (type | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
+        function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (returnType | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
         module %= "module" > identifier > ';' >> *function >> qi::eoi;
 
         identifier.name("identifier");
@@ -228,6 +240,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     }
 
     detail::Type type;
+    detail::ReturnType returnType;
     detail::Sign sign;
     detail::MulOp mulOp;
     detail::RelOp relOp;

@@ -20,7 +20,8 @@ enum Type
 {
     int_,
     float_,
-    bool_
+    bool_,
+    void_
 };
 
 inline const char *typeSuffix(Type type)
@@ -53,7 +54,10 @@ inline const char *typeName(Type type)
 
 inline bool isConvertible(Type from, Type to)
 {
-    return from == to || (from != st::bool_ && to != st::bool_);
+    return
+        (from == to) ||
+        (to == float_ && from == int_) ||
+        (to == int_ && from == float_);
 }
 
 class Variable;

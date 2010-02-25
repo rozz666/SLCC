@@ -124,5 +124,9 @@ const st::BuiltinFunction operator_neq_bb(operatorName(ast::notEqual_), st::bool
 const st::BuiltinFunction operator_land_bb("operator&&", st::bool_, st::bool_, st::bool_);
 const st::BuiltinFunction operator_lor_bb("operator||", st::bool_, st::bool_, st::bool_);
 
+const st::BuiltinFunction function_swap_ii("swap", st::int_, st::int_, st::void_);
+const st::BuiltinFunction function_swap_ff("swap", st::float_, st::float_, st::void_);
+const st::BuiltinFunction function_swap_bb("swap", st::bool_, st::bool_, st::void_);
+
 }
 }

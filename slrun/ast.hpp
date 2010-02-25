@@ -18,7 +18,8 @@ enum Type
 {
     int_,
     float_,
-    bool_
+    bool_,
+    void_
 };
 
 enum Sign

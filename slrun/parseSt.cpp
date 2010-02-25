@@ -14,6 +14,7 @@ st::Type convertType(ast::Type type)
         case ast::int_: return st::int_;
         case ast::float_: return st::float_;
         case ast::bool_: return st::bool_;
+        case ast::void_: return st::void_;
     }
 
     assert(!"Invalid type");
@@ -465,6 +466,14 @@ public:
 
             if (!expr) return boost::none;
 
+            st::Type exprType = expressionType(*expr);
+
+            if (exprType == st::void_)
+            {
+                std::cerr << "Cannot declare variable of type void" << std::endl;
+                return boost::none;
+            }
+
             st::VariableDecl out(decl.name, expressionType(*expr), *expr);
             vts_->insert(out.var());
 
@@ -591,6 +600,10 @@ void registerBuiltinFunctions(st::FunctionTable& ft)
 
     ft.insert(&operator_land_bb);
     ft.insert(&operator_lor_bb);
+
+    ft.insert(&function_swap_ii);
+    ft.insert(&function_swap_ff);
+    ft.insert(&function_swap_bb);
 }
 
 st::Module parseModule(const sl::ast::Module& module)

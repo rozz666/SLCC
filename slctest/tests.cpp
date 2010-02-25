@@ -37,8 +37,6 @@ sl::vm::Module compileFile(const std::string& fname)
 
     if (!module) throw CompileError();
 
-    std::cout << "parsed " << fname << std::endl;
-
     sl::st::Module parsed = parseModule(*module);
 
     sl::FunctionAddrMap fam;
@@ -115,6 +113,14 @@ template <>
 template <>
 void object::test<4>()
 {
+    set_test_name("swap");
+
+    sl::vm::Module module = compileFile("tests\\test4.sl");
+    sl::vm::Environment env(1024);
+
+    ensure("swap [int]", module.call<int>(sl::vm::FunctionCall("test_swap_int$"), env) == true);
+    ensure("swap [float]", module.call<int>(sl::vm::FunctionCall("test_swap_float$"), env) == true);
+    ensure("swap [bool]", module.call<int>(sl::vm::FunctionCall("test_swap_bool$"), env) == true);
 }
 
 template <>

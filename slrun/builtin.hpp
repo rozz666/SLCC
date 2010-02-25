@@ -78,6 +78,10 @@ extern const st::BuiltinFunction operator_neq_bb;
 extern const st::BuiltinFunction operator_land_bb;
 extern const st::BuiltinFunction operator_lor_bb;
 
+extern const st::BuiltinFunction function_swap_ii;
+extern const st::BuiltinFunction function_swap_ff;
+extern const st::BuiltinFunction function_swap_bb;
+
 }
 }
 

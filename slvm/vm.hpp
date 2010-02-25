@@ -145,7 +145,8 @@ public:
         assert(f != functions_.end());
 
         env.sp(env.sp() - fc.paramSize() - sizeof(retT) - sizeof(CodeAddr));
-        std::memcpy(&env[env.sp() + sizeof(CodeAddr)], fc.params(), fc.paramSize());
+
+        if (fc.paramSize()) std::memcpy(&env[env.sp() + sizeof(CodeAddr)], fc.params(), fc.paramSize());
 
         CodeAddr retAddr = ~CodeAddr(0);
         std::memcpy(&env[env.sp()], &retAddr, sizeof(retAddr));
