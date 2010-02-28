@@ -6,6 +6,7 @@
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
+#include "FilePosition.hpp"
 
 namespace sl
 {
@@ -49,9 +50,15 @@ enum EqOp
     notEqual_
 };
 
+struct Identifier
+{
+    FilePosition pos;
+    std::string str;
+};
+
 struct Variable
 {
-    std::string name;
+    Identifier name;
 };
 
 struct SignedUnaryExpression;
@@ -68,66 +75,82 @@ typedef boost::variant<
 
 struct SignedUnaryExpression
 {
+    FilePosition signPos;
     Sign sign;
+    FilePosition exprPos;
     UnaryExpression expr;
 };
 
 struct MulOpUnaryExpression
 {
+    FilePosition opPos;
     MulOp op;
+    FilePosition exprPos;
     UnaryExpression expr;
 };
 
 struct MultiplicativeExpression
 {
+    FilePosition firstPos;
     UnaryExpression first;
     std::vector<MulOpUnaryExpression> next;
 };
 
 struct SignMultiplicativeExpression
 {
+    FilePosition signPos;
     Sign sign;
+    FilePosition exprPos;
     MultiplicativeExpression expr;
 };
 
 struct AdditiveExpression
 {
+    FilePosition firstPos;
     MultiplicativeExpression first;
     std::vector<SignMultiplicativeExpression> next;
 };
 
 struct RelOpAdditiveExpression
 {
+    FilePosition opPos;
     RelOp op;
+    FilePosition exprPos;
     AdditiveExpression expr;
 };
 
 struct RelationalExpression
 {
+    FilePosition firstPos;
     AdditiveExpression first;
     std::vector<RelOpAdditiveExpression> next;
 };
 
 struct EqOpRelationalExpression
 {
+    FilePosition opPos;
     EqOp op;
+    FilePosition exprPos;
     RelationalExpression expr;
 };
 
 struct EqualityExpression
 {
+    FilePosition firstPos;
     RelationalExpression first;
     std::vector<EqOpRelationalExpression> next;
 };
 
 struct LogicalAndExpression
 {
+    FilePosition firstPos;
     EqualityExpression first;
     std::vector<EqualityExpression> next;
 };
 
 struct Expression
 {
+    FilePosition firstPos;
     LogicalAndExpression first;
     std::vector<LogicalAndExpression> next;
 };
@@ -135,31 +158,31 @@ struct Expression
 struct VariableDecl
 {
     boost::optional<Type> type;
-    std::string name;
+    Identifier name;
     boost::optional<Expression> expr;
 };
 
 struct VariableDelete
 {
-    std::string name;
+    Identifier name;
 };
 
 struct FunctionParameter
 {
     bool ref;
     Type type;
-    std::string name;
+    Identifier name;
 };
 
 struct Assignment
 {
-    std::string var;
+    Identifier var;
     Expression expr;
 };
 
 struct FunctionCall
 {
-    std::string name;
+    Identifier name;
     std::vector<Expression> expr;
 };
 
@@ -191,7 +214,7 @@ typedef boost::variant<Type, Expression> FunctionReturnType;
 
 struct Function
 {
-    std::string name;
+    Identifier name;
     std::vector<FunctionParameter> parameters;
     FunctionReturnType type;
     CompoundStatement body;
@@ -199,7 +222,7 @@ struct Function
 
 struct Module
 {
-    std::string name;
+    Identifier name;
     std::vector<Function> functions;
 };
 
@@ -207,8 +230,14 @@ struct Module
 }
 
 BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::Identifier,
+    (::sl::FilePosition, pos)
+    (std::string, str)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Variable,
-    (std::string, name)
+    (::sl::ast::Identifier, name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -280,31 +309,31 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::VariableDecl,
     (boost::optional<::sl::ast::Type>, type)
-    (std::string, name)
+    (::sl::ast::Identifier, name)
     (boost::optional<::sl::ast::Expression>, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::VariableDelete,
-    (std::string, name)
+    (::sl::ast::Identifier, name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::FunctionParameter,
     (bool, ref)
     (::sl::ast::Type, type)
-    (std::string, name)
+    (::sl::ast::Identifier, name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Assignment,
-    (std::string, var)
+    (::sl::ast::Identifier, var)
     (::sl::ast::Expression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::FunctionCall,
-    (std::string, name)
+    (::sl::ast::Identifier, name)
     (std::vector<::sl::ast::Expression>, expr)
 )
 
@@ -320,7 +349,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Function,
-    (std::string, name)
+    (::sl::ast::Identifier, name)
     (std::vector<::sl::ast::FunctionParameter>, parameters)
     (::sl::ast::FunctionReturnType, type)
     (::sl::ast::CompoundStatement, body)
@@ -328,7 +357,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Module,
-    (std::string, name)
+    (::sl::ast::Identifier, name)
     (std::vector<::sl::ast::Function>, functions)
 )
 

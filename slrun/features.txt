@@ -21,3 +21,4 @@ relational ops
 logical and, or
 swap
 void functions
+error handling

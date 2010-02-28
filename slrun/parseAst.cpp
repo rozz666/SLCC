@@ -4,21 +4,24 @@
 namespace sl
 {
 
-boost::optional<ast::Module> parseFile(std::istream& is)
+
+boost::optional<ast::Module> parseFile(std::istream& is, ErrorLogger& errorLogger)
 {
     typedef std::vector<char> Source;
     Source source;
 
     source.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
 
-    typedef sl::Grammar<Source::const_iterator> Grammar;
-    Grammar grammar;
-    ast::Module module;
+    typedef boost::spirit::classic::position_iterator<Source::const_iterator, boost::spirit::classic::file_position> PosIterator;
 
     using boost::spirit::ascii::space;
-    Source::const_iterator iter = source.begin();
-    Source::const_iterator end = source.end();
-    
+    PosIterator iter(source.begin(), source.end());
+    PosIterator end;
+
+    typedef sl::Grammar<PosIterator> Grammar;
+    Grammar grammar(errorLogger);
+    ast::Module module;
+
     bool r = boost::spirit::qi::phrase_parse(iter, end, grammar, space, module);
 
     if (r && iter == end) return module;

@@ -219,7 +219,9 @@ public:
 
         if ((i + size) > mem_.size()) mem_.resize(i + size, 0);
 
-        mem_[i] = size;
+        assert(size <= std::numeric_limits<C::value_type>::max());
+
+        mem_[i] = C::value_type(size);
 
         if (peek_ < mem_.size()) peek_ = mem_.size();
 
@@ -228,7 +230,7 @@ public:
 
     void free(vm::BPAddr addr)
     {
-        addr = -addr;
+        addr = -std::int32_t(addr);
         assert(addr < mem_.size() && mem_[addr] != 0);
         mem_[addr] = 0;
     }
@@ -428,14 +430,16 @@ BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
 
 std::uint8_t parametersTotalSize(const st::FunctionDef& fd)
 {
-    std::uint8_t size = 0;
+    std::uint32_t size = 0;
 
     BOOST_FOREACH(const std::shared_ptr<st::Variable>& p, fd.parameters())
     {
         size += typeSize(p->type());
     }
 
-    return size;
+    assert(size <= std::numeric_limits<std::uint8_t>::max());
+
+    return std::uint8_t(size);
 }
 
 class GenerateFunctionCall : public boost::static_visitor<void>
@@ -454,7 +458,7 @@ public:
         if (discardReturnValue_ && bf->type() != st::void_)
         {
             cg_.emit(vm::POP);
-            cg_.emit<std::uint8_t>(typeSize(bf->type()));
+            cg_.emit(std::uint8_t(typeSize(bf->type())));
         }
     }
 
@@ -500,7 +504,7 @@ public:
 
         if (discardReturnValue_ && fd->type() != st::void_)
         {
-            cg_.emit<std::uint8_t>(parametersTotalSize(*fd) + typeSize(fd->type()));
+            cg_.emit(std::uint8_t(parametersTotalSize(*fd) + typeSize(fd->type())));
         }
         else
         {

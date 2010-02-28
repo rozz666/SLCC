@@ -60,30 +60,39 @@ int main(int argc, char **argv)
 
     BOOST_FOREACH(const std::string& fn, inputFiles)
     {
+        ErrorLogger errorLogger(fn);
         std::ifstream fin(fn.c_str());
-        boost::optional<ast::Module> module = parseFile(fin);
+        boost::optional<ast::Module> module = parseFile(fin, errorLogger);
 
         if (module)
         {
             std::cout << "parsed " << fn << std::endl;
 
-            sl::st::Module parsed = parseModule(*module);
+            sl::st::Module parsed = parseModule(*module, errorLogger);
 
-            std::ofstream fout((fn + "asm").c_str());
+            if (!errorLogger.hasErrors())
+            {
+                std::ofstream fout((fn + "asm").c_str());
 
-            sl::FunctionAddrMap fam;
+                sl::FunctionAddrMap fam;
 
-            sl::vm::BytecodeBuffer bb = generateBytecode(parsed, fam);
+                sl::vm::BytecodeBuffer bb = generateBytecode(parsed, fam);
 
-            exportToAsm(bb, fout);
+                exportToAsm(bb, fout);
 
-            std::ofstream bc((fn + "bin").c_str(), std::ios::binary);
-            bc.write((const char *) &bb.front(), bb.size());
-
+                std::ofstream bc((fn + "bin").c_str(), std::ios::binary);
+                bc.write((const char *) &bb.front(), bb.size());
+            }
+            else
+            {
+                errorLogger.sort();
+                errorLogger.print(std::cerr);
+            }
         }
         else
         {
             std::cout << "parsing " << fn << " failed" << std::endl;
+            errorLogger.print(std::cerr);
         }
     }
 }

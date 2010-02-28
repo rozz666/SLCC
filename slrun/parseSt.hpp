@@ -4,11 +4,12 @@
 #include <memory>
 #include "st.hpp"
 #include "ast.hpp"
+#include "ErrorLogger.hpp"
 
 namespace sl
 {
 
-st::Module parseModule(const ast::Module& module);
+st::Module parseModule(const ast::Module& module, ErrorLogger& errorLogger);
 
 }
 

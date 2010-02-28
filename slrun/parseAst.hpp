@@ -3,12 +3,13 @@
 
 #include <iosfwd>
 #include <boost/optional.hpp>
+#include "ErrorLogger.hpp"
 #include "ast.hpp"
 
 namespace sl
 {
 
-boost::optional<ast::Module> parseFile(std::istream& is);
+boost::optional<ast::Module> parseFile(std::istream& is, ErrorLogger& errorLogger);
 
 }
 

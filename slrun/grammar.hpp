@@ -9,11 +9,17 @@
 #include <boost/spirit/include/phoenix_fusion.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
+#include <boost/spirit/home/classic/iterator/position_iterator.hpp>
 
+#include "ErrorLogger.hpp"
 #include "ast.hpp"
 
-namespace boost { namespace spirit { namespace traits {
-
+namespace boost
+{
+namespace spirit
+{
+namespace traits
+{
     
 template <typename Exposed, typename Transformed>
 struct transform_attribute<
@@ -45,6 +51,66 @@ struct transform_attribute<
     }
 };
 
+}
+}
+}
+
+namespace sl
+{
+    BOOST_SPIRIT_TERMINAL(input_pos);
+}
+
+namespace boost
+{
+namespace spirit 
+{ 
+    template <>
+    struct use_terminal<qi::domain, sl::tag::input_pos> : mpl::true_  { }; 
+}
+}
+
+namespace sl
+{
+    struct input_pos_parser : boost::spirit::qi::primitive_parser<input_pos_parser>
+    {
+        template <typename Context, typename Iterator>
+        struct attribute
+        {
+            typedef sl::FilePosition type;
+        };
+
+        template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+        bool parse(Iterator& first, Iterator const& last, Context&, Skipper const& skipper, Attribute& attr) const
+        {
+            boost::spirit::qi::skip_over(first, last, skipper);
+            boost::spirit::traits::assign_to(sl::FilePosition(first.get_position().line, first.get_position().column), attr);
+            return true;
+        }
+
+        template <typename Context>
+        boost::spirit::info what(Context&) const
+        {
+            return boost::spirit::info("input_pos");
+        }
+    };
+}
+
+namespace boost
+{
+namespace spirit
+{
+namespace qi
+{
+    template <typename Modifiers>
+    struct make_primitive<sl::tag::input_pos, Modifiers>
+    {
+        typedef sl::input_pos_parser result_type;
+
+        result_type operator()(unused_type, unused_type) const
+        {
+            return result_type();
+        }
+    };
 }
 }
 }
@@ -136,39 +202,28 @@ struct BoolLit : qi::symbols<char, bool>
 
 }
 
-struct position_impl
+struct errorMessageImpl
 {
-    template <typename It1, typename It2>
-    struct result { typedef std::string type; };
+    template <typename Logger, typename It, typename What>
+    struct result { typedef void type; };
 
-    template <typename It1, typename It2>
-    std::string operator()(It1 first, It2 pos) const
+    template <typename Logger, typename It, typename What>
+    void operator()(Logger *logger, It it, What what) const
     {
-        unsigned line = 1, col = 1;
-        for (; first != pos; ++first)
-        {
-            if (*first == '\n')
-            {
-                ++line;
-                col = 1;
-            }
-            else ++col;
-        }
-
-        std::ostringstream ss;
-
-        ss << "(" << line << ", " << col << ")";
-
-        return ss.str();
+        std::ostringstream os;
+        os << what;
+        *logger << err::syntax_error(FilePosition(it.get_position().line, it.get_position().column), os.str());
     }
 };
 
-boost::phoenix::function<position_impl> position;
+boost::phoenix::function<errorMessageImpl> errorMessage;
+
+
 
 template <typename Iterator>
 struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type> 
 {
-    Grammar() : Grammar::base_type(module, "module")
+    Grammar(ErrorLogger& errorLogger) : Grammar::base_type(module, "module"), errorLogger_(&errorLogger)
     {
         using qi::int_;
         using qi::float_;
@@ -180,11 +235,12 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         using qi::fail;
         using boost::phoenix::construct;
         using boost::phoenix::val;
+        using boost::phoenix::ref;
         using boost::phoenix::at_c;
         using boost::phoenix::push_back;
         using namespace qi::labels;            
 
-        identifier %= lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
+        identifier %= input_pos >> lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
         constant %= (int_ >> !char_('.')) | float_ | boolLit;
         variable %= identifier;
         unaryExpression %= constant | functionCall | variable | ('(' >> expression >> ')') | signedUnaryExpression;
@@ -198,7 +254,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         variableDecl %= "new" > -type > identifier > -('=' > expression) > ';';
         variableDelete %= "delete" > identifier > ';';
         functionParameter %= (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
-        assignment %= identifier >> '=' > expression;
+        assignment = identifier >> '=' >> expression;
         functionCall %= identifier >> '(' >> -(expression % ',') > ')';
         returnStatement %= "return" > -expression > ';';
         statement %=
@@ -232,13 +288,11 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         on_error<fail>
         (
             module,
-            std::cout
-                << val("Error") << position(_1, _3) << val(": expected ")
-                << _4                               // what failed?
-                << std::endl
+            errorMessage(errorLogger_, _3, _4)
         );
     }
 
+    ErrorLogger *errorLogger_;
     detail::Type type;
     detail::ReturnType returnType;
     detail::Sign sign;
@@ -246,7 +300,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     detail::RelOp relOp;
     detail::EqOp eqOp;
     detail::BoolLit boolLit;
-    qi::rule<Iterator, std::string(), ascii::space_type> identifier;
+    qi::rule<Iterator, ast::Identifier(), ascii::space_type> identifier;
     qi::rule<Iterator, ast::Constant(), ascii::space_type> constant;
     qi::rule<Iterator, ast::Variable(), ascii::space_type> variable;
     qi::rule<Iterator, ast::UnaryExpression(), ascii::space_type> unaryExpression;

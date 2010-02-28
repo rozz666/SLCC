@@ -1,7 +1,6 @@
 #ifndef SL_ST_HPP
 #define SL_ST_HPP
 
-#include <iostream>
 #include <string>
 #include <memory>
 #include <boost/noncopyable.hpp>
@@ -10,6 +9,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/foreach.hpp>
+#include "FilePosition.hpp"
 
 namespace sl
 {
@@ -80,6 +80,56 @@ functionSuffix(const Container& params)
     return suffix;
 }
 
+template <typename Container>
+inline 
+typename boost::enable_if<
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, std::shared_ptr<Variable> >,
+    std::string
+>::type
+functionParameters(const Container& params)
+{
+    std::ostringstream os;
+    bool comma = false;
+
+    os << "(";
+
+    BOOST_FOREACH(const std::shared_ptr<Variable>& v, params)
+    {
+        if (comma) os << ", ";
+        comma = true;
+        os << typeName(v->type());
+    }
+
+    os << ")";
+
+    return os.str();
+}
+
+template <typename Container>
+inline 
+typename boost::enable_if<
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, st::Type>,
+    std::string
+>::type
+functionParameters(const Container& params)
+{
+    std::ostringstream os;
+    bool comma = false;
+
+    os << "(";
+
+    BOOST_FOREACH(st::Type v, params)
+    {
+        if (comma) os << ", ";
+        comma = true;
+        os << typeName(v);
+    }
+
+    os << ")";
+
+    return os.str();
+}
+
 inline std::string functionMangledName(const std::string& name, const std::string& suffix)
 {
     return name + "$" + suffix;
@@ -102,15 +152,17 @@ class Variable
 {
 public:
 
-    Variable(const std::string& name, Type type, bool ref) : name_(name), type_(type), ref_(ref) { }
+    Variable(const std::string& name, const FilePosition& pos, Type type, bool ref) : name_(name), pos_(pos), type_(type), ref_(ref) { }
 
     const std::string& name() const { return name_; }
+    FilePosition pos() const { return pos_; }
     Type type() const { return type_; }
     bool ref() const { return ref_; }
 
 private:
 
     std::string name_;
+    FilePosition pos_;
     Type type_;
     bool ref_;
 };
@@ -189,8 +241,8 @@ class VariableDecl
 {
 public:
 
-    VariableDecl(const std::string& name, Type type) : var_(new Variable(name, type, false)) { }
-    VariableDecl(const std::string& name, Type type, const Expression& expr) : var_(new Variable(name, type, false)), expr_(expr) { }
+    VariableDecl(const std::string& name, const FilePosition& pos, Type type) : var_(new Variable(name, pos, type, false)) { }
+    VariableDecl(const std::string& name, const FilePosition& pos, Type type, const Expression& expr) : var_(new Variable(name, pos, type, false)), expr_(expr) { }
 
     Variable& var() { return *var_; }
     const Variable& var() const { return *var_; }
@@ -261,8 +313,8 @@ public:
 
     typedef std::vector<std::shared_ptr<Variable> > ParameterContainer;
    
-    FunctionDef(const std::string& name, ParameterContainer&& parameters) 
-        : name_(name), suffix_(functionSuffix(parameters))
+    FunctionDef(const std::string& name, const FilePosition& pos, ParameterContainer&& parameters) 
+        : name_(name), suffix_(functionSuffix(parameters)), pos_(pos)
     {
         parameters.swap(parameters_);
     }
@@ -284,7 +336,8 @@ public:
 private:
 
     std::string name_;
-    std::string suffix_;     
+    std::string suffix_;
+    FilePosition pos_;
     boost::optional<Type> type_;
     ParameterContainer parameters_;
     boost::optional<CompoundStatement> body_;
@@ -331,8 +384,8 @@ public:
     typedef std::vector<Expression> ParamContainer;
 
     template <typename It>    
-    FunctionCall(FunctionRef f, It firstParam, It lastParam)
-        : f_(f), params_(firstParam, lastParam) { }
+    FunctionCall(const FilePosition& pos, FunctionRef f, It firstParam, It lastParam)
+        : pos_(pos), f_(f), params_(firstParam, lastParam) { }
 
     const FunctionRef& f() const { return f_; }
 
@@ -340,6 +393,7 @@ public:
 
 private:
 
+    FilePosition pos_;
     FunctionRef f_;
     ParamContainer params_;
 };

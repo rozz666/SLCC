@@ -33,11 +33,12 @@ sl::vm::Module compileFile(const std::string& fname)
 
     assert(fin.is_open());
 
-    boost::optional<ast::Module> module = parseFile(fin);
+    sl::ErrorLogger errorLogger(fname);
+    boost::optional<ast::Module> module = parseFile(fin, errorLogger);
 
     if (!module) throw CompileError();
 
-    sl::st::Module parsed = parseModule(*module);
+    sl::st::Module parsed = parseModule(*module, errorLogger);
 
     sl::FunctionAddrMap fam;
 
@@ -67,7 +68,11 @@ bool validFile(const std::string& fname)
 
     assert(fin.is_open());
 
-    return parseFile(fin);
+    sl::ErrorLogger errorLogger(fname);
+
+    parseFile(fin, errorLogger);
+
+    return !errorLogger.hasErrors();
 }
 
 template <>
@@ -118,9 +123,9 @@ void object::test<4>()
     sl::vm::Module module = compileFile("tests\\test4.sl");
     sl::vm::Environment env(1024);
 
-    ensure("swap [int]", module.call<int>(sl::vm::FunctionCall("test_swap_int$"), env) == true);
-    ensure("swap [float]", module.call<int>(sl::vm::FunctionCall("test_swap_float$"), env) == true);
-    ensure("swap [bool]", module.call<int>(sl::vm::FunctionCall("test_swap_bool$"), env) == true);
+    ensure("swap [int]", module.call<int>(sl::vm::FunctionCall("test_swap_int$"), env) == 1);
+    ensure("swap [float]", module.call<int>(sl::vm::FunctionCall("test_swap_float$"), env) == 1);
+    ensure("swap [bool]", module.call<int>(sl::vm::FunctionCall("test_swap_bool$"), env) == 1);
 }
 
 template <>

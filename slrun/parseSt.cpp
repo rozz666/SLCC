@@ -1,4 +1,3 @@
-#include <iostream>
 #include <boost/foreach.hpp>
 #include "parseSt.hpp"
 #include "builtin.hpp"
@@ -76,20 +75,24 @@ st::Type expressionType(const st::Expression& expr)
 }
 
 
-boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft);
+boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger);
 
 
-boost::optional<st::FunctionCall> makeUnaryOperatorCall(const std::string& opName, const st::Expression& right, const st::FunctionTable& ft)
+boost::optional<st::FunctionCall> makeUnaryOperatorCall(const std::string& opName, const st::Expression& right, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     st::Type rightType = expressionType(right);
 
     if (boost::optional<st::FunctionRef> f = ft.find(st::functionMangledName(opName, typeSuffix(rightType))))
     {
-        return st::FunctionCall(*f, &right, &right + 1);
+        // TODO: set position
+        return st::FunctionCall(FilePosition(), *f, &right, &right + 1);
     }
     else
     {
-        std::cerr << "operator not found: " << opName << "(" << typeName(rightType) << ")" << std::endl;
+        std::ostringstream os;
+        os << opName << "(" << typeName(rightType) << ")"; 
+        // TODO: set position
+        errorLogger << err::function_not_found(FilePosition(), os.str());
 
         return boost::none;
     }
@@ -99,7 +102,7 @@ class ParseUnaryExpression : public boost::static_visitor<boost::optional<st::Ex
 {
 public:
 
-    ParseUnaryExpression(st::VariableTableStack& vts, const st::FunctionTable& ft) : vts_(&vts), ft_(&ft) { }
+    ParseUnaryExpression(st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger) : vts_(vts), ft_(ft), errorLogger_(errorLogger) { }
 
     boost::optional<st::Expression> operator()(const ast::Constant& c) const
     {
@@ -108,11 +111,12 @@ public:
 
     boost::optional<st::Expression> operator()(const ast::Variable& v) const
     {
-        const st::Variable *pv = vts_->find(v.name);
+        const st::Variable *pv = vts_.find(v.name.str);
 
         if (!pv)
         {
-            std::cerr << "unknown identifier: " << v.name << std::endl;
+            errorLogger_ << err::unknown_identifier(v.name.pos, v.name.str);
+            return boost::none;
         }
 
         return pv;
@@ -121,13 +125,19 @@ public:
     boost::optional<st::Expression> operator()(const ast::FunctionCall& fc) const
     {
         std::vector<st::Expression> expr;
+        std::vector<st::Type> paramTypes;
         std::string suffix;
+
+        expr.reserve(fc.expr.size());
+        paramTypes.reserve(fc.expr.size());
 
         BOOST_FOREACH(const ast::Expression& e, fc.expr)
         {
-            if (boost::optional<st::Expression> pe = parseExpression(e, *vts_, *ft_))
+            if (boost::optional<st::Expression> pe = parseExpression(e, vts_, ft_, errorLogger_))
             {
-                suffix += st::typeSuffix(expressionType(*pe));
+                st::Type et = expressionType(*pe);
+                paramTypes.push_back(et);
+                suffix += st::typeSuffix(et);
 
                 expr.push_back(*pe);
             }
@@ -135,23 +145,24 @@ public:
 
         if (expr.size() < fc.expr.size()) return boost::none;
 
-        boost::optional<st::FunctionRef> f = ft_->find(st::functionMangledName(fc.name, suffix));
+        boost::optional<st::FunctionRef> f = ft_.find(st::functionMangledName(fc.name.str, suffix));
 
         if (!f)
         {
-            std::cerr << "no function " << fc.name << " matching given parameters" << std::endl;
-
+            std::ostringstream os;
+            os << fc.name.str << st::functionParameters(paramTypes);
+            errorLogger_ << err::function_not_found(fc.name.pos, os.str());
             return boost::none;
         }
 
-        st::FunctionCall out(*f, expr.begin(), expr.end());
+        st::FunctionCall out(fc.name.pos, *f, expr.begin(), expr.end());
 
         return out;
     }
 
     boost::optional<st::Expression> operator()(const ast::Expression& e) const
     {
-        return parseExpression(e, *vts_, *ft_);
+        return parseExpression(e, vts_, ft_, errorLogger_);
     }
 
     boost::optional<st::Expression> operator()(const ast::SignedUnaryExpression& sf) const
@@ -164,7 +175,7 @@ public:
 
                 if (boost::optional<st::Expression> e = sf.expr.apply_visitor(*this))
                 {
-                    if (boost::optional<st::FunctionCall> fc = makeUnaryOperatorCall(builtin::operatorName(sf.sign), *e, *ft_))
+                    if (boost::optional<st::FunctionCall> fc = makeUnaryOperatorCall(builtin::operatorName(sf.sign), *e, ft_, errorLogger_))
                     {
                         return *fc;
                     }
@@ -176,17 +187,18 @@ public:
 
 private:
 
-    st::VariableTableStack *vts_;
-    const st::FunctionTable *ft_;
+    st::VariableTableStack& vts_;
+    const st::FunctionTable& ft_;
+    ErrorLogger& errorLogger_;
 };
 
-boost::optional<st::Expression> parseUnaryExpression(const ast::UnaryExpression& f, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseUnaryExpression(const ast::UnaryExpression& f, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    ParseUnaryExpression pf(vts, ft);
+    ParseUnaryExpression pf(vts, ft, errorLogger);
     return f.apply_visitor(pf);
 }
 
-boost::optional<st::FunctionCall> makeBinaryOperatorCall(const std::string& opName, const st::Expression& left, const st::Expression& right, const st::FunctionTable& ft)
+boost::optional<st::FunctionCall> makeBinaryOperatorCall(const std::string& opName, const st::Expression& left, const st::Expression& right, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     st::Type leftType = expressionType(left);
     st::Type rightType = expressionType(right);
@@ -199,25 +211,29 @@ boost::optional<st::FunctionCall> makeBinaryOperatorCall(const std::string& opNa
         expr.push_back(left);
         expr.push_back(right);
 
-        return st::FunctionCall(*f, expr.begin(), expr.end());
+        // TODO: set position
+        return st::FunctionCall(FilePosition(), *f, expr.begin(), expr.end());
     }
     else
     {
-        std::cerr << "operator not found: " << opName << "(" << typeName(leftType) << ", " << typeName(rightType) << ")" << std::endl;
+        std::ostringstream os;
+        os << opName << "(" << typeName(leftType) << ", " << typeName(rightType) << ")";
+        // TODO: set position
+        errorLogger << err::function_not_found(FilePosition(), os.str());
 
         return boost::none;
     }
 }
 
-boost::optional<st::Expression> parseMultiplicativeExpression(const ast::MultiplicativeExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseMultiplicativeExpression(const ast::MultiplicativeExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<st::Expression> left = parseUnaryExpression(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseUnaryExpression(expr.first, vts, ft, errorLogger))
     {
         BOOST_FOREACH(const ast::MulOpUnaryExpression& mf, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseUnaryExpression(mf.expr, vts, ft))
+            if (boost::optional<st::Expression> right = parseUnaryExpression(mf.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(mf.op), *left, *right, ft);
+                left = makeBinaryOperatorCall(builtin::operatorName(mf.op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -233,15 +249,15 @@ boost::optional<st::Expression> parseMultiplicativeExpression(const ast::Multipl
     return boost::none;
 }
 
-boost::optional<st::Expression> parseAdditiveExpression(const ast::AdditiveExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseAdditiveExpression(const ast::AdditiveExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<st::Expression> left = parseMultiplicativeExpression(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseMultiplicativeExpression(expr.first, vts, ft, errorLogger))
     {
         BOOST_FOREACH(const ast::SignMultiplicativeExpression& st, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseMultiplicativeExpression(st.expr, vts, ft))
+            if (boost::optional<st::Expression> right = parseMultiplicativeExpression(st.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.sign), *left, *right, ft);
+                left = makeBinaryOperatorCall(builtin::operatorName(st.sign), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -257,15 +273,15 @@ boost::optional<st::Expression> parseAdditiveExpression(const ast::AdditiveExpre
     return boost::none;
 }
 
-boost::optional<st::Expression> parseRelationalExpression(const ast::RelationalExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseRelationalExpression(const ast::RelationalExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<st::Expression> left = parseAdditiveExpression(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseAdditiveExpression(expr.first, vts, ft, errorLogger))
     {
         BOOST_FOREACH(const ast::RelOpAdditiveExpression& st, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseAdditiveExpression(st.expr, vts, ft))
+            if (boost::optional<st::Expression> right = parseAdditiveExpression(st.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft);
+                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -281,15 +297,15 @@ boost::optional<st::Expression> parseRelationalExpression(const ast::RelationalE
     return boost::none;
 }
 
-boost::optional<st::Expression> parseEqualityExpression(const ast::EqualityExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseEqualityExpression(const ast::EqualityExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<st::Expression> left = parseRelationalExpression(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseRelationalExpression(expr.first, vts, ft, errorLogger))
     {
         BOOST_FOREACH(const ast::EqOpRelationalExpression& st, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseRelationalExpression(st.expr, vts, ft))
+            if (boost::optional<st::Expression> right = parseRelationalExpression(st.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft);
+                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -305,15 +321,15 @@ boost::optional<st::Expression> parseEqualityExpression(const ast::EqualityExpre
     return boost::none;
 }
 
-boost::optional<st::Expression> parseLogicalAndExpression(const ast::LogicalAndExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseLogicalAndExpression(const ast::LogicalAndExpression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<st::Expression> left = parseEqualityExpression(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseEqualityExpression(expr.first, vts, ft, errorLogger))
     {
         BOOST_FOREACH(const ast::EqualityExpression& st, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseEqualityExpression(st, vts, ft))
+            if (boost::optional<st::Expression> right = parseEqualityExpression(st, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall("operator&&", *left, *right, ft);
+                left = makeBinaryOperatorCall("operator&&", *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -329,15 +345,15 @@ boost::optional<st::Expression> parseLogicalAndExpression(const ast::LogicalAndE
     return boost::none;
 }
 
-boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<st::Expression> left = parseLogicalAndExpression(expr.first, vts, ft))
+    if (boost::optional<st::Expression> left = parseLogicalAndExpression(expr.first, vts, ft, errorLogger))
     {
         BOOST_FOREACH(const ast::LogicalAndExpression& st, expr.next)
         {
-            if (boost::optional<st::Expression> right = parseLogicalAndExpression(st, vts, ft))
+            if (boost::optional<st::Expression> right = parseLogicalAndExpression(st, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall("operator||", *left, *right, ft);
+                left = makeBinaryOperatorCall("operator||", *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -357,13 +373,13 @@ class ParseStatement : public boost::static_visitor<boost::optional<st::Statemen
 {
 public:
 
-    ParseStatement(st::VariableTableStack& vts, const st::FunctionTable& ft) : vts_(&vts), ft_(&ft) { }
+    ParseStatement(st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger) : vts_(vts), ft_(ft), errorLogger_(errorLogger) { }
 
     boost::optional<st::Statement> operator()(const ast::CompoundStatement& cs) const
     {
         st::CompoundStatement out;
 
-        vts_->push();
+        vts_.push();
 
         BOOST_FOREACH(const ast::Statement& s, cs.statements)
         {
@@ -373,20 +389,19 @@ public:
             }
         }
 
-        vts_->pop();
+        vts_.pop();
 
         return out;
     }
 
     boost::optional<st::Statement> operator()(const ast::Assignment& assignment) const
     {
-        const st::Variable *var = vts_->find(assignment.var);
-        boost::optional<st::Expression> expr = parseExpression(assignment.expr, *vts_, *ft_);
+        const st::Variable *var = vts_.find(assignment.var.str);
+        boost::optional<st::Expression> expr = parseExpression(assignment.expr, vts_, ft_, errorLogger_);
 
         if (!var)
         {
-            std::cerr << "unknown identifier: " << assignment.var << std::endl;
-
+            errorLogger_ << err::unknown_identifier(assignment.var.pos, assignment.var.str);
             return boost::none;
         }
 
@@ -396,7 +411,12 @@ public:
 
         if (exprType != var->type())
         {
-            if (!isConvertible(exprType, var->type())) return boost::none;
+            if (!isConvertible(exprType, var->type()))
+            {
+                errorLogger_ << err::not_convertible(assignment.expr.firstPos, typeName(exprType), typeName(var->type())); 
+
+                return boost::none;
+            }
 
             return st::Assignment(*var, st::Cast(*expr, var->type()));
         }
@@ -408,7 +428,7 @@ public:
 
     boost::optional<st::Statement> operator()(const ast::FunctionCall& fc) const
     {
-        ParseUnaryExpression pf(*vts_, *ft_);
+        ParseUnaryExpression pf(vts_, ft_, errorLogger_);
 
         if (boost::optional<st::Expression> e = pf(fc))
         {
@@ -422,7 +442,7 @@ public:
 
     boost::optional<st::Statement> operator()(const ast::ReturnStatement& rs) const
     {
-        boost::optional<st::Expression> expr = parseExpression(rs.expr, *vts_, *ft_);
+        boost::optional<st::Expression> expr = parseExpression(rs.expr, vts_, ft_, errorLogger_);
 
         if (!expr) return boost::none;
         
@@ -435,34 +455,41 @@ public:
         {
             if (decl.expr)
             {
-                boost::optional<st::Expression> expr = parseExpression(*decl.expr, *vts_, *ft_);
+                boost::optional<st::Expression> expr = parseExpression(*decl.expr, vts_, ft_, errorLogger_);
 
                 if (!expr) return boost::none;
 
                 st::Type type = convertType(*decl.type);
-
                 st::Type exprType = expressionType(*expr);
 
-                if (!isConvertible(exprType, type)) return boost::none;
+                if (!isConvertible(exprType, type))
+                {
+                    errorLogger_ << err::not_convertible(decl.expr->firstPos, typeName(exprType), typeName(type));
+                    return boost::none;
+                }
 
-                st::VariableDecl out(decl.name, type, type != exprType ? st::Cast(*expr, type) : *expr);
-                vts_->insert(out.var());
+                st::VariableDecl out(decl.name.str, decl.name.pos, type, type != exprType ? st::Cast(*expr, type) : *expr);
+                vts_.insert(out.var());
 
                 return out;
             }
             else
             {   
-                st::VariableDecl out(decl.name, convertType(*decl.type));
-                vts_->insert(out.var());
+                st::VariableDecl out(decl.name.str, decl.name.pos, convertType(*decl.type));
+                vts_.insert(out.var());
 
                 return out;
             }
         }   
         else
         {
-            if (!decl.expr) return boost::none;
+            if (!decl.expr)
+            {
+                errorLogger_ << err::no_variable_type(decl.name.pos, decl.name.str);
+                return boost::none;
+            }
 
-            boost::optional<st::Expression> expr = parseExpression(*decl.expr, *vts_, *ft_);
+            boost::optional<st::Expression> expr = parseExpression(*decl.expr, vts_, ft_, errorLogger_);
 
             if (!expr) return boost::none;
 
@@ -470,12 +497,12 @@ public:
 
             if (exprType == st::void_)
             {
-                std::cerr << "Cannot declare variable of type void" << std::endl;
+                errorLogger_ << err::void_variable(decl.name.pos, decl.name.str);
                 return boost::none;
             }
 
-            st::VariableDecl out(decl.name, expressionType(*expr), *expr);
-            vts_->insert(out.var());
+            st::VariableDecl out(decl.name.str, decl.name.pos, expressionType(*expr), *expr);
+            vts_.insert(out.var());
 
             return out;
         }
@@ -483,15 +510,15 @@ public:
 
     boost::optional<st::Statement> operator()(const ast::VariableDelete& del) const
     {
-        if (const st::Variable *v = vts_->findInScope(del.name))
+        if (const st::Variable *v = vts_.findInScope(del.name.str))
         {
-            vts_->eraseInScope(del.name);
+            vts_.eraseInScope(del.name.str);
 
             return st::VariableDelete(*v);
         }
         else
         {
-            std::cerr << "Unknown identifier " << del.name << std::endl;
+            errorLogger_ << err::unknown_identifier(del.name.pos, del.name.str);
         }
 
         return boost::none;
@@ -499,14 +526,15 @@ public:
 
 private:
 
-    st::VariableTableStack *vts_;
-    const st::FunctionTable *ft_;
+    st::VariableTableStack& vts_;
+    const st::FunctionTable& ft_;
+    ErrorLogger& errorLogger_;
 };
 
 class ParseReturnType : public boost::static_visitor<boost::optional<st::Type> >
 {
 public:
-    ParseReturnType(st::VariableTableStack& vts, const st::FunctionTable& ft) : vts_(vts), ft_(ft) { }
+    ParseReturnType(st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger) : vts_(vts), ft_(ft), errorLogger_(errorLogger) { }
 
     boost::optional<st::Type> operator()(const ast::Type& t) const
     {
@@ -515,7 +543,7 @@ public:
 
     boost::optional<st::Type> operator()(const ast::Expression& e) const
     {
-        boost::optional<st::Expression> expr = parseExpression(e, vts_, ft_);
+        boost::optional<st::Expression> expr = parseExpression(e, vts_, ft_, errorLogger_);
 
         if (!expr) return boost::none;
 
@@ -526,11 +554,12 @@ private:
 
     st::VariableTableStack& vts_;
     const st::FunctionTable& ft_;
+    ErrorLogger& errorLogger_;
 };
 
-boost::optional<st::Type> parseReturnType(const ast::FunctionReturnType frt, st::VariableTableStack& vts, const st::FunctionTable& ft)
+boost::optional<st::Type> parseReturnType(const ast::FunctionReturnType frt, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    ParseReturnType prt(vts, ft);
+    ParseReturnType prt(vts, ft, errorLogger);
     return frt.apply_visitor(prt);
 }
 
@@ -606,9 +635,9 @@ void registerBuiltinFunctions(st::FunctionTable& ft)
     ft.insert(&function_swap_bb);
 }
 
-st::Module parseModule(const sl::ast::Module& module)
+st::Module parseModule(const sl::ast::Module& module, ErrorLogger& errorLogger)
 {
-    st::Module m(module.name);
+    st::Module m(module.name.str);
     st::FunctionTable functionTable;
 
     registerBuiltinFunctions(functionTable);
@@ -624,23 +653,19 @@ st::Module parseModule(const sl::ast::Module& module)
 
         BOOST_FOREACH(const ast::FunctionParameter& fp, f.parameters)
         {
-            std::auto_ptr<st::Variable> v(new st::Variable(fp.name, convertType(fp.type), fp.ref));
+            std::auto_ptr<st::Variable> v(new st::Variable(fp.name.str, fp.name.pos, convertType(fp.type), fp.ref));
 
             pc.push_back(v);
         }
 
-        std::auto_ptr<st::FunctionDef> cf(new st::FunctionDef(f.name, std::move(pc)));
+        std::auto_ptr<st::FunctionDef> cf(new st::FunctionDef(f.name.str, f.name.pos, std::move(pc)));
 
         if (!functionTable.insert(&*cf))
         {
-            std::cout << "error: function " << f.name << "(";
+            std::ostringstream os;
+            os << f.name.str << st::functionParameters(pc);
 
-            BOOST_FOREACH(const ast::FunctionParameter& fp, f.parameters)
-            {
-                std::cout << st::typeName(convertType(fp.type)) << ", ";
-            }
-
-            std::cout << "\b\b) already defined" << std::endl;
+            errorLogger << err::function_already_declared(f.name.pos, os.str());
         }
 
         ff.insert(std::make_pair(&*cf, &f));
@@ -660,7 +685,7 @@ st::Module parseModule(const sl::ast::Module& module)
             vts.insert(*p);
         }
 
-        boost::optional<st::Type> fType = parseReturnType(f.second->type, vts, functionTable);
+        boost::optional<st::Type> fType = parseReturnType(f.second->type, vts, functionTable, errorLogger);
 
         if (!fType) return m;
 
@@ -686,7 +711,7 @@ st::Module parseModule(const sl::ast::Module& module)
 
         BOOST_FOREACH(const ast::Statement& s, sf.body.statements)
         {
-            ParseStatement ps(vts, functionTable);
+            ParseStatement ps(vts, functionTable, errorLogger);
 
             if (boost::optional<st::Statement> st = s.apply_visitor(ps))
             {
