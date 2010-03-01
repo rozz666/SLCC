@@ -21,35 +21,11 @@ st::Type convertType(ast::Type type)
     return st::Type();
 }
 
-struct ConstantType : public boost::static_visitor<st::Type>
-{
-    st::Type operator()(const int& ) const
-    {
-        return st::int_;
-    }
-
-    st::Type operator()(const float& ) const
-    {
-        return st::float_;
-    }
-
-    st::Type operator()(const bool& ) const
-    {
-        return st::bool_;
-    }
-};
-
-st::Type constantType(const st::Constant& c)
-{
-    ConstantType ct;
-    return c.apply_visitor(ct);
-}
-
 struct ExpressionType : public boost::static_visitor<st::Type>
 {
     st::Type operator()(const st::Constant& c) const
     {
-        return constantType(c);
+        return c.type();
     }
 
     st::Type operator()(const st::Variable *v) const
@@ -74,25 +50,52 @@ st::Type expressionType(const st::Expression& expr)
     return expr.apply_visitor(et);
 }
 
+struct ExpressionPos : public boost::static_visitor<FilePosition>
+{
+    FilePosition operator()(const st::Constant& c) const
+    {
+        return c.pos();
+    }
+
+    FilePosition operator()(const st::Variable *v) const
+    {
+        return v->pos();
+    }
+
+    FilePosition operator()(const st::FunctionCall& fc) const
+    {
+        return fc.pos();
+    }
+
+    FilePosition operator()(const st::Cast& c) const
+    {
+        return c.pos();
+    }
+};
+
+FilePosition expressionPos(const st::Expression& expr)
+{
+    ExpressionPos ep;
+    return expr.apply_visitor(ep);
+}
+
 
 boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger);
 
 
-boost::optional<st::FunctionCall> makeUnaryOperatorCall(const std::string& opName, const st::Expression& right, const st::FunctionTable& ft, ErrorLogger& errorLogger)
+boost::optional<st::FunctionCall> makeUnaryOperatorCall(const FilePosition& pos, const std::string& opName, const st::Expression& right, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     st::Type rightType = expressionType(right);
 
     if (boost::optional<st::FunctionRef> f = ft.find(st::functionMangledName(opName, typeSuffix(rightType))))
     {
-        // TODO: set position
-        return st::FunctionCall(FilePosition(), *f, &right, &right + 1);
+        return st::FunctionCall(pos, *f, &right, &right + 1);
     }
     else
     {
         std::ostringstream os;
         os << opName << "(" << typeName(rightType) << ")"; 
-        // TODO: set position
-        errorLogger << err::function_not_found(FilePosition(), os.str());
+        errorLogger << err::function_not_found(pos, os.str());
 
         return boost::none;
     }
@@ -106,7 +109,7 @@ public:
 
     boost::optional<st::Expression> operator()(const ast::Constant& c) const
     {
-        return c;
+        return st::Constant(c.pos, c.value);
     }
 
     boost::optional<st::Expression> operator()(const ast::Variable& v) const
@@ -174,8 +177,8 @@ public:
             default:
 
                 if (boost::optional<st::Expression> e = sf.expr.apply_visitor(*this))
-                {
-                    if (boost::optional<st::FunctionCall> fc = makeUnaryOperatorCall(builtin::operatorName(sf.sign), *e, ft_, errorLogger_))
+                {                                                                   
+                    if (boost::optional<st::FunctionCall> fc = makeUnaryOperatorCall(sf.signPos, builtin::operatorName(sf.sign), *e, ft_, errorLogger_))
                     {
                         return *fc;
                     }
@@ -198,7 +201,7 @@ boost::optional<st::Expression> parseUnaryExpression(const ast::UnaryExpression&
     return f.apply_visitor(pf);
 }
 
-boost::optional<st::FunctionCall> makeBinaryOperatorCall(const std::string& opName, const st::Expression& left, const st::Expression& right, const st::FunctionTable& ft, ErrorLogger& errorLogger)
+boost::optional<st::FunctionCall> makeBinaryOperatorCall(const FilePosition& pos, const std::string& opName, const st::Expression& left, const st::Expression& right, const st::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     st::Type leftType = expressionType(left);
     st::Type rightType = expressionType(right);
@@ -211,15 +214,13 @@ boost::optional<st::FunctionCall> makeBinaryOperatorCall(const std::string& opNa
         expr.push_back(left);
         expr.push_back(right);
 
-        // TODO: set position
-        return st::FunctionCall(FilePosition(), *f, expr.begin(), expr.end());
+        return st::FunctionCall(pos, *f, expr.begin(), expr.end());
     }
     else
     {
         std::ostringstream os;
         os << opName << "(" << typeName(leftType) << ", " << typeName(rightType) << ")";
-        // TODO: set position
-        errorLogger << err::function_not_found(FilePosition(), os.str());
+        errorLogger << err::function_not_found(pos, os.str());
 
         return boost::none;
     }
@@ -233,7 +234,7 @@ boost::optional<st::Expression> parseMultiplicativeExpression(const ast::Multipl
         {
             if (boost::optional<st::Expression> right = parseUnaryExpression(mf.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(mf.op), *left, *right, ft, errorLogger);
+                left = makeBinaryOperatorCall(mf.opPos, builtin::operatorName(mf.op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -257,7 +258,7 @@ boost::optional<st::Expression> parseAdditiveExpression(const ast::AdditiveExpre
         {
             if (boost::optional<st::Expression> right = parseMultiplicativeExpression(st.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.sign), *left, *right, ft, errorLogger);
+                left = makeBinaryOperatorCall(st.signPos, builtin::operatorName(st.sign), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -281,7 +282,7 @@ boost::optional<st::Expression> parseRelationalExpression(const ast::RelationalE
         {
             if (boost::optional<st::Expression> right = parseAdditiveExpression(st.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft, errorLogger);
+                left = makeBinaryOperatorCall(st.opPos, builtin::operatorName(st.op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -305,7 +306,7 @@ boost::optional<st::Expression> parseEqualityExpression(const ast::EqualityExpre
         {
             if (boost::optional<st::Expression> right = parseRelationalExpression(st.expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(builtin::operatorName(st.op), *left, *right, ft, errorLogger);
+                left = makeBinaryOperatorCall(st.opPos, builtin::operatorName(st.op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -329,7 +330,8 @@ boost::optional<st::Expression> parseLogicalAndExpression(const ast::LogicalAndE
         {
             if (boost::optional<st::Expression> right = parseEqualityExpression(st, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall("operator&&", *left, *right, ft, errorLogger);
+                // TODO: set pos
+                left = makeBinaryOperatorCall(FilePosition(), "operator&&", *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -353,7 +355,8 @@ boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st:
         {
             if (boost::optional<st::Expression> right = parseLogicalAndExpression(st, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall("operator||", *left, *right, ft, errorLogger);
+                // TODO: set pos
+                left = makeBinaryOperatorCall(FilePosition(), "operator||", *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -418,7 +421,7 @@ public:
                 return boost::none;
             }
 
-            return st::Assignment(*var, st::Cast(*expr, var->type()));
+            return st::Assignment(*var, st::Cast(expressionPos(*expr), *expr, var->type()));
         }
         else
         {
@@ -468,7 +471,7 @@ public:
                     return boost::none;
                 }
 
-                st::VariableDecl out(decl.name.str, decl.name.pos, type, type != exprType ? st::Cast(*expr, type) : *expr);
+                st::VariableDecl out(decl.name.str, decl.name.pos, type, type != exprType ? st::Cast(expressionPos(*expr), *expr, type) : *expr);
                 vts_.insert(out.var());
 
                 return out;

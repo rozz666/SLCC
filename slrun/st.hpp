@@ -146,7 +146,45 @@ functionMangledName(const std::string& name, const Container& params)
     return functionMangledName(name, functionSuffix(params));
 }
 
-typedef boost::variant<int, float, bool> Constant;
+struct ConstantType : public boost::static_visitor<Type>
+{
+    Type operator()(const int& ) const
+    {
+        return st::int_;
+    }
+
+    Type operator()(const float& ) const
+    {
+        return st::float_;
+    }
+
+    Type operator()(const bool& ) const
+    {
+        return st::bool_;
+    }
+};
+
+class Constant
+{
+public:
+
+    typedef boost::variant<int, float, bool> Value;
+
+    Constant(const FilePosition& pos, const Value& value) : pos_(pos), value_(value) { }
+
+    FilePosition pos() const { return pos_; }
+    Value value() const { return value_; }
+    Type type() const
+    {
+        ConstantType ct;
+        return value_.apply_visitor(ct);
+    }
+
+private:
+
+    FilePosition pos_;
+    Value value_;
+};
 
 class Variable
 {
@@ -198,13 +236,15 @@ class Cast
 {
 public:
 
-    Cast(const Expression& expr, Type type) : expr_(expr), type_(type) { }
+    Cast(const FilePosition& pos, const Expression& expr, Type type) : pos_(pos), expr_(expr), type_(type) { }
 
+    FilePosition pos() const { return pos_; }
     const Expression& expr() const { return expr_; }
     Type type() const { return type_; }
 
 private:
 
+    FilePosition pos_;
     Expression expr_;
     Type type_;
 };
@@ -321,6 +361,7 @@ public:
 
     const std::string& name() const { return name_; }
     const std::string& suffix() const { return suffix_; }
+    FilePosition pos() const { return pos_; }
     Type type() const { return *type_; }
     void type(st::Type val) { type_ = val; }
 
@@ -387,8 +428,8 @@ public:
     FunctionCall(const FilePosition& pos, FunctionRef f, It firstParam, It lastParam)
         : pos_(pos), f_(f), params_(firstParam, lastParam) { }
 
+    FilePosition pos() const { return pos_; }
     const FunctionRef& f() const { return f_; }
-
     const ParamContainer& params() const { return params_; }
 
 private:

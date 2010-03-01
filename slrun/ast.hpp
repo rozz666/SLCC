@@ -13,7 +13,12 @@ namespace sl
 namespace ast
 {
 
-typedef boost::variant<int, float, bool> Constant;
+struct Constant
+{
+    typedef boost::variant<int, float, bool> Value;
+    FilePosition pos;
+    Value value;
+};
 
 enum Type
 {
@@ -230,6 +235,12 @@ struct Module
 }
 
 BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::Constant,
+    (::sl::FilePosition, pos)
+    (::sl::ast::Constant::Value, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Identifier,
     (::sl::FilePosition, pos)
     (std::string, str)
@@ -242,66 +253,82 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::SignedUnaryExpression,
+    (::sl::FilePosition, signPos)
     (::sl::ast::Sign, sign)
+    (::sl::FilePosition, exprPos)
     (::sl::ast::UnaryExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::MulOpUnaryExpression,
+    (::sl::FilePosition, opPos)
     (::sl::ast::MulOp, op)
+    (::sl::FilePosition, exprPos)
     (::sl::ast::UnaryExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::MultiplicativeExpression,
+    (::sl::FilePosition, firstPos)
     (::sl::ast::UnaryExpression, first)
     (std::vector<::sl::ast::MulOpUnaryExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::SignMultiplicativeExpression,
+    (::sl::FilePosition, signPos)
     (::sl::ast::Sign, sign)
+    (::sl::FilePosition, exprPos)
     (::sl::ast::MultiplicativeExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::AdditiveExpression,
+    (::sl::FilePosition, firstPos)
     (::sl::ast::MultiplicativeExpression, first)
     (std::vector<::sl::ast::SignMultiplicativeExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::RelOpAdditiveExpression,
+    (::sl::FilePosition, opPos)
     (::sl::ast::RelOp, op)
+    (::sl::FilePosition, exprPos)
     (::sl::ast::AdditiveExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::RelationalExpression,
+    (::sl::FilePosition, firstPos)
     (::sl::ast::AdditiveExpression, first)
     (std::vector<::sl::ast::RelOpAdditiveExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::EqOpRelationalExpression,
+    (::sl::FilePosition, opPos)
     (::sl::ast::EqOp, op)
+    (::sl::FilePosition, exprPos)
     (::sl::ast::RelationalExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::EqualityExpression,
+    (::sl::FilePosition, firstPos)
     (::sl::ast::RelationalExpression, first)
     (std::vector<::sl::ast::EqOpRelationalExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::LogicalAndExpression,
+    (::sl::FilePosition, firstPos)
     (::sl::ast::EqualityExpression, first)
     (std::vector<::sl::ast::EqualityExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Expression,
+    (::sl::FilePosition, firstPos)
     (::sl::ast::LogicalAndExpression, first)
     (std::vector<::sl::ast::LogicalAndExpression>, next)
 )

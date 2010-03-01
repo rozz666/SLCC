@@ -7,6 +7,7 @@ namespace sl
 {
 
 st::Type expressionType(const st::Expression& expr);
+FilePosition expressionPos(const st::Expression& expr);
 
 namespace
 {
@@ -560,7 +561,7 @@ public:
     void operator()(const st::Constant& c) const
     {
         GenerateConstant gc(cg_);
-        c.apply_visitor(gc);
+        c.value().apply_visitor(gc);
     }
 
     void operator()(const st::Variable *v) const
@@ -714,7 +715,7 @@ public:
     {
         if (expressionType(rs.expr()) != vt_.returnType())
         {
-            generateExpression(st::Cast(rs.expr(), vt_.returnType()), cg_, fam_, salloc_, vt_);
+            generateExpression(st::Cast(expressionPos(rs.expr()), rs.expr(), vt_.returnType()), cg_, fam_, salloc_, vt_);
         }
         else
         {

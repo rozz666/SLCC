@@ -241,16 +241,16 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         using namespace qi::labels;            
 
         identifier %= input_pos >> lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
-        constant %= (int_ >> !char_('.')) | float_ | boolLit;
+        constant %= input_pos >> ((int_ >> !char_('.')) | float_ | boolLit);
         variable %= identifier;
         unaryExpression %= constant | functionCall | variable | ('(' >> expression >> ')') | signedUnaryExpression;
-        signedUnaryExpression %= sign >> unaryExpression;
-        multiplicativeExpression %= unaryExpression >> *(mulOp > unaryExpression);
-        additiveExpression %= multiplicativeExpression >> *(sign > multiplicativeExpression);
-        relationalExpression %= additiveExpression >> *(relOp > additiveExpression);
-        equalityExpression %= relationalExpression >> *(eqOp > relationalExpression); 
-        andExpression = equalityExpression >> *(lit("&&") >> equalityExpression); 
-        expression = andExpression >> *(lit("||") > andExpression); 
+        signedUnaryExpression %= input_pos >> sign >> input_pos >> unaryExpression;
+        multiplicativeExpression %= input_pos >> unaryExpression >> *(input_pos >> mulOp >> input_pos >> unaryExpression);
+        additiveExpression %= input_pos >> multiplicativeExpression >> *(input_pos >> sign >> input_pos >> multiplicativeExpression);
+        relationalExpression %= input_pos >> additiveExpression >> *(input_pos >> relOp >> input_pos >> additiveExpression);
+        equalityExpression %= input_pos >> relationalExpression >> *(input_pos >> eqOp >> input_pos >> relationalExpression); 
+        andExpression = input_pos >> equalityExpression >> *(lit("&&") >> equalityExpression); 
+        expression = input_pos >> andExpression >> *(lit("||") > andExpression); 
         variableDecl %= "new" > -type > identifier > -('=' > expression) > ';';
         variableDelete %= "delete" > identifier > ';';
         functionParameter %= (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
