@@ -195,11 +195,11 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 break;
 
             case ORI:
-                SLVM_OP4(int_t, &);
+                SLVM_OP4(int_t, |);
                 break;
 
             case XORI:
-                SLVM_OP4(int_t, &);
+                SLVM_OP4(int_t, ^);
                 break;
 
             case NOTI:

@@ -57,7 +57,7 @@ struct transform_attribute<
 
 namespace sl
 {
-    BOOST_SPIRIT_TERMINAL(input_pos);
+    BOOST_SPIRIT_TERMINAL(inputPos);
 }
 
 namespace boost
@@ -65,13 +65,13 @@ namespace boost
 namespace spirit 
 { 
     template <>
-    struct use_terminal<qi::domain, sl::tag::input_pos> : mpl::true_  { }; 
+    struct use_terminal<qi::domain, sl::tag::inputPos> : mpl::true_  { }; 
 }
 }
 
 namespace sl
 {
-    struct input_pos_parser : boost::spirit::qi::primitive_parser<input_pos_parser>
+    struct inputPosParser : boost::spirit::qi::primitive_parser<inputPosParser>
     {
         template <typename Context, typename Iterator>
         struct attribute
@@ -90,7 +90,7 @@ namespace sl
         template <typename Context>
         boost::spirit::info what(Context&) const
         {
-            return boost::spirit::info("input_pos");
+            return boost::spirit::info("inputPos");
         }
     };
 }
@@ -102,9 +102,9 @@ namespace spirit
 namespace qi
 {
     template <typename Modifiers>
-    struct make_primitive<sl::tag::input_pos, Modifiers>
+    struct make_primitive<sl::tag::inputPos, Modifiers>
     {
-        typedef sl::input_pos_parser result_type;
+        typedef sl::inputPosParser result_type;
 
         result_type operator()(unused_type, unused_type) const
         {
@@ -147,7 +147,18 @@ struct ReturnType : qi::symbols<char, ast::Type>
     }
 };
 
-struct Sign : qi::symbols<char, ast::Sign>
+struct UnOp : qi::symbols<char, ast::UnOp>
+{
+    UnOp()
+    {
+        add
+            ("+", ast::plus_)
+            ("-", ast::minus_)
+            ("!", ast::lnot_);
+    }
+};
+
+struct Sign : qi::symbols<char, ast::UnOp>
 {
     Sign()
     {
@@ -187,6 +198,22 @@ struct EqOp : qi::symbols<char, ast::EqOp>
         add
             ("==", ast::equal_)
             ("!=", ast::notEqual_);
+    }
+};
+
+struct LAndOp : qi::symbols<char, ast::LAndOp>
+{
+    LAndOp()
+    {
+        add("&&", ast::and_);
+    }
+};
+
+struct LOrOp : qi::symbols<char, ast::LOrOp>
+{
+    LOrOp()
+    {
+        add("||", ast::or_);
     }
 };
 
@@ -240,17 +267,17 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         using boost::phoenix::push_back;
         using namespace qi::labels;            
 
-        identifier %= input_pos >> lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
-        constant %= input_pos >> ((int_ >> !char_('.')) | float_ | boolLit);
+        identifier %= inputPos >> lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
+        constant %= inputPos >> ((int_ >> !char_('.')) | float_ | boolLit);
         variable %= identifier;
-        unaryExpression %= constant | functionCall | variable | ('(' >> expression >> ')') | signedUnaryExpression;
-        signedUnaryExpression %= input_pos >> sign >> input_pos >> unaryExpression;
-        multiplicativeExpression %= input_pos >> unaryExpression >> *(input_pos >> mulOp >> input_pos >> unaryExpression);
-        additiveExpression %= input_pos >> multiplicativeExpression >> *(input_pos >> sign >> input_pos >> multiplicativeExpression);
-        relationalExpression %= input_pos >> additiveExpression >> *(input_pos >> relOp >> input_pos >> additiveExpression);
-        equalityExpression %= input_pos >> relationalExpression >> *(input_pos >> eqOp >> input_pos >> relationalExpression); 
-        andExpression = input_pos >> equalityExpression >> *(lit("&&") >> equalityExpression); 
-        expression = input_pos >> andExpression >> *(lit("||") > andExpression); 
+        unaryExpression %= constant | functionCall | variable | ('(' >> expression >> ')') | unOpUnaryExpression;
+        unOpUnaryExpression %= inputPos >> unOp >> inputPos >> unaryExpression;
+        multiplicativeExpression %= inputPos >> unaryExpression >> *(inputPos >> mulOp >> inputPos >> unaryExpression);
+        additiveExpression %= inputPos >> multiplicativeExpression >> *(inputPos >> sign >> inputPos >> multiplicativeExpression);
+        relationalExpression %= inputPos >> additiveExpression >> *(inputPos >> relOp >> inputPos >> additiveExpression);
+        equalityExpression %= inputPos >> relationalExpression >> *(inputPos >> eqOp >> inputPos >> relationalExpression); 
+        andExpression = inputPos >> equalityExpression >> *(inputPos >> landOp >> inputPos >> equalityExpression); 
+        expression = inputPos >> andExpression >> *(inputPos >> lorOp >> inputPos >> andExpression); 
         variableDecl %= "new" > -type > identifier > -('=' > expression) > ';';
         variableDelete %= "delete" > identifier > ';';
         functionParameter %= (lit("ref") >> attr(true) | attr(false)) >> type >> identifier;
@@ -272,7 +299,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         constant.name("constant");
         variable.name("variable");
         unaryExpression.name("unaryExpression");
-        signedUnaryExpression.name("signedUnaryExpression");
+        unOpUnaryExpression.name("unOpUnaryExpression");
         multiplicativeExpression.name("multiplicativeExpression");
         expression.name("expression");
         variableDecl.name("variable declaration");
@@ -295,16 +322,19 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     ErrorLogger *errorLogger_;
     detail::Type type;
     detail::ReturnType returnType;
+    detail::UnOp unOp;
     detail::Sign sign;
     detail::MulOp mulOp;
     detail::RelOp relOp;
     detail::EqOp eqOp;
+    detail::LAndOp landOp;
+    detail::LOrOp lorOp;
     detail::BoolLit boolLit;
     qi::rule<Iterator, ast::Identifier(), ascii::space_type> identifier;
     qi::rule<Iterator, ast::Constant(), ascii::space_type> constant;
     qi::rule<Iterator, ast::Variable(), ascii::space_type> variable;
     qi::rule<Iterator, ast::UnaryExpression(), ascii::space_type> unaryExpression;
-    qi::rule<Iterator, ast::SignedUnaryExpression(), ascii::space_type> signedUnaryExpression;
+    qi::rule<Iterator, ast::UnOpUnaryExpression(), ascii::space_type> unOpUnaryExpression;
     qi::rule<Iterator, ast::MultiplicativeExpression(), ascii::space_type> multiplicativeExpression;
     qi::rule<Iterator, ast::AdditiveExpression(), ascii::space_type> additiveExpression;
     qi::rule<Iterator, ast::RelationalExpression(), ascii::space_type> relationalExpression;

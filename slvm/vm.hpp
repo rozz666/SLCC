@@ -157,6 +157,8 @@ public:
         retT ret;
         std::memcpy(&ret, &env[env.sp()], sizeof(ret));
 
+        env.sp(env.sp() + sizeof(retT));
+
         return ret;
     }
 

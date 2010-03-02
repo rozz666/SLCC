@@ -5,6 +5,11 @@ identity(int a) -> int
     return a;
 }
 
+plus(int a) -> int
+{
+    return +a;
+}
+
 neg(int a) -> int
 {
     return -a;
@@ -40,6 +45,11 @@ identity(float a) -> float
     return a;
 }
 
+plus(float a) -> float
+{
+    return +a;
+}
+
 neg(float a) -> float
 {
     return -a;
@@ -70,4 +80,19 @@ mod(float a, float b) -> float
     return a % b;
 }
 
-main() ->int { }
+lnot(bool a) -> bool
+{
+    return !a;
+}
+
+land(bool a, bool b) -> bool
+{
+    return a && b;
+}
+
+lor(bool a, bool b) -> bool
+{
+    return a || b;
+}
+
+main() -> int { }

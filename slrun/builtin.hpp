@@ -10,13 +10,18 @@ namespace sl
 namespace builtin
 {
 
-const char *operatorName(ast::Sign s);
+const char *operatorName(ast::UnOp s);
 const char *operatorName(ast::MulOp o);
 const char *operatorName(ast::RelOp o);
 const char *operatorName(ast::EqOp o);
+const char *operatorName(ast::LAndOp o);
+const char *operatorName(ast::LOrOp o);
 
+extern const st::BuiltinFunction operator_plus_i;
+extern const st::BuiltinFunction operator_plus_f;
 extern const st::BuiltinFunction operator_minus_i;
 extern const st::BuiltinFunction operator_minus_f;
+extern const st::BuiltinFunction operator_lnot_b;
 
 extern const st::BuiltinFunction operator_plus_ii;
 extern const st::BuiltinFunction operator_plus_fi;

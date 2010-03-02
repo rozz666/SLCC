@@ -28,10 +28,11 @@ enum Type
     void_
 };
 
-enum Sign
+enum UnOp
 {
     plus_,
-    minus_
+    minus_,
+    lnot_
 };
 
 enum MulOp
@@ -55,6 +56,16 @@ enum EqOp
     notEqual_
 };
 
+enum LAndOp
+{
+    and_
+};
+
+enum LOrOp
+{
+    or_
+};
+
 struct Identifier
 {
     FilePosition pos;
@@ -66,7 +77,7 @@ struct Variable
     Identifier name;
 };
 
-struct SignedUnaryExpression;
+struct UnOpUnaryExpression;
 struct FunctionCall;
 struct Expression;
 
@@ -75,13 +86,13 @@ typedef boost::variant<
     Variable, 
     boost::recursive_wrapper<FunctionCall>,
     boost::recursive_wrapper<Expression>,
-    boost::recursive_wrapper<SignedUnaryExpression>
+    boost::recursive_wrapper<UnOpUnaryExpression>
 > UnaryExpression;
 
-struct SignedUnaryExpression
+struct UnOpUnaryExpression
 {
-    FilePosition signPos;
-    Sign sign;
+    FilePosition opPos;
+    UnOp op;
     FilePosition exprPos;
     UnaryExpression expr;
 };
@@ -104,7 +115,7 @@ struct MultiplicativeExpression
 struct SignMultiplicativeExpression
 {
     FilePosition signPos;
-    Sign sign;
+    UnOp sign;
     FilePosition exprPos;
     MultiplicativeExpression expr;
 };
@@ -146,18 +157,34 @@ struct EqualityExpression
     std::vector<EqOpRelationalExpression> next;
 };
 
+struct LAndOpEqualityExpression
+{
+    FilePosition opPos;
+    LAndOp op;
+    FilePosition exprPos;
+    EqualityExpression expr;
+};
+
 struct LogicalAndExpression
 {
     FilePosition firstPos;
     EqualityExpression first;
-    std::vector<EqualityExpression> next;
+    std::vector<LAndOpEqualityExpression> next;
+};
+
+struct LOrOpLogicalAndExpression
+{
+    FilePosition opPos;
+    LOrOp op;
+    FilePosition exprPos;
+    LogicalAndExpression expr;
 };
 
 struct Expression
 {
     FilePosition firstPos;
     LogicalAndExpression first;
-    std::vector<LogicalAndExpression> next;
+    std::vector<LOrOpLogicalAndExpression> next;
 };
 
 struct VariableDecl
@@ -252,9 +279,9 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::SignedUnaryExpression,
-    (::sl::FilePosition, signPos)
-    (::sl::ast::Sign, sign)
+    ::sl::ast::UnOpUnaryExpression,
+    (::sl::FilePosition, opPos)
+    (::sl::ast::UnOp, op)
     (::sl::FilePosition, exprPos)
     (::sl::ast::UnaryExpression, expr)
 )
@@ -277,7 +304,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::SignMultiplicativeExpression,
     (::sl::FilePosition, signPos)
-    (::sl::ast::Sign, sign)
+    (::sl::ast::UnOp, sign)
     (::sl::FilePosition, exprPos)
     (::sl::ast::MultiplicativeExpression, expr)
 )
@@ -320,17 +347,33 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::LAndOpEqualityExpression,
+    (::sl::FilePosition, opPos)
+    (::sl::ast::LAndOp, op)
+    (::sl::FilePosition, exprPos)
+    (::sl::ast::EqualityExpression, expr)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::LogicalAndExpression,
     (::sl::FilePosition, firstPos)
     (::sl::ast::EqualityExpression, first)
-    (std::vector<::sl::ast::EqualityExpression>, next)
+    (std::vector<::sl::ast::LAndOpEqualityExpression>, next)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::LOrOpLogicalAndExpression,
+    (::sl::FilePosition, opPos)
+    (::sl::ast::LOrOp, op)
+    (::sl::FilePosition, exprPos)
+    (::sl::ast::LogicalAndExpression, expr)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::Expression,
     (::sl::FilePosition, firstPos)
     (::sl::ast::LogicalAndExpression, first)
-    (std::vector<::sl::ast::LogicalAndExpression>, next)
+    (std::vector<::sl::ast::LOrOpLogicalAndExpression>, next)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(

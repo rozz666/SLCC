@@ -6,12 +6,13 @@ namespace sl
 namespace builtin
 {
 
-const char *operatorName(ast::Sign s)
+const char *operatorName(ast::UnOp s)
 {
     switch (s)
     {
         case ast::plus_: return "operator+";
         case ast::minus_: return "operator-";
+        case ast::lnot_: return "operator!";
     }
 
     assert(!"Not all operator handled");
@@ -61,8 +62,21 @@ const char *operatorName(ast::EqOp o)
     return "";
 }
 
+const char *operatorName(ast::LAndOp)
+{
+    return "operator&&";
+}
+
+const char *operatorName(ast::LOrOp)
+{
+    return "operator||";
+}
+
+const st::BuiltinFunction operator_plus_i(operatorName(ast::plus_), st::int_, st::int_);
+const st::BuiltinFunction operator_plus_f(operatorName(ast::plus_), st::float_, st::float_);
 const st::BuiltinFunction operator_minus_i(operatorName(ast::minus_), st::int_, st::int_);
 const st::BuiltinFunction operator_minus_f(operatorName(ast::minus_), st::float_, st::float_);
+const st::BuiltinFunction operator_lnot_b(operatorName(ast::lnot_), st::bool_, st::bool_);
 
 const st::BuiltinFunction operator_plus_ii(operatorName(ast::plus_), st::int_, st::int_, st::int_);
 const st::BuiltinFunction operator_plus_fi(operatorName(ast::plus_), st::float_, st::int_, st::float_);

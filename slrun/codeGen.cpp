@@ -254,6 +254,18 @@ st::Type constantType(const st::Constant& c);
 void generateExpression(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
 void generateExpressionRef(const st::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
 
+void gen_operator_plus_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+}
+
+void gen_operator_plus_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+}
+
 void gen_operator_minus_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
     assert(pc.size() == 1);
@@ -266,6 +278,15 @@ void gen_operator_minus_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGe
     assert(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::NEGF);
+}
+
+void gen_operator_lnot_b(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::CONST4);
+    cg.emit<std::int32_t>(1);
+    cg.emit(vm::XORI);
 }
 
 #define SL_GEN_OPERATORS(name, opcode) \
@@ -367,8 +388,11 @@ typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::Cod
 typedef std::map<const st::BuiltinFunction *, BuiltinFunctionGen> BuiltinFunctionGenerators;
 
 BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
+    (&builtin::operator_plus_i, &gen_operator_plus_i)
+    (&builtin::operator_plus_f, &gen_operator_plus_f)
     (&builtin::operator_minus_i, &gen_operator_minus_i)
     (&builtin::operator_minus_f, &gen_operator_minus_f)
+    (&builtin::operator_lnot_b, &gen_operator_lnot_b)
     (&builtin::operator_plus_ii, &gen_operator_plus_ii)
     (&builtin::operator_plus_fi, &gen_operator_plus_fi)
     (&builtin::operator_plus_if, &gen_operator_plus_if)
