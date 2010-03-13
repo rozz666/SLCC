@@ -21,7 +21,8 @@ int main(int argc, char **argv)
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "produce help message")
-        ("version,v", "print version information");
+        ("version,v", "print version information")
+        ("asm,a", "generate assembler");
 
     po::options_description hidden("Hidden options");
     hidden.add_options()
@@ -58,6 +59,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    bool genAsm = vm.count("asm") != 0;
+
     BOOST_FOREACH(const std::string& fn, inputFiles)
     {
         ErrorLogger errorLogger(fn);
@@ -72,13 +75,15 @@ int main(int argc, char **argv)
 
             if (!errorLogger.hasErrors())
             {
-                std::ofstream fout((fn + "asm").c_str());
-
                 sl::FunctionAddrMap fam;
 
                 sl::vm::BytecodeBuffer bb = generateBytecode(parsed, fam);
 
-                exportToAsm(bb, fout);
+                if (genAsm)
+                {
+                    std::ofstream fout((fn + "asm").c_str());
+                    exportToAsm(bb, fout);
+                }
 
                 std::ofstream bc((fn + "bin").c_str(), std::ios::binary);
                 bc.write((const char *) &bb.front(), bb.size());

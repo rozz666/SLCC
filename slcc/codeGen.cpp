@@ -526,15 +526,19 @@ public:
         cg_.emit(vm::CONST4);
         cg_.emit<std::int32_t>(it->second);
         cg_.emit(vm::CALL);
-        cg_.emit(vm::POP);
 
         if (discardReturnValue_ && fd->type() != st::void_)
         {
+            cg_.emit(vm::POP);
             cg_.emit(std::uint8_t(parametersTotalSize(*fd) + typeSize(fd->type())));
         }
         else
         {
-            cg_.emit<std::uint8_t>(parametersTotalSize(*fd));
+            if (parametersTotalSize(*fd) > 0)
+            {
+                cg_.emit(vm::POP);
+                cg_.emit<std::uint8_t>(parametersTotalSize(*fd));
+            }
         }
     }
 
