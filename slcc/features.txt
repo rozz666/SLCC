@@ -4,7 +4,6 @@ Order independent functions
 Public functions
 typeof
 passing by references
-logical not
 if
 while
 
@@ -18,7 +17,7 @@ bool
 new variable syntax
 delete variable in the same scope
 relational ops
-logical and, or
+logical and, or, not
 swap
 void functions
 error handling

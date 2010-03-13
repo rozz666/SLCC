@@ -4,12 +4,12 @@
 #include <cmath>
 #include <limits>
 #include <boost/foreach.hpp>
-#include "../slrun/ast.hpp"
-#include "../slrun/st.hpp"
+#include "../slcc/ast.hpp"
+#include "../slcc/st.hpp"
 #include "../slvm/vm.hpp"
-#include "../slrun/parseAst.hpp"
-#include "../slrun/parseSt.hpp"
-#include "../slrun/codeGen.hpp"
+#include "../slcc/parseAst.hpp"
+#include "../slcc/parseSt.hpp"
+#include "../slcc/codeGen.hpp"
 
 namespace tut
 {

@@ -115,7 +115,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 
             case STORE4:
             {
-                std::int32_t addr, value;
+                std::int32_t addr;
                 copy4(memory + sp + 4, &addr);
                 copy4(memory + sp, memory + addr);
                 sp += 8;

@@ -676,7 +676,7 @@ st::Module parseModule(const sl::ast::Module& module, ErrorLogger& errorLogger)
             auto p = params.find(fp.name.str);
             if (p == params.end())
             {
-                std::auto_ptr<st::Variable> v(new st::Variable(fp.name.str, fp.name.pos, convertType(fp.type), fp.ref));
+                std::shared_ptr<st::Variable> v(new st::Variable(fp.name.str, fp.name.pos, convertType(fp.type), fp.ref));
 
                 pc.push_back(v);
                 params.insert(std::make_pair(fp.name.str, fp.name.pos));

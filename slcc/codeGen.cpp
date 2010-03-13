@@ -2,6 +2,7 @@
 #include <boost/function.hpp>
 #include "codeGen.hpp"
 #include "builtin.hpp"
+#include "DependencyGraph.hpp"
 
 namespace sl
 {
@@ -823,6 +824,121 @@ void generateFunction(const st::FunctionDef& f, vm::CodeGenerator& cg, FunctionA
     }
 }
 
+class FunctionCallDependencies : public boost::static_visitor<void>
+{
+public:
+
+    FunctionCallDependencies(DependencyGraph<st::FunctionDef>& dg, const st::FunctionDef *fd)
+        : dg_(dg), fd_(fd) { }
+
+    void operator()(const st::BuiltinFunction *) const
+    {
+    }
+
+    void operator()(const st::FunctionDef *fd) const
+    {
+        dg_.insert(fd_, fd);
+    }
+
+private:
+
+    DependencyGraph<st::FunctionDef>& dg_;
+    const st::FunctionDef *fd_;
+};
+
+class ExpressionDependencies : public boost::static_visitor<void>
+{
+public:
+
+    ExpressionDependencies(DependencyGraph<st::FunctionDef>& dg, const st::FunctionDef *fd)
+        : dg_(dg), fd_(fd) { }
+
+    void operator()(const st::Constant& ) const { }
+
+    void operator()(const st::Variable *) const { }
+
+    void operator()(const st::FunctionCall& fc) const
+    {
+        BOOST_FOREACH(const st::Expression& e, fc.params())
+        {
+            e.apply_visitor(*this);    
+        }
+
+        FunctionCallDependencies fcd(dg_, fd_);
+        fc.f().apply_visitor(fcd);
+    }
+
+    void operator()(const st::Cast& c) const
+    {
+        c.expr().apply_visitor(*this);
+    }
+
+private:
+
+    DependencyGraph<st::FunctionDef>& dg_;
+    const st::FunctionDef *fd_;
+};
+
+class StatementDependencies : public boost::static_visitor<void>
+{
+public:
+
+    StatementDependencies(DependencyGraph<st::FunctionDef>& dg, const st::FunctionDef *fd)
+        : dg_(dg), fd_(fd) { }
+
+    void operator()(const st::CompoundStatement& cs) const
+    {
+        BOOST_FOREACH(const st::Statement& s, cs.statements)
+        {
+            s.apply_visitor(*this);    
+        }
+    }
+
+    void operator()(const st::Assignment& a) const
+    {
+        ExpressionDependencies ed(dg_, fd_);
+        a.expr().apply_visitor(ed);
+    }
+
+    void operator()(const st::FunctionCall& fc) const
+    {
+        ExpressionDependencies(dg_, fd_)(fc);
+    }
+
+    void operator()(const st::ReturnStatement& rs) const
+    {
+        ExpressionDependencies ed(dg_, fd_);
+        rs.expr().apply_visitor(ed);
+    }
+
+    void operator()(const st::VariableDecl& vd) const
+    {
+        if (vd.expr())
+        {
+            ExpressionDependencies ed(dg_, fd_);
+            vd.expr()->apply_visitor(ed);
+        }
+    }
+
+    void operator()(const st::VariableDelete& vd) const
+    {
+    }
+
+private:
+
+    DependencyGraph<st::FunctionDef>& dg_;
+    const st::FunctionDef *fd_;
+};
+
+void generateDependencies(const st::FunctionDef& f, DependencyGraph<st::FunctionDef>& dg)
+{
+    BOOST_FOREACH(const st::Statement& s, f.body()->statements)
+    {
+        StatementDependencies sd(dg, &f);
+        s.apply_visitor(sd);
+    }
+}
+
 vm::BytecodeBuffer generateBytecode(const st::Module& module, FunctionAddrMap& fam)
 {
     vm::CodeGenerator cg;
@@ -843,11 +959,21 @@ vm::BytecodeBuffer generateBytecode(const st::Module& module, FunctionAddrMap& f
     vm::CodeAddr startAddr = cg.emit<std::int32_t>(0);
     cg.emit(vm::JUMP);
 
+    DependencyGraph<st::FunctionDef> funcDep;
+
     BOOST_FOREACH(const st::FunctionDef& f, module.functions())
     {
-        std::string fmn = st::functionMangledName(f);
+        generateDependencies(f, funcDep);
+    }
 
-        if (fam.find(fmn) == fam.end()) generateFunction(f, cg, fam);
+    BOOST_FOREACH(const st::FunctionDef& f, module.functions())
+    {
+        funcDep.visit(&f, [&cg, &fam](const st::FunctionDef *f)
+            {
+                std::string fmn = st::functionMangledName(f);
+
+                if (fam.find(fmn) == fam.end()) generateFunction(*f, cg, fam);
+            });
     }
 
     vm::CodeAddr faddr = fam.find("main$")->second;
