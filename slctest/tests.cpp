@@ -151,6 +151,14 @@ template <>
 template <>
 void object::test<5>()
 {
+    set_test_name("passing by reference");
+
+    sl::vm::Module module = compileFile("tests\\test5.sl");
+    sl::vm::Environment env(1024);
+
+    ensure("pass by ref [int]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_int$"), env) == 1);
+    ensure("pass by ref [float]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_float$"), env) == 1);
+    ensure("pass by ref [bool]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_bool$"), env) == 1);
 }
 
 

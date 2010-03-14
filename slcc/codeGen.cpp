@@ -630,7 +630,7 @@ public:
     {
         if (v->ref())
         {
-            cg_.emit(vm::LADDR);
+            cg_.emit(vm::LLOAD4);
             cg_.emit(std::int16_t(vt_.addrOf(v)));
             cg_.emit(vm::LOAD4);
         }
@@ -750,7 +750,7 @@ public:
 
         if (a.var().ref())
         {
-            cg_.emit(vm::LADDR);
+            cg_.emit(vm::LLOAD4);
             cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
         }
 
