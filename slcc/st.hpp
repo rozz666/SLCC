@@ -231,6 +231,7 @@ inline bool isLValue(const Expression& e)
 }
 
 struct CompoundStatement;
+class IfStatement;
 
 class Cast
 {
@@ -313,6 +314,7 @@ typedef boost::variant<
     Assignment, 
     FunctionCall, 
     ReturnStatement,
+    IfStatement,
     VariableDecl,
     VariableDelete
 > Statement;
@@ -320,6 +322,24 @@ typedef boost::variant<
 struct CompoundStatement
 {
     std::vector<Statement> statements;
+};
+
+class IfStatement
+{
+public:
+
+    IfStatement(Expression&& cond, CompoundStatement&& onTrue) : cond_(cond), onTrue_(onTrue) { }
+    IfStatement(Expression&& cond, CompoundStatement&& onTrue, CompoundStatement&& onFalse) : cond_(cond), onTrue_(onTrue), onFalse_(onFalse) { }
+
+    const Expression& cond() const { return cond_; }
+    const CompoundStatement& onTrue() const { return onTrue_; }
+    const boost::optional<CompoundStatement>& onFalse() const { return onFalse_; }
+
+private:
+
+    Expression cond_;
+    CompoundStatement onTrue_;
+    boost::optional<CompoundStatement> onFalse_;
 };
 
 class BuiltinFunction

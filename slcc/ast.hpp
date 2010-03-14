@@ -224,9 +224,11 @@ struct ReturnStatement
 };
 
 struct CompoundStatement;
+struct IfStatement;
 
 typedef boost::variant<
     boost::recursive_wrapper<CompoundStatement>, 
+    boost::recursive_wrapper<IfStatement>,
     Assignment, 
     FunctionCall, 
     ReturnStatement,
@@ -240,6 +242,13 @@ struct CompoundStatement
 
     CompoundStatement() { }
     CompoundStatement(const std::vector<Statement>& s) : statements(s) { }
+};
+
+struct IfStatement
+{
+    Expression cond;
+    CompoundStatement onTrue;
+    boost::optional<CompoundStatement> onFalse;
 };
 
 typedef boost::variant<Type, Expression> FunctionReturnType;
@@ -415,6 +424,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     ::sl::ast::CompoundStatement,
     (std::vector<::sl::ast::Statement>, statements)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::IfStatement,
+    (::sl::ast::Expression, cond)
+    (::sl::ast::CompoundStatement, onTrue)
+    (boost::optional<::sl::ast::CompoundStatement>, onFalse)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(

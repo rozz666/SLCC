@@ -76,6 +76,12 @@ bool validFile(const std::string& fname)
 
     parseModule(*module, errorLogger);
 
+    if (errorLogger.hasErrors())
+    {
+        std::ofstream lf(fname + "log");
+        errorLogger.print(lf);
+    }
+
     return !errorLogger.hasErrors();
 }
 
@@ -159,6 +165,32 @@ void object::test<5>()
     ensure("pass by ref [int]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_int$"), env) == 1);
     ensure("pass by ref [float]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_float$"), env) == 1);
     ensure("pass by ref [bool]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_bool$"), env) == 1);
+}
+
+template <>
+template <>
+void object::test<6>()
+{
+    set_test_name("if");
+
+    sl::vm::Module module = compileFile("tests\\test6.sl");
+    sl::vm::Environment env(1024);
+
+    ensure("max1", module.call<int>(sl::vm::FunctionCall("max1$ii").p(2).p(1), env) == 2);
+    ensure("max1", module.call<int>(sl::vm::FunctionCall("max1$ii").p(1).p(2), env) == 2);
+    ensure("max2", module.call<int>(sl::vm::FunctionCall("max2$ii").p(2).p(1), env) == 2);
+    ensure("max2", module.call<int>(sl::vm::FunctionCall("max2$ii").p(1).p(2), env) == 2);
+    ensure("max3", module.call<int>(sl::vm::FunctionCall("max3$ii").p(2).p(1), env) == 2);
+    ensure("max3", module.call<int>(sl::vm::FunctionCall("max3$ii").p(1).p(2), env) == 2);
+    ensure("max4", module.call<int>(sl::vm::FunctionCall("max4$ii").p(2).p(1), env) == 2);
+    ensure("max4", module.call<int>(sl::vm::FunctionCall("max4$ii").p(1).p(2), env) == 2);
+}
+
+template <>
+template <>
+void object::test<7>()
+{
+    ensure("delete in if statement", !validFile("tests\\bad4.sl"));
 }
 
 

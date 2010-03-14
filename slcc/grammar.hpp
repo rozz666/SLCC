@@ -284,13 +284,15 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         assignment = identifier >> '=' >> expression;
         functionCall %= identifier >> '(' >> -(expression % ',') > ')';
         returnStatement %= "return" > -expression > ';';
+        ifStatement = lit("if") > '(' > expression > ')' > compoundStatement > -(lit("else") > compoundStatement);
         statement %=
             compoundStatement |
             returnStatement |
-            (assignment > ';') |
-            (functionCall > ';') |
             variableDecl |
-            variableDelete;
+            variableDelete |
+            ifStatement |
+            (assignment > ';') |
+            (functionCall > ';');
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
         function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (returnType | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
         module %= "module" > identifier > ';' >> *function >> qi::eoi;
@@ -307,6 +309,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         assignment.name("assignment");
         functionCall.name("function call");
         returnStatement.name("return statement");
+        ifStatement.name("if stastement");
         statement.name("statement");
         compoundStatement.name("compound statement");
         function.name("function definition");
@@ -347,6 +350,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     qi::rule<Iterator, ast::Assignment(), ascii::space_type> assignment;
     qi::rule<Iterator, ast::FunctionCall(), ascii::space_type> functionCall;
     qi::rule<Iterator, ast::ReturnStatement(), ascii::space_type> returnStatement;
+    qi::rule<Iterator, ast::IfStatement(), ascii::space_type> ifStatement;
     qi::rule<Iterator, ast::Statement(), ascii::space_type> statement;
     qi::rule<Iterator, ast::CompoundStatement(), ascii::space_type> compoundStatement;
     qi::rule<Iterator, ast::Function(), ascii::space_type> function;

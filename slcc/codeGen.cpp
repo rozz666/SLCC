@@ -744,6 +744,28 @@ public:
         }
     }
 
+    void operator()(const st::IfStatement& ifs) const
+    {
+        cg_.emit(vm::CONST4);
+        vm::CodeAddr je = cg_.emit(std::int32_t(0xbebebebe));
+
+        generateExpression(ifs.cond(), cg_, fam_, salloc_, vt_);
+
+        cg_.emit(vm::CJUMP);
+
+        if (ifs.onFalse()) (*this)(*ifs.onFalse());
+
+        cg_.emit(vm::CONST4);
+        vm::CodeAddr end = cg_.emit(std::int32_t(0xbebebebe));
+        cg_.emit(vm::JUMP);
+
+        cg_.emit(je, cg_.code().size());
+
+        (*this)(ifs.onTrue());
+
+        cg_.emit(end, cg_.code().size());
+    }
+
     void operator()(const st::Assignment& a) const
     {
         assert(a.var().type() == expressionType(a.expr()));
@@ -931,6 +953,15 @@ public:
         }
     }
 
+    void operator()(const st::IfStatement& ifs) const
+    {
+        ExpressionDependencies ed(dg_, fd_);
+        ifs.cond().apply_visitor(ed);
+        (*this)(ifs.onTrue());
+
+        if (ifs.onFalse()) (*this)(*ifs.onFalse());
+    }
+
     void operator()(const st::Assignment& a) const
     {
         ExpressionDependencies ed(dg_, fd_);
@@ -957,9 +988,7 @@ public:
         }
     }
 
-    void operator()(const st::VariableDelete& vd) const
-    {
-    }
+    void operator()(const st::VariableDelete& ) const { }
 
 private:
 

@@ -364,6 +364,8 @@ boost::optional<st::Expression> parseExpression(const ast::Expression& expr, st:
     return boost::none;
 }
 
+st::CompoundStatement parseCompoundStatement(const ast::CompoundStatement& cs, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger);
+
 class ParseStatement : public boost::static_visitor<boost::optional<st::Statement> >
 {
 public:
@@ -442,6 +444,32 @@ public:
         if (!expr) return boost::none;
         
         return st::ReturnStatement(*expr);
+    }
+
+    boost::optional<st::Statement> operator()(const ast::IfStatement& ifs) const
+    {
+        boost::optional<st::Expression> cond = parseExpression(ifs.cond, vts_, ft_, errorLogger_);
+
+        if (!cond) return boost::none;
+
+        if (expressionType(*cond) != st::bool_)
+        {
+            errorLogger_ << err::bool_expr_expected(expressionPos(*cond));
+            return boost::none;
+        }
+
+        st::CompoundStatement onTrue = parseCompoundStatement(ifs.onTrue, vts_, ft_, errorLogger_);
+        
+        if (ifs.onFalse)
+        {
+            st::CompoundStatement onFalse = parseCompoundStatement(*ifs.onFalse, vts_, ft_, errorLogger_);
+
+            return st::IfStatement(std::move(*cond), std::move(onTrue), std::move(onFalse));
+        }
+        else
+        {
+            return st::IfStatement(std::move(*cond), std::move(onTrue));
+        }
     }
 
     boost::optional<st::Statement> operator()(const ast::VariableDecl& decl) const
@@ -544,6 +572,28 @@ private:
         errorLogger_ << err::variable_earlier_declaration(vts_.findInScope(name.str)->pos(), name.str);
     }
 };
+
+
+st::CompoundStatement parseCompoundStatement(const ast::CompoundStatement& cs, st::VariableTableStack& vts, const st::FunctionTable& ft, ErrorLogger& errorLogger)
+{
+    st::CompoundStatement out;
+
+    ParseStatement ps(vts, ft, errorLogger);
+
+    vts.push();
+
+    BOOST_FOREACH(const ast::Statement& s, cs.statements)
+    {
+        if (boost::optional<st::Statement> st = s.apply_visitor(ps))
+        {
+            out.statements.push_back(*st);
+        }
+    }
+
+    vts.pop();
+
+    return out;
+}
 
 class ParseReturnType : public boost::static_visitor<boost::optional<st::Type> >
 {
