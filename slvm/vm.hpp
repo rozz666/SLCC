@@ -16,7 +16,7 @@ namespace vm
 
 typedef std::vector<std::uint8_t> BytecodeBuffer;
 typedef std::uint32_t CodeAddr;
-typedef std::uint32_t BPAddr;
+typedef std::int32_t BPAddr;
 
 class CodeGenerator
 {

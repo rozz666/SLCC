@@ -175,15 +175,24 @@ void object::test<6>()
 
     sl::vm::Module module = compileFile("tests\\test6.sl");
     sl::vm::Environment env(1024);
+    std::ptrdiff_t sp = env.sp();
 
     ensure("max1", module.call<int>(sl::vm::FunctionCall("max1$ii").p(2).p(1), env) == 2);
+    ensure_equals("stack1", env.sp(), sp);
     ensure("max1", module.call<int>(sl::vm::FunctionCall("max1$ii").p(1).p(2), env) == 2);
+    ensure_equals("stack2", env.sp(), sp);
     ensure("max2", module.call<int>(sl::vm::FunctionCall("max2$ii").p(2).p(1), env) == 2);
+    ensure_equals("stack3", env.sp(), sp);
     ensure("max2", module.call<int>(sl::vm::FunctionCall("max2$ii").p(1).p(2), env) == 2);
+    ensure_equals("stack4", env.sp(), sp);
     ensure("max3", module.call<int>(sl::vm::FunctionCall("max3$ii").p(2).p(1), env) == 2);
+    ensure_equals("stack5", env.sp(), sp);
     ensure("max3", module.call<int>(sl::vm::FunctionCall("max3$ii").p(1).p(2), env) == 2);
+    ensure_equals("stack6", env.sp(), sp);
     ensure("max4", module.call<int>(sl::vm::FunctionCall("max4$ii").p(2).p(1), env) == 2);
+    ensure_equals("stack7", env.sp(), sp);
     ensure("max4", module.call<int>(sl::vm::FunctionCall("max4$ii").p(1).p(2), env) == 2);
+    ensure_equals("stack8", env.sp(), sp);
 }
 
 template <>
@@ -191,6 +200,26 @@ template <>
 void object::test<7>()
 {
     ensure("delete in if statement", !validFile("tests\\bad4.sl"));
+    ensure("delete in while loop", !validFile("tests\\bad5.sl"));
+}
+
+template <>
+template <>
+void object::test<8>()
+{
+    set_test_name("while loop");
+
+    sl::vm::Module module = compileFile("tests\\test7.sl");
+    sl::vm::Environment env(1024);
+
+    std::ptrdiff_t sp = env.sp();
+
+    ensure_equals("while test1", module.call<int>(sl::vm::FunctionCall("while_test$i").p(0), env), 0);
+    ensure_equals("stack1", env.sp(), sp);
+    ensure_equals("while test2", module.call<int>(sl::vm::FunctionCall("while_test$i").p(-10), env), 0);
+    ensure_equals("stack2", env.sp(), sp);
+    ensure_equals("while test3", module.call<int>(sl::vm::FunctionCall("while_test$i").p(10), env), 10);
+    ensure_equals("stack3", env.sp(), sp);
 }
 
 

@@ -472,6 +472,23 @@ public:
         }
     }
 
+    boost::optional<st::Statement> operator()(const ast::WhileLoop& loop) const
+    {
+        boost::optional<st::Expression> cond = parseExpression(loop.cond, vts_, ft_, errorLogger_);
+
+        if (!cond) return boost::none;
+
+        if (expressionType(*cond) != st::bool_)
+        {
+            errorLogger_ << err::bool_expr_expected(expressionPos(*cond));
+            return boost::none;
+        }
+
+        st::CompoundStatement body = parseCompoundStatement(loop.body, vts_, ft_, errorLogger_);
+
+        return st::WhileLoop(std::move(*cond), std::move(body));
+    }
+
     boost::optional<st::Statement> operator()(const ast::VariableDecl& decl) const
     {
         if (decl.type)

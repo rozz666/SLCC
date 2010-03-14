@@ -229,13 +229,13 @@ public:
 
         if (peek_ < mem_.size()) peek_ = mem_.size();
 
-        return vm::BPAddr(-int(i));
+        return -vm::BPAddr(i);
     }
 
     void free(vm::BPAddr addr)
     {
-        addr = -std::int32_t(addr);
-        assert(addr < mem_.size() && mem_[addr] != 0);
+        addr = -addr;
+        assert(addr >= 0 && addr < vm::BPAddr(mem_.size()) && mem_[addr] != 0);
         mem_[addr] = 0;
     }
 
@@ -766,6 +766,29 @@ public:
         cg_.emit(end, cg_.code().size());
     }
 
+    void operator()(const st::WhileLoop& loop) const
+    {
+        vm::CodeAddr lloop = cg_.code().size();
+        cg_.emit(vm::CONST4);
+        vm::CodeAddr je = cg_.emit(std::int32_t(0xbebebebe));
+
+        generateExpression(loop.cond(), cg_, fam_, salloc_, vt_);
+
+        cg_.emit(vm::CJUMP);
+        cg_.emit(vm::CONST4);
+        vm::CodeAddr end = cg_.emit(std::int32_t(0xbebebebe));
+        cg_.emit(vm::JUMP);
+        cg_.emit(je, cg_.code().size());
+
+        (*this)(loop.body());
+
+        cg_.emit(vm::CONST4);
+        cg_.emit(std::int32_t(lloop));
+        cg_.emit(vm::JUMP);
+
+        cg_.emit(end, cg_.code().size());
+    }
+
     void operator()(const st::Assignment& a) const
     {
         assert(a.var().type() == expressionType(a.expr()));
@@ -815,7 +838,7 @@ public:
 
     void operator()(const st::VariableDecl& vd) const
     {
-        vt_.insert(&vd.var(), salloc_.alloc(typeSize(vd.var().type())));
+        vt_.insert(&vd.var(), salloc_.alloc(typeSize(vd.var().type())) - typeSize(vd.var().type()));
 
         if (vd.expr())
         {
@@ -830,7 +853,7 @@ public:
     {
         // TODO: should be remove it from VT?
         //vt_.erase(&vd.var());
-        salloc_.free(vt_.addrOf(&vd.var()));
+        salloc_.free(vt_.addrOf(&vd.var()) + typeSize(vd.var().type()));
     }
 
 private:
@@ -960,6 +983,13 @@ public:
         (*this)(ifs.onTrue());
 
         if (ifs.onFalse()) (*this)(*ifs.onFalse());
+    }
+
+    void operator()(const st::WhileLoop& loop) const
+    {
+        ExpressionDependencies ed(dg_, fd_);
+        loop.cond().apply_visitor(ed);
+        (*this)(loop.body());
     }
 
     void operator()(const st::Assignment& a) const

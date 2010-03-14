@@ -66,6 +66,13 @@ int main(int argc, char **argv)
     {
         ErrorLogger errorLogger(fn);
         std::ifstream fin(fn.c_str());
+
+        if (!fin.is_open())
+        {
+            std::cerr << fn << " not found" << std::endl;
+            continue;
+        }
+
         boost::optional<ast::Module> module = parseFile(fin, errorLogger);
 
         if (module)

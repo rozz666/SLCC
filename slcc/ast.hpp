@@ -225,10 +225,12 @@ struct ReturnStatement
 
 struct CompoundStatement;
 struct IfStatement;
+struct WhileLoop;
 
 typedef boost::variant<
     boost::recursive_wrapper<CompoundStatement>, 
     boost::recursive_wrapper<IfStatement>,
+    boost::recursive_wrapper<WhileLoop>,
     Assignment, 
     FunctionCall, 
     ReturnStatement,
@@ -249,6 +251,12 @@ struct IfStatement
     Expression cond;
     CompoundStatement onTrue;
     boost::optional<CompoundStatement> onFalse;
+};
+
+struct WhileLoop
+{
+    Expression cond;
+    CompoundStatement body;
 };
 
 typedef boost::variant<Type, Expression> FunctionReturnType;
@@ -431,6 +439,12 @@ BOOST_FUSION_ADAPT_STRUCT(
     (::sl::ast::Expression, cond)
     (::sl::ast::CompoundStatement, onTrue)
     (boost::optional<::sl::ast::CompoundStatement>, onFalse)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    ::sl::ast::WhileLoop,
+    (::sl::ast::Expression, cond)
+    (::sl::ast::CompoundStatement, body)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(

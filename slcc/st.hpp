@@ -232,6 +232,7 @@ inline bool isLValue(const Expression& e)
 
 struct CompoundStatement;
 class IfStatement;
+class WhileLoop;
 
 class Cast
 {
@@ -314,7 +315,8 @@ typedef boost::variant<
     Assignment, 
     FunctionCall, 
     ReturnStatement,
-    IfStatement,
+    boost::recursive_wrapper<IfStatement>,
+    boost::recursive_wrapper<WhileLoop>,
     VariableDecl,
     VariableDelete
 > Statement;
@@ -341,6 +343,22 @@ private:
     CompoundStatement onTrue_;
     boost::optional<CompoundStatement> onFalse_;
 };
+
+class WhileLoop
+{
+public:
+
+    WhileLoop(Expression&& cond, CompoundStatement&& body) : cond_(cond), body_(body) { }
+
+    const Expression& cond() const { return cond_; }
+    const CompoundStatement& body() const { return body_; }
+
+private:
+
+    Expression cond_;
+    CompoundStatement body_;
+};
+
 
 class BuiltinFunction
 {

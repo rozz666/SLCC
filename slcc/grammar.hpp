@@ -285,12 +285,14 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         functionCall %= identifier >> '(' >> -(expression % ',') > ')';
         returnStatement %= "return" > -expression > ';';
         ifStatement = lit("if") > '(' > expression > ')' > compoundStatement > -(lit("else") > compoundStatement);
+        whileLoop = lit("while") > '(' > expression > ')' > compoundStatement;
         statement %=
             compoundStatement |
             returnStatement |
             variableDecl |
             variableDelete |
             ifStatement |
+            whileLoop |
             (assignment > ';') |
             (functionCall > ';');
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
@@ -310,8 +312,9 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         functionCall.name("function call");
         returnStatement.name("return statement");
         ifStatement.name("if stastement");
+        whileLoop.name("while loop");
         statement.name("statement");
-        compoundStatement.name("compound statement");
+        //compoundStatement.name("compound statement");
         function.name("function definition");
         module.name("module body");
 
@@ -351,6 +354,7 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     qi::rule<Iterator, ast::FunctionCall(), ascii::space_type> functionCall;
     qi::rule<Iterator, ast::ReturnStatement(), ascii::space_type> returnStatement;
     qi::rule<Iterator, ast::IfStatement(), ascii::space_type> ifStatement;
+    qi::rule<Iterator, ast::WhileLoop(), ascii::space_type> whileLoop;
     qi::rule<Iterator, ast::Statement(), ascii::space_type> statement;
     qi::rule<Iterator, ast::CompoundStatement(), ascii::space_type> compoundStatement;
     qi::rule<Iterator, ast::Function(), ascii::space_type> function;
