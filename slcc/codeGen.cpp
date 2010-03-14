@@ -119,8 +119,10 @@ std::map<std::uint8_t, OpcodePrinter> opcodePrinters = boost::assign::map_list_o
     (vm::NEQI, OpcodePrinter("neqi"))
     (vm::NEQF, OpcodePrinter("neqf"))
 
-    (vm::INPI, OpcodePrinter("inpi", 2))
-    (vm::OUTI, OpcodePrinter("outi", 2));
+    (vm::INPI, OpcodePrinter("inpi"))
+    (vm::INPF, OpcodePrinter("inpf"))
+    (vm::OUTI, OpcodePrinter("outi"))
+    (vm::OUTF, OpcodePrinter("outf"));
 
 }
 
@@ -385,6 +387,32 @@ void gen_function_swap4(const st::FunctionCall::ParamContainer& pc, vm::CodeGene
     cg.emit(vm::STORE4);
 }
 
+void gen_function_geti(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& , StackAlloc& , VariableTable& )
+{
+    assert(pc.size() == 0);
+    cg.emit(vm::INPI);
+}
+
+void gen_function_getf(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& , StackAlloc& , VariableTable& )
+{
+    assert(pc.size() == 0);
+    cg.emit(vm::INPF);
+}
+
+void gen_function_put_i(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::OUTI);
+}
+
+void gen_function_put_f(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
+{
+    assert(pc.size() == 1);
+    generateExpression(pc[0], cg, fam, salloc, vt);
+    cg.emit(vm::OUTF);
+}
+
 typedef boost::function<void(const st::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)> BuiltinFunctionGen;
 typedef std::map<const st::BuiltinFunction *, BuiltinFunctionGen> BuiltinFunctionGenerators;
 
@@ -452,7 +480,12 @@ BuiltinFunctionGenerators builtinFunctionGen = boost::assign::map_list_of
 
     (&builtin::function_swap_ii, &gen_function_swap4)
     (&builtin::function_swap_ff, &gen_function_swap4)
-    (&builtin::function_swap_bb, &gen_function_swap4);
+    (&builtin::function_swap_bb, &gen_function_swap4)
+    
+    (&builtin::function_geti, &gen_function_geti)
+    (&builtin::function_getf, &gen_function_getf)
+    (&builtin::function_put_i, &gen_function_put_i)
+    (&builtin::function_put_f, &gen_function_put_f);
 
 std::uint8_t parametersTotalSize(const st::FunctionDef& fd)
 {

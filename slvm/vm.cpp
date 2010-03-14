@@ -353,22 +353,27 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 
             case INPI:
             {
-                std::int16_t addr;
                 int_t val;
                 std::cin >> val;
-                copy2(code + off, &addr);
-                off += 2;
-                copy4(&val, memory + bp + addr);
+                sp -= 4;
+                copy4(&val, memory + sp);
+                break;
+            }
+
+            case INPF:
+            {
+                int_t val;
+                std::cin >> val;
+                sp -= 4;
+                copy4(&val, memory + sp);
                 break;
             }
 
             case OUTI:
             {
-                std::int16_t addr;
                 int_t val;
-                copy2(code + off, &addr);
-                off += 2;
-                copy4(memory + bp + addr, &val);
+                copy4(memory + sp, &val);
+                sp += 4;
                 std::cout << val << std::endl;
                 break;
             }

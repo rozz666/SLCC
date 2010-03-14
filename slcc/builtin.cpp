@@ -142,5 +142,10 @@ const st::BuiltinFunction function_swap_ii("swap", st::int_, st::int_, st::void_
 const st::BuiltinFunction function_swap_ff("swap", st::float_, st::float_, st::void_);
 const st::BuiltinFunction function_swap_bb("swap", st::bool_, st::bool_, st::void_);
 
+const st::BuiltinFunction function_geti("geti", st::int_);
+const st::BuiltinFunction function_getf("getf", st::float_);
+const st::BuiltinFunction function_put_i("put", st::int_, st::void_);
+const st::BuiltinFunction function_put_f("put", st::float_, st::void_);
+
 }
 }

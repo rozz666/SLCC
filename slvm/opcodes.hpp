@@ -58,8 +58,10 @@ enum Opcode
     NEQI        = 0xb8,
     NEQF        = 0xb9,
 
-    INPI        = 0xfc,
-    OUTI        = 0xfd
+    INPI        = 0xf0,
+    INPF        = 0xf1,
+    OUTI        = 0xf2,
+    OUTF        = 0xf3
 };
 
 }

@@ -652,6 +652,11 @@ void registerBuiltinFunctions(st::FunctionTable& ft)
     ft.insert(&function_swap_ii);
     ft.insert(&function_swap_ff);
     ft.insert(&function_swap_bb);
+
+    ft.insert(&function_geti);
+    ft.insert(&function_getf);
+    ft.insert(&function_put_i);
+    ft.insert(&function_put_f);
 }
 
 st::Module parseModule(const sl::ast::Module& module, ErrorLogger& errorLogger)

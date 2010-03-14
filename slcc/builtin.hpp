@@ -87,6 +87,11 @@ extern const st::BuiltinFunction function_swap_ii;
 extern const st::BuiltinFunction function_swap_ff;
 extern const st::BuiltinFunction function_swap_bb;
 
+extern const st::BuiltinFunction function_geti;
+extern const st::BuiltinFunction function_getf;
+extern const st::BuiltinFunction function_put_i;
+extern const st::BuiltinFunction function_put_f;
+
 }
 }
 

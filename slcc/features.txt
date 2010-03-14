@@ -21,3 +21,4 @@ logical and, or, not
 swap
 void functions
 error handling
+geti, getf, put

@@ -18,10 +18,10 @@ int main(int argc, char **argv)
 
     std::vector<std::string> inputFiles;
 
-    po::options_description desc("Allowed options");
+    po::options_description desc("Options");
     desc.add_options()
-        ("help,h", "produce help message")
-        ("version,v", "print version information")
+        ("help", "produce help message")
+        ("version", "print version information")
         ("asm,a", "generate assembler");
 
     po::options_description hidden("Hidden options");
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     po::options_description cmdline_options;
     cmdline_options.add(desc).add(hidden);
 
-    po::options_description visible("Allowed options");
+    po::options_description visible("Options");
     visible.add(desc);
     
     po::positional_options_description p;
@@ -43,13 +43,14 @@ int main(int argc, char **argv)
 
     if (vm.count("help"))
     {
+        std::cout << "Usage: slcc [options] file..." << std::endl;
         std::cout << desc << std::endl;
         return 1;
     }
 
     if (vm.count("version"))
     {                                       
-        std::cout << "slrun Copyright (C) 2010 Rafal Przywarski\nVersion 1.0" << std::endl;
+        std::cout << "slcc 1.0\nCopyright (C) 2010 Rafal Przywarski" << std::endl;
         return 1;
     }
 
