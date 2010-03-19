@@ -1,16 +1,16 @@
-#ifndef SL_PARSEAST_HPP
-#define SL_PARSEAST_HPP
+#ifndef SL_PARSEST_HPP
+#define SL_PARSEST_HPP
 
-#include <iosfwd>
-#include <boost/optional.hpp>
-#include "ErrorLogger.hpp"
+#include <memory>
 #include "ast.hpp"
+#include "cst.hpp"
+#include "ErrorLogger.hpp"
 
 namespace sl
 {
 
-boost::optional<ast::Module> parseFile(std::istream& is, ErrorLogger& errorLogger);
+ast::Module parseModule(const cst::Module& module, ErrorLogger& errorLogger);
 
 }
 
-#endif /* SL_PARSEAST_HPP */
+#endif /* SL_PARSEST_HPP */

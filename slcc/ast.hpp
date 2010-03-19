@@ -1,24 +1,20 @@
-#ifndef SL_AST_HPP
-#define SL_AST_HPP
+#ifndef SL_ST_HPP
+#define SL_ST_HPP
 
 #include <string>
-#include <vector>
-#include <boost/variant.hpp>
+#include <memory>
+#include <boost/noncopyable.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/optional.hpp>
-#include <boost/fusion/adapted/struct/adapt_struct.hpp>
+#include <boost/variant.hpp>
+#include <boost/foreach.hpp>
 #include "FilePosition.hpp"
 
 namespace sl
 {
 namespace ast
 {
-
-struct Constant
-{
-    typedef boost::variant<int, float, bool> Value;
-    FilePosition pos;
-    Value value;
-};
 
 enum Type
 {
@@ -28,212 +24,299 @@ enum Type
     void_
 };
 
-enum UnOp
+inline const char *typeSuffix(Type type)
 {
-    plus_,
-    minus_,
-    lnot_
+    switch (type)
+    {
+        case int_: return "i";
+        case float_: return "f";
+        case bool_: return "b";
+    }
+
+    assert(!"Invalid type");
+
+    return "";
+}
+
+inline const char *typeName(Type type)
+{
+    switch (type)
+    {
+        case int_: return "int";
+        case float_: return "float";
+        case bool_: return "bool";
+    }
+
+    assert(!"Invalid type");
+
+    return "";
+}
+
+inline bool isConvertible(Type from, Type to)
+{
+    return
+        (from == to) ||
+        (to == float_ && from == int_) ||
+        (to == int_ && from == float_);
+}
+
+class Variable;
+
+template <typename Container>
+inline 
+typename boost::enable_if<
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, std::shared_ptr<Variable> >,
+    std::string
+>::type
+functionSuffix(const Container& params)
+{
+    std::string suffix;
+
+    BOOST_FOREACH(const std::shared_ptr<Variable>& v, params)
+    {
+        suffix += typeSuffix(v->type());
+    }
+
+    return suffix;
+}
+
+template <typename Container>
+inline 
+typename boost::enable_if<
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, std::shared_ptr<Variable> >,
+    std::string
+>::type
+functionParameters(const Container& params)
+{
+    std::ostringstream os;
+    bool comma = false;
+
+    os << "(";
+
+    BOOST_FOREACH(const std::shared_ptr<Variable>& v, params)
+    {
+        if (comma) os << ", ";
+        comma = true;
+        os << typeName(v->type());
+    }
+
+    os << ")";
+
+    return os.str();
+}
+
+template <typename Container>
+inline 
+typename boost::enable_if<
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, ast::Type>,
+    std::string
+>::type
+functionParameters(const Container& params)
+{
+    std::ostringstream os;
+    bool comma = false;
+
+    os << "(";
+
+    BOOST_FOREACH(ast::Type v, params)
+    {
+        if (comma) os << ", ";
+        comma = true;
+        os << typeName(v);
+    }
+
+    os << ")";
+
+    return os.str();
+}
+
+inline std::string functionMangledName(const std::string& name, const std::string& suffix)
+{
+    return name + "$" + suffix;
+}
+
+template <typename Container>
+inline
+typename boost::enable_if<
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, Variable>,
+    std::string
+>::type
+functionMangledName(const std::string& name, const Container& params)
+{
+    return functionMangledName(name, functionSuffix(params));
+}
+
+struct ConstantType : public boost::static_visitor<Type>
+{
+    Type operator()(const int& ) const
+    {
+        return ast::int_;
+    }
+
+    Type operator()(const float& ) const
+    {
+        return ast::float_;
+    }
+
+    Type operator()(const bool& ) const
+    {
+        return ast::bool_;
+    }
 };
 
-enum MulOp
+class Constant
 {
-    mul_,
-    div_,
-    mod_
+public:
+
+    typedef boost::variant<int, float, bool> Value;
+
+    Constant(const FilePosition& pos, const Value& value) : pos_(pos), value_(value) { }
+
+    FilePosition pos() const { return pos_; }
+    Value value() const { return value_; }
+    Type type() const
+    {
+        ConstantType ct;
+        return value_.apply_visitor(ct);
+    }
+
+private:
+
+    FilePosition pos_;
+    Value value_;
 };
 
-enum RelOp
+class Variable
 {
-    less_,
-    lessEqual_,
-    greater_,
-    greaterEqual_
+public:
+
+    Variable(const std::string& name, const FilePosition& pos, Type type, bool ref) : name_(name), pos_(pos), type_(type), ref_(ref) { }
+
+    const std::string& name() const { return name_; }
+    FilePosition pos() const { return pos_; }
+    Type type() const { return type_; }
+    bool ref() const { return ref_; }
+
+private:
+
+    std::string name_;
+    FilePosition pos_;
+    Type type_;
+    bool ref_;
 };
 
-enum EqOp
-{
-    equal_,
-    notEqual_
-};
-
-enum LAndOp
-{
-    and_
-};
-
-enum LOrOp
-{
-    or_
-};
-
-struct Identifier
-{
-    FilePosition pos;
-    std::string str;
-};
-
-struct Variable
-{
-    Identifier name;
-};
-
-struct UnOpUnaryExpression;
-struct FunctionCall;
-struct Expression;
+class FunctionCall;
+class Cast;
 
 typedef boost::variant<
-    Constant, 
-    Variable, 
+    Constant,
+    const Variable *,
     boost::recursive_wrapper<FunctionCall>,
-    boost::recursive_wrapper<Expression>,
-    boost::recursive_wrapper<UnOpUnaryExpression>
-> UnaryExpression;
+    boost::recursive_wrapper<Cast>
+> Expression;
 
-struct UnOpUnaryExpression
+
+struct IsLValue : public boost::static_visitor<bool>
 {
-    FilePosition opPos;
-    UnOp op;
-    FilePosition exprPos;
-    UnaryExpression expr;
+    bool operator()(const Variable *) const { return true; }
+
+    template <typename T>
+    bool operator()(const T& ) const { return false; }
 };
 
-struct MulOpUnaryExpression
+inline bool isLValue(const Expression& e)
 {
-    FilePosition opPos;
-    MulOp op;
-    FilePosition exprPos;
-    UnaryExpression expr;
-};
-
-struct MultiplicativeExpression
-{
-    FilePosition firstPos;
-    UnaryExpression first;
-    std::vector<MulOpUnaryExpression> next;
-};
-
-struct SignMultiplicativeExpression
-{
-    FilePosition signPos;
-    UnOp sign;
-    FilePosition exprPos;
-    MultiplicativeExpression expr;
-};
-
-struct AdditiveExpression
-{
-    FilePosition firstPos;
-    MultiplicativeExpression first;
-    std::vector<SignMultiplicativeExpression> next;
-};
-
-struct RelOpAdditiveExpression
-{
-    FilePosition opPos;
-    RelOp op;
-    FilePosition exprPos;
-    AdditiveExpression expr;
-};
-
-struct RelationalExpression
-{
-    FilePosition firstPos;
-    AdditiveExpression first;
-    std::vector<RelOpAdditiveExpression> next;
-};
-
-struct EqOpRelationalExpression
-{
-    FilePosition opPos;
-    EqOp op;
-    FilePosition exprPos;
-    RelationalExpression expr;
-};
-
-struct EqualityExpression
-{
-    FilePosition firstPos;
-    RelationalExpression first;
-    std::vector<EqOpRelationalExpression> next;
-};
-
-struct LAndOpEqualityExpression
-{
-    FilePosition opPos;
-    LAndOp op;
-    FilePosition exprPos;
-    EqualityExpression expr;
-};
-
-struct LogicalAndExpression
-{
-    FilePosition firstPos;
-    EqualityExpression first;
-    std::vector<LAndOpEqualityExpression> next;
-};
-
-struct LOrOpLogicalAndExpression
-{
-    FilePosition opPos;
-    LOrOp op;
-    FilePosition exprPos;
-    LogicalAndExpression expr;
-};
-
-struct Expression
-{
-    FilePosition firstPos;
-    LogicalAndExpression first;
-    std::vector<LOrOpLogicalAndExpression> next;
-};
-
-struct VariableDecl
-{
-    boost::optional<Type> type;
-    Identifier name;
-    boost::optional<Expression> expr;
-};
-
-struct VariableDelete
-{
-    Identifier name;
-};
-
-struct FunctionParameter
-{
-    bool ref;
-    Type type;
-    Identifier name;
-};
-
-struct Assignment
-{
-    Identifier var;
-    Expression expr;
-};
-
-struct FunctionCall
-{
-    Identifier name;
-    std::vector<Expression> expr;
-};
-
-struct ReturnStatement
-{
-    Expression expr;
-};
+    IsLValue v;
+    return e.apply_visitor(v);
+}
 
 struct CompoundStatement;
-struct IfStatement;
-struct WhileLoop;
+class IfStatement;
+class WhileLoop;
+
+class Cast
+{
+public:
+
+    Cast(const FilePosition& pos, const Expression& expr, Type type) : pos_(pos), expr_(expr), type_(type) { }
+
+    FilePosition pos() const { return pos_; }
+    const Expression& expr() const { return expr_; }
+    Type type() const { return type_; }
+
+private:
+
+    FilePosition pos_;
+    Expression expr_;
+    Type type_;
+};
+
+class Assignment
+{
+public:
+
+    Assignment(const Variable& var, const Expression& expr) : var_(&var), expr_(expr) { }
+
+    const Variable& var() const { return *var_; }
+    const Expression& expr() const { return expr_; }
+
+private:
+
+    const Variable *var_;
+    Expression expr_;
+};
+
+class ReturnStatement
+{
+public:
+
+    ReturnStatement(const Expression& expr) : expr_(expr) { }
+
+    const Expression& expr() const { return expr_; }
+
+private:
+
+    Expression expr_;
+};
+
+class VariableDecl  
+{
+public:
+
+    VariableDecl(const std::string& name, const FilePosition& pos, Type type) : var_(new Variable(name, pos, type, false)) { }
+    VariableDecl(const std::string& name, const FilePosition& pos, Type type, const Expression& expr) : var_(new Variable(name, pos, type, false)), expr_(expr) { }
+
+    Variable& var() { return *var_; }
+    const Variable& var() const { return *var_; }
+
+    const boost::optional<Expression>& expr() const { return expr_; }
+
+private:
+
+    std::shared_ptr<Variable> var_;
+    boost::optional<Expression> expr_;
+};
+
+class VariableDelete
+{
+public:
+
+    VariableDelete(const Variable& var) : var_(&var) { }
+
+    const Variable& var() const { return *var_; }
+
+private:
+
+    const Variable *var_;
+};
 
 typedef boost::variant<
     boost::recursive_wrapper<CompoundStatement>, 
-    boost::recursive_wrapper<IfStatement>,
-    boost::recursive_wrapper<WhileLoop>,
     Assignment, 
     FunctionCall, 
     ReturnStatement,
+    boost::recursive_wrapper<IfStatement>,
+    boost::recursive_wrapper<WhileLoop>,
     VariableDecl,
     VariableDelete
 > Statement;
@@ -241,224 +324,295 @@ typedef boost::variant<
 struct CompoundStatement
 {
     std::vector<Statement> statements;
-
-    CompoundStatement() { }
-    CompoundStatement(const std::vector<Statement>& s) : statements(s) { }
 };
 
-struct IfStatement
+class IfStatement
 {
-    Expression cond;
-    CompoundStatement onTrue;
-    boost::optional<CompoundStatement> onFalse;
+public:
+
+    IfStatement(Expression&& cond, CompoundStatement&& onTrue) : cond_(cond), onTrue_(onTrue) { }
+    IfStatement(Expression&& cond, CompoundStatement&& onTrue, CompoundStatement&& onFalse) : cond_(cond), onTrue_(onTrue), onFalse_(onFalse) { }
+
+    const Expression& cond() const { return cond_; }
+    const CompoundStatement& onTrue() const { return onTrue_; }
+    const boost::optional<CompoundStatement>& onFalse() const { return onFalse_; }
+
+private:
+
+    Expression cond_;
+    CompoundStatement onTrue_;
+    boost::optional<CompoundStatement> onFalse_;
 };
 
-struct WhileLoop
+class WhileLoop
 {
-    Expression cond;
-    CompoundStatement body;
+public:
+
+    WhileLoop(Expression&& cond, CompoundStatement&& body) : cond_(cond), body_(body) { }
+
+    const Expression& cond() const { return cond_; }
+    const CompoundStatement& body() const { return body_; }
+
+private:
+
+    Expression cond_;
+    CompoundStatement body_;
 };
 
-typedef boost::variant<Type, Expression> FunctionReturnType;
 
-struct Function
+class BuiltinFunction
 {
-    Identifier name;
-    std::vector<FunctionParameter> parameters;
-    FunctionReturnType type;
-    CompoundStatement body;
+public:
+
+    BuiltinFunction(const std::string& name, Type type) : name_(name), type_(type) { }
+
+    BuiltinFunction(const std::string& name, Type arg0, Type type) : name_(name), suffix_(typeSuffix(arg0)), type_(type) { }
+
+    BuiltinFunction(const std::string& name, Type arg0, Type arg1, Type type) : name_(name), type_(type)
+    {
+        suffix_ = typeSuffix(arg0);
+        suffix_ += typeSuffix(arg1);
+    }
+
+    const std::string& name() const { return name_; }
+    const std::string& suffix() const { return suffix_; }
+    Type type() const { return type_; }
+
+private:
+
+    std::string name_;
+    std::string suffix_;     
+    Type type_;
 };
 
-struct Module
+class FunctionDef
 {
-    Identifier name;
-    std::vector<Function> functions;
+public:
+
+    typedef std::vector<std::shared_ptr<Variable> > ParameterContainer;
+   
+    FunctionDef(const std::string& name, const FilePosition& pos, ParameterContainer&& parameters) 
+        : name_(name), suffix_(functionSuffix(parameters)), pos_(pos)
+    {
+        parameters.swap(parameters_);
+    }
+
+    const std::string& name() const { return name_; }
+    const std::string& suffix() const { return suffix_; }
+    FilePosition pos() const { return pos_; }
+    Type type() const { return *type_; }
+    void type(ast::Type val) { type_ = val; }
+
+    const ParameterContainer& parameters() const { return parameters_; }
+
+    const boost::optional<CompoundStatement>& body() const { return body_; }
+
+    void body(CompoundStatement&& c)
+    {
+        body_ = c;
+    }
+
+private:
+
+    std::string name_;
+    std::string suffix_;
+    FilePosition pos_;
+    boost::optional<Type> type_;
+    ParameterContainer parameters_;
+    boost::optional<CompoundStatement> body_;
+};
+
+inline std::string functionMangledName(const FunctionDef& f)
+{
+    return functionMangledName(f.name(), f.suffix());
+}
+
+typedef boost::variant<
+    const BuiltinFunction *,
+    const FunctionDef *
+> FunctionRef;
+
+struct FunctionMangledName : public boost::static_visitor<std::string>
+{
+    template <typename T>
+    std::string operator()(const T& f) const { return ast::functionMangledName(f->name(), f->suffix()); }
+};
+
+inline std::string functionMangledName(const FunctionRef& f)
+{
+    FunctionMangledName fmn;
+    return f.apply_visitor(fmn);
+}
+
+struct FunctionType : public boost::static_visitor<Type>
+{
+    template <typename T>
+    Type operator()(const T& f) const { return f->type(); }
+};
+
+inline Type functionType(const FunctionRef& f)
+{
+    FunctionType ft;
+    return f.apply_visitor(ft);
+}
+
+class FunctionCall
+{
+public:
+
+    typedef std::vector<Expression> ParamContainer;
+
+    template <typename It>    
+    FunctionCall(const FilePosition& pos, FunctionRef f, It firstParam, It lastParam)
+        : pos_(pos), f_(f), params_(firstParam, lastParam) { }
+
+    FilePosition pos() const { return pos_; }
+    const FunctionRef& f() const { return f_; }
+    const ParamContainer& params() const { return params_; }
+
+private:
+
+    FilePosition pos_;
+    FunctionRef f_;
+    ParamContainer params_;
+};
+
+
+class FunctionTable
+{
+    typedef std::map<std::string, FunctionRef> C;
+
+public:
+
+    FunctionTable() { }
+
+    bool insert(const FunctionRef& f)
+    {
+        return functions_.insert(std::make_pair(functionMangledName(f), f)).second;
+    }
+
+    boost::optional<FunctionRef> find(const std::string& name) const
+    {
+        C::const_iterator it = functions_.find(name);
+
+        if (it != functions_.end()) return it->second;
+        else return boost::none;
+    }
+
+private:
+
+    C functions_;
+};
+
+class VariableTable
+{
+    typedef std::map<std::string, const Variable *> C; 
+
+public:
+
+    bool insert(const Variable& var)
+    {
+        return vars_.insert(std::make_pair(var.name(), &var)).second;
+    }
+
+    const Variable *find(const std::string& name) const
+    {
+        C::const_iterator it = vars_.find(name);
+
+        return (it != vars_.end()) ? it->second : nullptr;
+    }
+
+    void erase(const std::string& name)
+    {
+        vars_.erase(name);        
+    }
+
+private:
+
+    C vars_;
+};
+
+class VariableTableStack
+{
+    typedef std::vector<VariableTable> C;
+
+public:
+
+    VariableTableStack()
+    {
+        push();
+    }
+
+    bool insert(const Variable& var)
+    {
+        return stack_.back().insert(var);
+    }
+
+    const Variable *find(const std::string& name) const
+    {
+        for (C::const_reverse_iterator it = stack_.rbegin(); it != stack_.rend(); ++it)
+        {
+            if (const Variable *v = it->find(name)) return v;
+        }
+
+        return nullptr;
+    }
+
+    const Variable *findInScope(const std::string& name) const
+    {
+        return stack_.back().find(name);
+    }
+
+    void eraseInScope(const std::string& name)
+    {
+        stack_.back().erase(name);
+    }
+
+    void push()
+    {
+        stack_.push_back(VariableTable());
+    }
+
+    void pop()
+    {
+        stack_.pop_back();
+    }
+
+private:
+
+    C stack_;
+};
+
+class Module : boost::noncopyable
+{
+public:
+
+    typedef boost::ptr_vector<FunctionDef> FunctionContainer;
+
+    Module(Module&& right)
+    {
+        name_.swap(right.name_);
+        functions_.swap(right.functions_);
+    }
+
+    Module(const std::string& name) : name_(name) { }
+
+    void insertFunction(std::auto_ptr<FunctionDef> function)
+    {
+        functions_.push_back(function);
+    }
+
+    const std::string name() const { return name_; }
+
+    const FunctionContainer& functions() const { return functions_; }
+
+private:
+
+    std::string name_;
+    FunctionContainer functions_;
 };
 
 }
 }
 
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Constant,
-    (::sl::FilePosition, pos)
-    (::sl::ast::Constant::Value, value)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Identifier,
-    (::sl::FilePosition, pos)
-    (std::string, str)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Variable,
-    (::sl::ast::Identifier, name)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::UnOpUnaryExpression,
-    (::sl::FilePosition, opPos)
-    (::sl::ast::UnOp, op)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::UnaryExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::MulOpUnaryExpression,
-    (::sl::FilePosition, opPos)
-    (::sl::ast::MulOp, op)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::UnaryExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::MultiplicativeExpression,
-    (::sl::FilePosition, firstPos)
-    (::sl::ast::UnaryExpression, first)
-    (std::vector<::sl::ast::MulOpUnaryExpression>, next)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::SignMultiplicativeExpression,
-    (::sl::FilePosition, signPos)
-    (::sl::ast::UnOp, sign)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::MultiplicativeExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::AdditiveExpression,
-    (::sl::FilePosition, firstPos)
-    (::sl::ast::MultiplicativeExpression, first)
-    (std::vector<::sl::ast::SignMultiplicativeExpression>, next)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::RelOpAdditiveExpression,
-    (::sl::FilePosition, opPos)
-    (::sl::ast::RelOp, op)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::AdditiveExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::RelationalExpression,
-    (::sl::FilePosition, firstPos)
-    (::sl::ast::AdditiveExpression, first)
-    (std::vector<::sl::ast::RelOpAdditiveExpression>, next)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::EqOpRelationalExpression,
-    (::sl::FilePosition, opPos)
-    (::sl::ast::EqOp, op)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::RelationalExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::EqualityExpression,
-    (::sl::FilePosition, firstPos)
-    (::sl::ast::RelationalExpression, first)
-    (std::vector<::sl::ast::EqOpRelationalExpression>, next)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::LAndOpEqualityExpression,
-    (::sl::FilePosition, opPos)
-    (::sl::ast::LAndOp, op)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::EqualityExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::LogicalAndExpression,
-    (::sl::FilePosition, firstPos)
-    (::sl::ast::EqualityExpression, first)
-    (std::vector<::sl::ast::LAndOpEqualityExpression>, next)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::LOrOpLogicalAndExpression,
-    (::sl::FilePosition, opPos)
-    (::sl::ast::LOrOp, op)
-    (::sl::FilePosition, exprPos)
-    (::sl::ast::LogicalAndExpression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Expression,
-    (::sl::FilePosition, firstPos)
-    (::sl::ast::LogicalAndExpression, first)
-    (std::vector<::sl::ast::LOrOpLogicalAndExpression>, next)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::VariableDecl,
-    (boost::optional<::sl::ast::Type>, type)
-    (::sl::ast::Identifier, name)
-    (boost::optional<::sl::ast::Expression>, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::VariableDelete,
-    (::sl::ast::Identifier, name)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::FunctionParameter,
-    (bool, ref)
-    (::sl::ast::Type, type)
-    (::sl::ast::Identifier, name)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Assignment,
-    (::sl::ast::Identifier, var)
-    (::sl::ast::Expression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::FunctionCall,
-    (::sl::ast::Identifier, name)
-    (std::vector<::sl::ast::Expression>, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::ReturnStatement,
-    (::sl::ast::Expression, expr)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::CompoundStatement,
-    (std::vector<::sl::ast::Statement>, statements)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::IfStatement,
-    (::sl::ast::Expression, cond)
-    (::sl::ast::CompoundStatement, onTrue)
-    (boost::optional<::sl::ast::CompoundStatement>, onFalse)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::WhileLoop,
-    (::sl::ast::Expression, cond)
-    (::sl::ast::CompoundStatement, body)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Function,
-    (::sl::ast::Identifier, name)
-    (std::vector<::sl::ast::FunctionParameter>, parameters)
-    (::sl::ast::FunctionReturnType, type)
-    (::sl::ast::CompoundStatement, body)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    ::sl::ast::Module,
-    (::sl::ast::Identifier, name)
-    (std::vector<::sl::ast::Function>, functions)
-)
-
-#endif /* SL_AST_HPP */
+#endif /* SL_ST_HPP */

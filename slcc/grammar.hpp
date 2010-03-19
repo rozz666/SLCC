@@ -12,7 +12,7 @@
 #include <boost/spirit/home/classic/iterator/position_iterator.hpp>
 
 #include "ErrorLogger.hpp"
-#include "ast.hpp"
+#include "cst.hpp"
 
 namespace boost
 {
@@ -124,96 +124,96 @@ namespace ascii = ::boost::spirit::ascii;
 namespace detail
 {
 
-struct Type : qi::symbols<char, ast::Type>
+struct Type : qi::symbols<char, cst::Type>
 {
     Type()
     {
         add
-            ("int", ast::int_)
-            ("float", ast::float_)
-            ("bool", ast::bool_);
+            ("int", cst::int_)
+            ("float", cst::float_)
+            ("bool", cst::bool_);
     }
 };
 
-struct ReturnType : qi::symbols<char, ast::Type>
+struct ReturnType : qi::symbols<char, cst::Type>
 {
     ReturnType()
     {
         add
-            ("int", ast::int_)
-            ("float", ast::float_)
-            ("bool", ast::bool_)
-            ("void", ast::void_);
+            ("int", cst::int_)
+            ("float", cst::float_)
+            ("bool", cst::bool_)
+            ("void", cst::void_);
     }
 };
 
-struct UnOp : qi::symbols<char, ast::UnOp>
+struct UnOp : qi::symbols<char, cst::UnOp>
 {
     UnOp()
     {
         add
-            ("+", ast::plus_)
-            ("-", ast::minus_)
-            ("!", ast::lnot_);
+            ("+", cst::plus_)
+            ("-", cst::minus_)
+            ("!", cst::lnot_);
     }
 };
 
-struct Sign : qi::symbols<char, ast::UnOp>
+struct Sign : qi::symbols<char, cst::UnOp>
 {
     Sign()
     {
         add
-            ("+", ast::plus_)
-            ("-", ast::minus_);
+            ("+", cst::plus_)
+            ("-", cst::minus_);
     }
 };
 
-struct MulOp : qi::symbols<char, ast::MulOp>
+struct MulOp : qi::symbols<char, cst::MulOp>
 {
     MulOp()
     {
         add
-            ("*", ast::mul_)
-            ("/", ast::div_)
-            ("%", ast::mod_);
+            ("*", cst::mul_)
+            ("/", cst::div_)
+            ("%", cst::mod_);
     }
 };
 
-struct RelOp : qi::symbols<char, ast::RelOp>
+struct RelOp : qi::symbols<char, cst::RelOp>
 {
     RelOp()
     {
         add
-            ("<", ast::less_)
-            ("<=", ast::lessEqual_)
-            (">", ast::greater_)
-            (">=", ast::greaterEqual_);
+            ("<", cst::less_)
+            ("<=", cst::lessEqual_)
+            (">", cst::greater_)
+            (">=", cst::greaterEqual_);
     }
 };
 
-struct EqOp : qi::symbols<char, ast::EqOp>
+struct EqOp : qi::symbols<char, cst::EqOp>
 {
     EqOp()
     {
         add
-            ("==", ast::equal_)
-            ("!=", ast::notEqual_);
+            ("==", cst::equal_)
+            ("!=", cst::notEqual_);
     }
 };
 
-struct LAndOp : qi::symbols<char, ast::LAndOp>
+struct LAndOp : qi::symbols<char, cst::LAndOp>
 {
     LAndOp()
     {
-        add("&&", ast::and_);
+        add("&&", cst::and_);
     }
 };
 
-struct LOrOp : qi::symbols<char, ast::LOrOp>
+struct LOrOp : qi::symbols<char, cst::LOrOp>
 {
     LOrOp()
     {
-        add("||", ast::or_);
+        add("||", cst::or_);
     }
 };
 
@@ -248,7 +248,7 @@ boost::phoenix::function<errorMessageImpl> errorMessage;
 
 
 template <typename Iterator>
-struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type> 
+struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type> 
 {
     Grammar(ErrorLogger& errorLogger) : Grammar::base_type(module, "module"), errorLogger_(&errorLogger)
     {
@@ -311,10 +311,10 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
         assignment.name("assignment");
         functionCall.name("function call");
         returnStatement.name("return statement");
-        ifStatement.name("if stastement");
+        ifStatement.name("if statement");
         whileLoop.name("while loop");
         statement.name("statement");
-        //compoundStatement.name("compound statement");
+        compoundStatement.name("compound statement");
         function.name("function definition");
         module.name("module body");
 
@@ -336,29 +336,29 @@ struct Grammar : qi::grammar<Iterator, ast::Module(), ascii::space_type>
     detail::LAndOp landOp;
     detail::LOrOp lorOp;
     detail::BoolLit boolLit;
-    qi::rule<Iterator, ast::Identifier(), ascii::space_type> identifier;
-    qi::rule<Iterator, ast::Constant(), ascii::space_type> constant;
-    qi::rule<Iterator, ast::Variable(), ascii::space_type> variable;
-    qi::rule<Iterator, ast::UnaryExpression(), ascii::space_type> unaryExpression;
-    qi::rule<Iterator, ast::UnOpUnaryExpression(), ascii::space_type> unOpUnaryExpression;
-    qi::rule<Iterator, ast::MultiplicativeExpression(), ascii::space_type> multiplicativeExpression;
-    qi::rule<Iterator, ast::AdditiveExpression(), ascii::space_type> additiveExpression;
-    qi::rule<Iterator, ast::RelationalExpression(), ascii::space_type> relationalExpression;
-    qi::rule<Iterator, ast::EqualityExpression(), ascii::space_type> equalityExpression;
-    qi::rule<Iterator, ast::LogicalAndExpression(), ascii::space_type> andExpression;
-    qi::rule<Iterator, ast::Expression(), ascii::space_type> expression;
-    qi::rule<Iterator, ast::VariableDecl(), ascii::space_type> variableDecl;
-    qi::rule<Iterator, ast::VariableDelete(), ascii::space_type> variableDelete;
-    qi::rule<Iterator, ast::FunctionParameter(), ascii::space_type> functionParameter;
-    qi::rule<Iterator, ast::Assignment(), ascii::space_type> assignment;
-    qi::rule<Iterator, ast::FunctionCall(), ascii::space_type> functionCall;
-    qi::rule<Iterator, ast::ReturnStatement(), ascii::space_type> returnStatement;
-    qi::rule<Iterator, ast::IfStatement(), ascii::space_type> ifStatement;
-    qi::rule<Iterator, ast::WhileLoop(), ascii::space_type> whileLoop;
-    qi::rule<Iterator, ast::Statement(), ascii::space_type> statement;
-    qi::rule<Iterator, ast::CompoundStatement(), ascii::space_type> compoundStatement;
-    qi::rule<Iterator, ast::Function(), ascii::space_type> function;
-    qi::rule<Iterator, ast::Module(), ascii::space_type> module;
+    qi::rule<Iterator, cst::Identifier(), ascii::space_type> identifier;
+    qi::rule<Iterator, cst::Constant(), ascii::space_type> constant;
+    qi::rule<Iterator, cst::Variable(), ascii::space_type> variable;
+    qi::rule<Iterator, cst::UnaryExpression(), ascii::space_type> unaryExpression;
+    qi::rule<Iterator, cst::UnOpUnaryExpression(), ascii::space_type> unOpUnaryExpression;
+    qi::rule<Iterator, cst::MultiplicativeExpression(), ascii::space_type> multiplicativeExpression;
+    qi::rule<Iterator, cst::AdditiveExpression(), ascii::space_type> additiveExpression;
+    qi::rule<Iterator, cst::RelationalExpression(), ascii::space_type> relationalExpression;
+    qi::rule<Iterator, cst::EqualityExpression(), ascii::space_type> equalityExpression;
+    qi::rule<Iterator, cst::LogicalAndExpression(), ascii::space_type> andExpression;
+    qi::rule<Iterator, cst::Expression(), ascii::space_type> expression;
+    qi::rule<Iterator, cst::VariableDecl(), ascii::space_type> variableDecl;
+    qi::rule<Iterator, cst::VariableDelete(), ascii::space_type> variableDelete;
+    qi::rule<Iterator, cst::FunctionParameter(), ascii::space_type> functionParameter;
+    qi::rule<Iterator, cst::Assignment(), ascii::space_type> assignment;
+    qi::rule<Iterator, cst::FunctionCall(), ascii::space_type> functionCall;
+    qi::rule<Iterator, cst::ReturnStatement(), ascii::space_type> returnStatement;
+    qi::rule<Iterator, cst::IfStatement(), ascii::space_type> ifStatement;
+    qi::rule<Iterator, cst::WhileLoop(), ascii::space_type> whileLoop;
+    qi::rule<Iterator, cst::Statement(), ascii::space_type> statement;
+    qi::rule<Iterator, cst::CompoundStatement(), ascii::space_type> compoundStatement;
+    qi::rule<Iterator, cst::Function(), ascii::space_type> function;
+    qi::rule<Iterator, cst::Module(), ascii::space_type> module;
 };
 
 }

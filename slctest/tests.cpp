@@ -4,11 +4,11 @@
 #include <cmath>
 #include <limits>
 #include <boost/foreach.hpp>
+#include "../slcc/cst.hpp"
 #include "../slcc/ast.hpp"
-#include "../slcc/st.hpp"
 #include "../slvm/vm.hpp"
+#include "../slcc/parseCst.hpp"
 #include "../slcc/parseAst.hpp"
-#include "../slcc/parseSt.hpp"
 #include "../slcc/codeGen.hpp"
 
 namespace tut
@@ -34,11 +34,11 @@ sl::vm::Module compileFile(const std::string& fname)
     assert(fin.is_open());
 
     sl::ErrorLogger errorLogger(fname);
-    boost::optional<ast::Module> module = parseFile(fin, errorLogger);
+    boost::optional<cst::Module> module = parseFile(fin, errorLogger);
 
     if (!module) throw CompileError();
 
-    sl::st::Module parsed = parseModule(*module, errorLogger);
+    sl::ast::Module parsed = parseModule(*module, errorLogger);
 
     sl::FunctionAddrMap fam;
 
@@ -70,7 +70,7 @@ bool validFile(const std::string& fname)
 
     sl::ErrorLogger errorLogger(fname);
 
-    boost::optional<ast::Module> module = parseFile(fin, errorLogger);
+    boost::optional<cst::Module> module = parseFile(fin, errorLogger);
 
     if (!module) return false;
 

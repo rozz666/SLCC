@@ -6,13 +6,13 @@ namespace sl
 namespace builtin
 {
 
-const char *operatorName(ast::UnOp s)
+const char *operatorName(cst::UnOp s)
 {
     switch (s)
     {
-        case ast::plus_: return "operator+";
-        case ast::minus_: return "operator-";
-        case ast::lnot_: return "operator!";
+        case cst::plus_: return "operator+";
+        case cst::minus_: return "operator-";
+        case cst::lnot_: return "operator!";
     }
 
     assert(!"Not all operator handled");
@@ -20,13 +20,13 @@ const char *operatorName(ast::UnOp s)
     return "";
 }
 
-const char *operatorName(ast::MulOp o)
+const char *operatorName(cst::MulOp o)
 {
     switch (o)
     {
-        case ast::mul_: return "operator*";
-        case ast::div_: return "operator/";
-        case ast::mod_: return "operator%";
+        case cst::mul_: return "operator*";
+        case cst::div_: return "operator/";
+        case cst::mod_: return "operator%";
     }
 
     assert(!"Not all operator handled");
@@ -34,14 +34,14 @@ const char *operatorName(ast::MulOp o)
     return "";
 }
 
-const char *operatorName(ast::RelOp o)
+const char *operatorName(cst::RelOp o)
 {
     switch (o)
     {
-        case ast::less_: return "operator<";
-        case ast::lessEqual_: return "operator<=";
-        case ast::greater_: return "operator>";
-        case ast::greaterEqual_: return "operator>=";
+        case cst::less_: return "operator<";
+        case cst::lessEqual_: return "operator<=";
+        case cst::greater_: return "operator>";
+        case cst::greaterEqual_: return "operator>=";
     }
 
     assert(!"Not all operator handled");
@@ -49,12 +49,12 @@ const char *operatorName(ast::RelOp o)
     return "";
 }
 
-const char *operatorName(ast::EqOp o)
+const char *operatorName(cst::EqOp o)
 {
     switch (o)
     {
-        case ast::equal_: return "operator==";
-        case ast::notEqual_: return "operator!=";
+        case cst::equal_: return "operator==";
+        case cst::notEqual_: return "operator!=";
     }
 
     assert(!"Not all operator handled");
@@ -62,90 +62,90 @@ const char *operatorName(ast::EqOp o)
     return "";
 }
 
-const char *operatorName(ast::LAndOp)
+const char *operatorName(cst::LAndOp)
 {
     return "operator&&";
 }
 
-const char *operatorName(ast::LOrOp)
+const char *operatorName(cst::LOrOp)
 {
     return "operator||";
 }
 
-const st::BuiltinFunction operator_plus_i(operatorName(ast::plus_), st::int_, st::int_);
-const st::BuiltinFunction operator_plus_f(operatorName(ast::plus_), st::float_, st::float_);
-const st::BuiltinFunction operator_minus_i(operatorName(ast::minus_), st::int_, st::int_);
-const st::BuiltinFunction operator_minus_f(operatorName(ast::minus_), st::float_, st::float_);
-const st::BuiltinFunction operator_lnot_b(operatorName(ast::lnot_), st::bool_, st::bool_);
+const ast::BuiltinFunction operator_plus_i(operatorName(cst::plus_), ast::int_, ast::int_);
+const ast::BuiltinFunction operator_plus_f(operatorName(cst::plus_), ast::float_, ast::float_);
+const ast::BuiltinFunction operator_minus_i(operatorName(cst::minus_), ast::int_, ast::int_);
+const ast::BuiltinFunction operator_minus_f(operatorName(cst::minus_), ast::float_, ast::float_);
+const ast::BuiltinFunction operator_lnot_b(operatorName(cst::lnot_), ast::bool_, ast::bool_);
 
-const st::BuiltinFunction operator_plus_ii(operatorName(ast::plus_), st::int_, st::int_, st::int_);
-const st::BuiltinFunction operator_plus_fi(operatorName(ast::plus_), st::float_, st::int_, st::float_);
-const st::BuiltinFunction operator_plus_if(operatorName(ast::plus_), st::int_, st::float_, st::float_);
-const st::BuiltinFunction operator_plus_ff(operatorName(ast::plus_), st::float_, st::float_, st::float_);
+const ast::BuiltinFunction operator_plus_ii(operatorName(cst::plus_), ast::int_, ast::int_, ast::int_);
+const ast::BuiltinFunction operator_plus_fi(operatorName(cst::plus_), ast::float_, ast::int_, ast::float_);
+const ast::BuiltinFunction operator_plus_if(operatorName(cst::plus_), ast::int_, ast::float_, ast::float_);
+const ast::BuiltinFunction operator_plus_ff(operatorName(cst::plus_), ast::float_, ast::float_, ast::float_);
 
-const st::BuiltinFunction operator_minus_ii(operatorName(ast::minus_), st::int_, st::int_, st::int_);
-const st::BuiltinFunction operator_minus_fi(operatorName(ast::minus_), st::float_, st::int_, st::float_);
-const st::BuiltinFunction operator_minus_if(operatorName(ast::minus_), st::int_, st::float_, st::float_);
-const st::BuiltinFunction operator_minus_ff(operatorName(ast::minus_), st::float_, st::float_, st::float_);
+const ast::BuiltinFunction operator_minus_ii(operatorName(cst::minus_), ast::int_, ast::int_, ast::int_);
+const ast::BuiltinFunction operator_minus_fi(operatorName(cst::minus_), ast::float_, ast::int_, ast::float_);
+const ast::BuiltinFunction operator_minus_if(operatorName(cst::minus_), ast::int_, ast::float_, ast::float_);
+const ast::BuiltinFunction operator_minus_ff(operatorName(cst::minus_), ast::float_, ast::float_, ast::float_);
 
-const st::BuiltinFunction operator_mul_ii(operatorName(ast::mul_), st::int_, st::int_, st::int_);
-const st::BuiltinFunction operator_mul_fi(operatorName(ast::mul_), st::float_, st::int_, st::float_);
-const st::BuiltinFunction operator_mul_if(operatorName(ast::mul_), st::int_, st::float_, st::float_);
-const st::BuiltinFunction operator_mul_ff(operatorName(ast::mul_), st::float_, st::float_, st::float_);
+const ast::BuiltinFunction operator_mul_ii(operatorName(cst::mul_), ast::int_, ast::int_, ast::int_);
+const ast::BuiltinFunction operator_mul_fi(operatorName(cst::mul_), ast::float_, ast::int_, ast::float_);
+const ast::BuiltinFunction operator_mul_if(operatorName(cst::mul_), ast::int_, ast::float_, ast::float_);
+const ast::BuiltinFunction operator_mul_ff(operatorName(cst::mul_), ast::float_, ast::float_, ast::float_);
 
-const st::BuiltinFunction operator_div_ii(operatorName(ast::div_), st::int_, st::int_, st::int_);
-const st::BuiltinFunction operator_div_fi(operatorName(ast::div_), st::float_, st::int_, st::float_);
-const st::BuiltinFunction operator_div_if(operatorName(ast::div_), st::int_, st::float_, st::float_);
-const st::BuiltinFunction operator_div_ff(operatorName(ast::div_), st::float_, st::float_, st::float_);
+const ast::BuiltinFunction operator_div_ii(operatorName(cst::div_), ast::int_, ast::int_, ast::int_);
+const ast::BuiltinFunction operator_div_fi(operatorName(cst::div_), ast::float_, ast::int_, ast::float_);
+const ast::BuiltinFunction operator_div_if(operatorName(cst::div_), ast::int_, ast::float_, ast::float_);
+const ast::BuiltinFunction operator_div_ff(operatorName(cst::div_), ast::float_, ast::float_, ast::float_);
 
-const st::BuiltinFunction operator_mod_ii(operatorName(ast::mod_), st::int_, st::int_, st::int_);
-const st::BuiltinFunction operator_mod_fi(operatorName(ast::mod_), st::float_, st::int_, st::float_);
-const st::BuiltinFunction operator_mod_if(operatorName(ast::mod_), st::int_, st::float_, st::float_);
-const st::BuiltinFunction operator_mod_ff(operatorName(ast::mod_), st::float_, st::float_, st::float_);
+const ast::BuiltinFunction operator_mod_ii(operatorName(cst::mod_), ast::int_, ast::int_, ast::int_);
+const ast::BuiltinFunction operator_mod_fi(operatorName(cst::mod_), ast::float_, ast::int_, ast::float_);
+const ast::BuiltinFunction operator_mod_if(operatorName(cst::mod_), ast::int_, ast::float_, ast::float_);
+const ast::BuiltinFunction operator_mod_ff(operatorName(cst::mod_), ast::float_, ast::float_, ast::float_);
 
-const st::BuiltinFunction operator_lt_ii(operatorName(ast::less_), st::int_, st::int_, st::bool_);
-const st::BuiltinFunction operator_lt_fi(operatorName(ast::less_), st::float_, st::int_, st::bool_);
-const st::BuiltinFunction operator_lt_if(operatorName(ast::less_), st::int_, st::float_, st::bool_);
-const st::BuiltinFunction operator_lt_ff(operatorName(ast::less_), st::float_, st::float_, st::bool_);
+const ast::BuiltinFunction operator_lt_ii(operatorName(cst::less_), ast::int_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_lt_fi(operatorName(cst::less_), ast::float_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_lt_if(operatorName(cst::less_), ast::int_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_lt_ff(operatorName(cst::less_), ast::float_, ast::float_, ast::bool_);
 
-const st::BuiltinFunction operator_le_ii(operatorName(ast::lessEqual_), st::int_, st::int_, st::bool_);
-const st::BuiltinFunction operator_le_fi(operatorName(ast::lessEqual_), st::float_, st::int_, st::bool_);
-const st::BuiltinFunction operator_le_if(operatorName(ast::lessEqual_), st::int_, st::float_, st::bool_);
-const st::BuiltinFunction operator_le_ff(operatorName(ast::lessEqual_), st::float_, st::float_, st::bool_);
+const ast::BuiltinFunction operator_le_ii(operatorName(cst::lessEqual_), ast::int_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_le_fi(operatorName(cst::lessEqual_), ast::float_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_le_if(operatorName(cst::lessEqual_), ast::int_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_le_ff(operatorName(cst::lessEqual_), ast::float_, ast::float_, ast::bool_);
 
-const st::BuiltinFunction operator_gt_ii(operatorName(ast::greater_), st::int_, st::int_, st::bool_);
-const st::BuiltinFunction operator_gt_fi(operatorName(ast::greater_), st::float_, st::int_, st::bool_);
-const st::BuiltinFunction operator_gt_if(operatorName(ast::greater_), st::int_, st::float_, st::bool_);
-const st::BuiltinFunction operator_gt_ff(operatorName(ast::greater_), st::float_, st::float_, st::bool_);
+const ast::BuiltinFunction operator_gt_ii(operatorName(cst::greater_), ast::int_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_gt_fi(operatorName(cst::greater_), ast::float_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_gt_if(operatorName(cst::greater_), ast::int_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_gt_ff(operatorName(cst::greater_), ast::float_, ast::float_, ast::bool_);
 
-const st::BuiltinFunction operator_ge_ii(operatorName(ast::greaterEqual_), st::int_, st::int_, st::bool_);
-const st::BuiltinFunction operator_ge_fi(operatorName(ast::greaterEqual_), st::float_, st::int_, st::bool_);
-const st::BuiltinFunction operator_ge_if(operatorName(ast::greaterEqual_), st::int_, st::float_, st::bool_);
-const st::BuiltinFunction operator_ge_ff(operatorName(ast::greaterEqual_), st::float_, st::float_, st::bool_);
+const ast::BuiltinFunction operator_ge_ii(operatorName(cst::greaterEqual_), ast::int_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_ge_fi(operatorName(cst::greaterEqual_), ast::float_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_ge_if(operatorName(cst::greaterEqual_), ast::int_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_ge_ff(operatorName(cst::greaterEqual_), ast::float_, ast::float_, ast::bool_);
 
-const st::BuiltinFunction operator_eq_ii(operatorName(ast::equal_), st::int_, st::int_, st::bool_);
-const st::BuiltinFunction operator_eq_fi(operatorName(ast::equal_), st::float_, st::int_, st::bool_);
-const st::BuiltinFunction operator_eq_if(operatorName(ast::equal_), st::int_, st::float_, st::bool_);
-const st::BuiltinFunction operator_eq_ff(operatorName(ast::equal_), st::float_, st::float_, st::bool_);
-const st::BuiltinFunction operator_eq_bb(operatorName(ast::equal_), st::bool_, st::bool_, st::bool_);
+const ast::BuiltinFunction operator_eq_ii(operatorName(cst::equal_), ast::int_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_eq_fi(operatorName(cst::equal_), ast::float_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_eq_if(operatorName(cst::equal_), ast::int_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_eq_ff(operatorName(cst::equal_), ast::float_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_eq_bb(operatorName(cst::equal_), ast::bool_, ast::bool_, ast::bool_);
 
-const st::BuiltinFunction operator_neq_ii(operatorName(ast::notEqual_), st::int_, st::int_, st::bool_);
-const st::BuiltinFunction operator_neq_fi(operatorName(ast::notEqual_), st::float_, st::int_, st::bool_);
-const st::BuiltinFunction operator_neq_if(operatorName(ast::notEqual_), st::int_, st::float_, st::bool_);
-const st::BuiltinFunction operator_neq_ff(operatorName(ast::notEqual_), st::float_, st::float_, st::bool_);
-const st::BuiltinFunction operator_neq_bb(operatorName(ast::notEqual_), st::bool_, st::bool_, st::bool_);
+const ast::BuiltinFunction operator_neq_ii(operatorName(cst::notEqual_), ast::int_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_neq_fi(operatorName(cst::notEqual_), ast::float_, ast::int_, ast::bool_);
+const ast::BuiltinFunction operator_neq_if(operatorName(cst::notEqual_), ast::int_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_neq_ff(operatorName(cst::notEqual_), ast::float_, ast::float_, ast::bool_);
+const ast::BuiltinFunction operator_neq_bb(operatorName(cst::notEqual_), ast::bool_, ast::bool_, ast::bool_);
 
-const st::BuiltinFunction operator_land_bb("operator&&", st::bool_, st::bool_, st::bool_);
-const st::BuiltinFunction operator_lor_bb("operator||", st::bool_, st::bool_, st::bool_);
+const ast::BuiltinFunction operator_land_bb("operator&&", ast::bool_, ast::bool_, ast::bool_);
+const ast::BuiltinFunction operator_lor_bb("operator||", ast::bool_, ast::bool_, ast::bool_);
 
-const st::BuiltinFunction function_swap_ii("swap", st::int_, st::int_, st::void_);
-const st::BuiltinFunction function_swap_ff("swap", st::float_, st::float_, st::void_);
-const st::BuiltinFunction function_swap_bb("swap", st::bool_, st::bool_, st::void_);
+const ast::BuiltinFunction function_swap_ii("swap", ast::int_, ast::int_, ast::void_);
+const ast::BuiltinFunction function_swap_ff("swap", ast::float_, ast::float_, ast::void_);
+const ast::BuiltinFunction function_swap_bb("swap", ast::bool_, ast::bool_, ast::void_);
 
-const st::BuiltinFunction function_geti("geti", st::int_);
-const st::BuiltinFunction function_getf("getf", st::float_);
-const st::BuiltinFunction function_put_i("put", st::int_, st::void_);
-const st::BuiltinFunction function_put_f("put", st::float_, st::void_);
+const ast::BuiltinFunction function_geti("geti", ast::int_);
+const ast::BuiltinFunction function_getf("getf", ast::float_);
+const ast::BuiltinFunction function_put_i("put", ast::int_, ast::void_);
+const ast::BuiltinFunction function_put_f("put", ast::float_, ast::void_);
 
 }
 }

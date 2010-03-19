@@ -6,8 +6,8 @@
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 
+#include "parseCst.hpp"
 #include "parseAst.hpp"
-#include "parseSt.hpp"
 #include "codeGen.hpp"
 
 
@@ -73,13 +73,13 @@ int main(int argc, char **argv)
             continue;
         }
 
-        boost::optional<ast::Module> module = parseFile(fin, errorLogger);
+        boost::optional<cst::Module> module = parseFile(fin, errorLogger);
 
         if (module)
         {
             std::cout << "parsed " << fn << std::endl;
 
-            sl::st::Module parsed = parseModule(*module, errorLogger);
+            sl::ast::Module parsed = parseModule(*module, errorLogger);
 
             if (!errorLogger.hasErrors())
             {

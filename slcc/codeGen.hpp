@@ -8,14 +8,14 @@
 #include <boost/array.hpp>
 #include "../slvm/vm.hpp"
 
-#include "st.hpp"
+#include "ast.hpp"
 
 namespace sl
 {
 
 typedef std::map<std::string, vm::CodeAddr> FunctionAddrMap;
 
-vm::BytecodeBuffer generateBytecode(const st::Module& module, FunctionAddrMap& fam);
+vm::BytecodeBuffer generateBytecode(const ast::Module& module, FunctionAddrMap& fam);
 
 void exportToAsm(const vm::BytecodeBuffer& bb, std::ostream& os);
 
