@@ -1,12 +1,11 @@
 #ifndef SL_CODEGEN_HPP
 #define SL_CODEGEN_HPP
 
-#include <vector>
-#include <sstream>
-#include <boost/optional.hpp>
-#include <boost/variant.hpp>
-#include <boost/array.hpp>
-#include <sl/vm.hpp>
+#include <map>
+#include <string>
+#include <ostream>
+#include <sl/vm/def.hpp>
+#include <sl/vm/BytecodeBuffer.hpp>
 #include <sl/ast.hpp>
 
 namespace sl

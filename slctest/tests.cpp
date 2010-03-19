@@ -94,32 +94,35 @@ void object::test<1>()
     sl::vm::Module module = compileFile("tests\\test1.sl");
     sl::vm::Environment env(1024);
 
-    ensure("identity [int]", module.call<int>(sl::vm::FunctionCall("identity$i").p(12345), env) == 12345);
-    ensure("plus test [int]", module.call<int>(sl::vm::FunctionCall("plus$i").p(6), env) == 6);
-    ensure("neg test [int]", module.call<int>(sl::vm::FunctionCall("neg$i").p(6), env) == -6);
-    ensure("add test [int]", module.call<int>(sl::vm::FunctionCall("add$ii").p(4).p(5), env) == 4 + 5);
-    ensure("sub test [int]", module.call<int>(sl::vm::FunctionCall("sub$ii").p(4).p(5), env) == 4 - 5);
-    ensure("mul test [int]", module.call<int>(sl::vm::FunctionCall("mul$ii").p(4).p(5), env) == 4 * 5);
-    ensure("div test [int]", module.call<int>(sl::vm::FunctionCall("div$ii").p(14).p(6), env) == 14 / 6);
-    ensure("mod test [int]", module.call<int>(sl::vm::FunctionCall("mod$ii").p(14).p(6), env) == 14 % 6);
-    ensure("identity [float]", module.call<float>(sl::vm::FunctionCall("identity$f").p(12345.0f), env) == 12345.0f);
-    ensure("plus test [float]", module.call<float>(sl::vm::FunctionCall("plus$f").p(6.0f), env) == 6.0f);
-    ensure("neg test [float]", module.call<float>(sl::vm::FunctionCall("neg$f").p(6.0f), env) == -6.0f);
-    ensure("add test [float]", module.call<float>(sl::vm::FunctionCall("add$ff").p(4.0f).p(5.0f), env) == 4.0f + 5.0f);
-    ensure("sub test [float]", module.call<float>(sl::vm::FunctionCall("sub$ff").p(4.0f).p(5.0f), env) == 4.0f - 5.0f);
-    ensure("mul test [float]", module.call<float>(sl::vm::FunctionCall("mul$ff").p(4.0f).p(5.0f), env) == 4.0f * 5.0f);
-    ensure("div test [float]", module.call<float>(sl::vm::FunctionCall("div$ff").p(14.0f).p(6.0f), env) == 14.0f / 6.0f);
-    ensure_distance("mod test [float]", module.call<float>(sl::vm::FunctionCall("mod$ff").p(14.0f).p(6.0f), env), std::fmod(14.0f, 6.0f), std::numeric_limits<float>::epsilon() * 14.0f);
-    ensure("land test [bool]", module.call<int>(sl::vm::FunctionCall("land$bb").p(0).p(0), env) == 0);
-    ensure("land test [bool]", module.call<int>(sl::vm::FunctionCall("land$bb").p(0).p(1), env) == 0);
-    ensure("land test [bool]", module.call<int>(sl::vm::FunctionCall("land$bb").p(1).p(0), env) == 0);
-    ensure("land test [bool]", module.call<int>(sl::vm::FunctionCall("land$bb").p(1).p(1), env) == 1);
-    ensure("lor test [bool]", module.call<int>(sl::vm::FunctionCall("lor$bb").p(0).p(0), env) == 0);
-    ensure("lor test [bool]", module.call<int>(sl::vm::FunctionCall("lor$bb").p(0).p(1), env) == 1);
-    ensure("lor test [bool]", module.call<int>(sl::vm::FunctionCall("lor$bb").p(1).p(0), env) == 1);
-    ensure("lor test [bool]", module.call<int>(sl::vm::FunctionCall("lor$bb").p(1).p(1), env) == 1);
-    ensure("lnot test [bool]", module.call<int>(sl::vm::FunctionCall("lnot$b").p(0), env) == 1);
-    ensure("lnot test [bool]", module.call<int>(sl::vm::FunctionCall("lnot$b").p(1), env) == 0);
+    using sl::vm::int_t;
+    using sl::vm::float_t;
+
+    ensure("identity [int]", module.call<int_t>(sl::vm::FunctionCall("identity$i").p(12345), env) == 12345);
+    ensure("plus test [int]", module.call<int_t>(sl::vm::FunctionCall("plus$i").p(6), env) == 6);
+    ensure("neg test [int]", module.call<int_t>(sl::vm::FunctionCall("neg$i").p(6), env) == -6);
+    ensure("add test [int]", module.call<int_t>(sl::vm::FunctionCall("add$ii").p(4).p(5), env) == 4 + 5);
+    ensure("sub test [int]", module.call<int_t>(sl::vm::FunctionCall("sub$ii").p(4).p(5), env) == 4 - 5);
+    ensure("mul test [int]", module.call<int_t>(sl::vm::FunctionCall("mul$ii").p(4).p(5), env) == 4 * 5);
+    ensure("div test [int]", module.call<int_t>(sl::vm::FunctionCall("div$ii").p(14).p(6), env) == 14 / 6);
+    ensure("mod test [int]", module.call<int_t>(sl::vm::FunctionCall("mod$ii").p(14).p(6), env) == 14 % 6);
+    ensure("identity [float]", module.call<float_t>(sl::vm::FunctionCall("identity$f").p(12345.0f), env) == 12345.0f);
+    ensure("plus test [float]", module.call<float_t>(sl::vm::FunctionCall("plus$f").p(6.0f), env) == 6.0f);
+    ensure("neg test [float]", module.call<float_t>(sl::vm::FunctionCall("neg$f").p(6.0f), env) == -6.0f);
+    ensure("add test [float]", module.call<float_t>(sl::vm::FunctionCall("add$ff").p(4.0f).p(5.0f), env) == 4.0f + 5.0f);
+    ensure("sub test [float]", module.call<float_t>(sl::vm::FunctionCall("sub$ff").p(4.0f).p(5.0f), env) == 4.0f - 5.0f);
+    ensure("mul test [float]", module.call<float_t>(sl::vm::FunctionCall("mul$ff").p(4.0f).p(5.0f), env) == 4.0f * 5.0f);
+    ensure("div test [float]", module.call<float_t>(sl::vm::FunctionCall("div$ff").p(14.0f).p(6.0f), env) == 14.0f / 6.0f);
+    ensure_distance("mod test [float]", module.call<float_t>(sl::vm::FunctionCall("mod$ff").p(14.0f).p(6.0f), env), std::fmod(14.0f, 6.0f), std::numeric_limits<float>::epsilon() * 14.0f);
+    ensure("land test [bool]", module.call<int_t>(sl::vm::FunctionCall("land$bb").p(0).p(0), env) == 0);
+    ensure("land test [bool]", module.call<int_t>(sl::vm::FunctionCall("land$bb").p(0).p(1), env) == 0);
+    ensure("land test [bool]", module.call<int_t>(sl::vm::FunctionCall("land$bb").p(1).p(0), env) == 0);
+    ensure("land test [bool]", module.call<int_t>(sl::vm::FunctionCall("land$bb").p(1).p(1), env) == 1);
+    ensure("lor test [bool]", module.call<int_t>(sl::vm::FunctionCall("lor$bb").p(0).p(0), env) == 0);
+    ensure("lor test [bool]", module.call<int_t>(sl::vm::FunctionCall("lor$bb").p(0).p(1), env) == 1);
+    ensure("lor test [bool]", module.call<int_t>(sl::vm::FunctionCall("lor$bb").p(1).p(0), env) == 1);
+    ensure("lor test [bool]", module.call<int_t>(sl::vm::FunctionCall("lor$bb").p(1).p(1), env) == 1);
+    ensure("lnot test [bool]", module.call<int_t>(sl::vm::FunctionCall("lnot$b").p(0), env) == 1);
+    ensure("lnot test [bool]", module.call<int_t>(sl::vm::FunctionCall("lnot$b").p(1), env) == 0);
 }
 
 template <>
@@ -148,9 +151,12 @@ void object::test<4>()
     sl::vm::Module module = compileFile("tests\\test4.sl");
     sl::vm::Environment env(1024);
 
-    ensure("swap [int]", module.call<int>(sl::vm::FunctionCall("test_swap_int$"), env) == 1);
-    ensure("swap [float]", module.call<int>(sl::vm::FunctionCall("test_swap_float$"), env) == 1);
-    ensure("swap [bool]", module.call<int>(sl::vm::FunctionCall("test_swap_bool$"), env) == 1);
+    using sl::vm::int_t;
+    using sl::vm::float_t;
+
+    ensure("swap [int]", module.call<int_t>(sl::vm::FunctionCall("test_swap_int$"), env) == 1);
+    ensure("swap [float]", module.call<int_t>(sl::vm::FunctionCall("test_swap_float$"), env) == 1);
+    ensure("swap [bool]", module.call<int_t>(sl::vm::FunctionCall("test_swap_bool$"), env) == 1);
 }
 
 template <>
@@ -162,9 +168,12 @@ void object::test<5>()
     sl::vm::Module module = compileFile("tests\\test5.sl");
     sl::vm::Environment env(1024);
 
-    ensure("pass by ref [int]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_int$"), env) == 1);
-    ensure("pass by ref [float]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_float$"), env) == 1);
-    ensure("pass by ref [bool]", module.call<int>(sl::vm::FunctionCall("pass_by_ref_bool$"), env) == 1);
+    using sl::vm::int_t;
+    using sl::vm::float_t;
+
+    ensure("pass by ref [int]", module.call<int_t>(sl::vm::FunctionCall("pass_by_ref_int$"), env) == 1);
+    ensure("pass by ref [float]", module.call<int_t>(sl::vm::FunctionCall("pass_by_ref_float$"), env) == 1);
+    ensure("pass by ref [bool]", module.call<int_t>(sl::vm::FunctionCall("pass_by_ref_bool$"), env) == 1);
 }
 
 template <>
@@ -175,23 +184,26 @@ void object::test<6>()
 
     sl::vm::Module module = compileFile("tests\\test6.sl");
     sl::vm::Environment env(1024);
-    std::ptrdiff_t sp = env.sp();
+    sl::vm::DataAddr sp = env.sp();
 
-    ensure("max1", module.call<int>(sl::vm::FunctionCall("max1$ii").p(2).p(1), env) == 2);
+    using sl::vm::int_t;
+    using sl::vm::float_t;
+
+    ensure("max1", module.call<int_t>(sl::vm::FunctionCall("max1$ii").p(2).p(1), env) == 2);
     ensure_equals("stack1", env.sp(), sp);
-    ensure("max1", module.call<int>(sl::vm::FunctionCall("max1$ii").p(1).p(2), env) == 2);
+    ensure("max1", module.call<int_t>(sl::vm::FunctionCall("max1$ii").p(1).p(2), env) == 2);
     ensure_equals("stack2", env.sp(), sp);
-    ensure("max2", module.call<int>(sl::vm::FunctionCall("max2$ii").p(2).p(1), env) == 2);
+    ensure("max2", module.call<int_t>(sl::vm::FunctionCall("max2$ii").p(2).p(1), env) == 2);
     ensure_equals("stack3", env.sp(), sp);
-    ensure("max2", module.call<int>(sl::vm::FunctionCall("max2$ii").p(1).p(2), env) == 2);
+    ensure("max2", module.call<int_t>(sl::vm::FunctionCall("max2$ii").p(1).p(2), env) == 2);
     ensure_equals("stack4", env.sp(), sp);
-    ensure("max3", module.call<int>(sl::vm::FunctionCall("max3$ii").p(2).p(1), env) == 2);
+    ensure("max3", module.call<int_t>(sl::vm::FunctionCall("max3$ii").p(2).p(1), env) == 2);
     ensure_equals("stack5", env.sp(), sp);
-    ensure("max3", module.call<int>(sl::vm::FunctionCall("max3$ii").p(1).p(2), env) == 2);
+    ensure("max3", module.call<int_t>(sl::vm::FunctionCall("max3$ii").p(1).p(2), env) == 2);
     ensure_equals("stack6", env.sp(), sp);
-    ensure("max4", module.call<int>(sl::vm::FunctionCall("max4$ii").p(2).p(1), env) == 2);
+    ensure("max4", module.call<int_t>(sl::vm::FunctionCall("max4$ii").p(2).p(1), env) == 2);
     ensure_equals("stack7", env.sp(), sp);
-    ensure("max4", module.call<int>(sl::vm::FunctionCall("max4$ii").p(1).p(2), env) == 2);
+    ensure("max4", module.call<int_t>(sl::vm::FunctionCall("max4$ii").p(1).p(2), env) == 2);
     ensure_equals("stack8", env.sp(), sp);
 }
 
@@ -211,14 +223,16 @@ void object::test<8>()
 
     sl::vm::Module module = compileFile("tests\\test7.sl");
     sl::vm::Environment env(1024);
+    sl::vm::DataAddr sp = env.sp();
 
-    std::ptrdiff_t sp = env.sp();
+    using sl::vm::int_t;
+    using sl::vm::float_t;
 
-    ensure_equals("while test1", module.call<int>(sl::vm::FunctionCall("while_test$i").p(0), env), 0);
+    ensure_equals("while test1", module.call<int_t>(sl::vm::FunctionCall("while_test$i").p(0), env), 0);
     ensure_equals("stack1", env.sp(), sp);
-    ensure_equals("while test2", module.call<int>(sl::vm::FunctionCall("while_test$i").p(-10), env), 0);
+    ensure_equals("while test2", module.call<int_t>(sl::vm::FunctionCall("while_test$i").p(-10), env), 0);
     ensure_equals("stack2", env.sp(), sp);
-    ensure_equals("while test3", module.call<int>(sl::vm::FunctionCall("while_test$i").p(10), env), 10);
+    ensure_equals("while test3", module.call<int_t>(sl::vm::FunctionCall("while_test$i").p(10), env), 10);
     ensure_equals("stack3", env.sp(), sp);
 }
 

@@ -5,6 +5,7 @@
 #include <sl/DependencyGraph.hpp>
 #include <sl/err/messages.hpp>
 #include <sl/vm/opcodes.hpp>
+#include <sl/vm/CodeGenerator.hpp>
 
 namespace sl
 {

@@ -2,6 +2,7 @@
 #define SL_ERR_MESSAGES_HPP
 
 #include <ostream>
+#include <sstream>
 #include <boost/preprocessor/seq/enum.hpp>
 #include <sl/err/Message.hpp>
 
