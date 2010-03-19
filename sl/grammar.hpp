@@ -11,8 +11,9 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/spirit/home/classic/iterator/position_iterator.hpp>
 
-#include "ErrorLogger.hpp"
-#include "cst.hpp"
+#include <sl/ErrorLogger.hpp>
+#include <sl/err/messages.hpp>
+#include <sl/cst.hpp>
 
 namespace boost
 {

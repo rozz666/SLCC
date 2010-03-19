@@ -9,7 +9,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/foreach.hpp>
-#include "FilePosition.hpp"
+#include <sl/FilePosition.hpp>
 
 namespace sl
 {

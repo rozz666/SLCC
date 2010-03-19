@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include "opcodes.hpp"
+#include <sl/vm/opcodes.hpp>
 
 namespace sl
 {

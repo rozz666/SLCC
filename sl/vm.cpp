@@ -1,8 +1,8 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
-#include "opcodes.hpp"
-#include "vm.hpp"
+#include <sl/vm/opcodes.hpp>
+#include <sl/vm.hpp>
 
 namespace sl
 {

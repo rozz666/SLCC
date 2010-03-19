@@ -6,7 +6,7 @@
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
-#include "FilePosition.hpp"
+#include <sl/FilePosition.hpp>
 
 namespace sl
 {

@@ -1,8 +1,8 @@
 #ifndef SL_BUILTIN_HPP
 #define SL_BUILTIN_HPP
 
-#include "cst.hpp"
-#include "ast.hpp"
+#include <sl/cst.hpp>
+#include <sl/ast.hpp>
 
 namespace sl
 {

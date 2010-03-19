@@ -2,9 +2,9 @@
 #define SL_PARSEST_HPP
 
 #include <memory>
-#include "ast.hpp"
-#include "cst.hpp"
-#include "ErrorLogger.hpp"
+#include <sl/ast.hpp>
+#include <sl/cst.hpp>
+#include <sl/ErrorLogger.hpp>
 
 namespace sl
 {

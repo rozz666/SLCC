@@ -1,9 +1,8 @@
-#include "grammar.hpp"
-#include "parseCst.hpp"
+#include <sl/grammar.hpp>
+#include <sl/parseCst.hpp>
 
 namespace sl
 {
-
 
 boost::optional<cst::Module> parseFile(std::istream& is, ErrorLogger& errorLogger)
 {

@@ -6,9 +6,8 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/array.hpp>
-#include "../slvm/vm.hpp"
-
-#include "ast.hpp"
+#include <sl/vm.hpp>
+#include <sl/ast.hpp>
 
 namespace sl
 {

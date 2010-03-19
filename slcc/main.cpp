@@ -6,9 +6,9 @@
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 
-#include "parseCst.hpp"
-#include "parseAst.hpp"
-#include "codeGen.hpp"
+#include <sl/parseCst.hpp>
+#include <sl/parseAst.hpp>
+#include <sl/codeGen.hpp>
 
 
 int main(int argc, char **argv)

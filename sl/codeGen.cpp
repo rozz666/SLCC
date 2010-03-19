@@ -1,8 +1,10 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/function.hpp>
-#include "codeGen.hpp"
-#include "builtin.hpp"
-#include "DependencyGraph.hpp"
+#include <sl/codeGen.hpp>
+#include <sl/builtin.hpp>
+#include <sl/DependencyGraph.hpp>
+#include <sl/err/messages.hpp>
+#include <sl/vm/opcodes.hpp>
 
 namespace sl
 {

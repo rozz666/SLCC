@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "../slvm/vm.hpp"
+#include <sl/vm.hpp>
 
 sl::vm::BytecodeBuffer readFile(const std::string& fname)
 {

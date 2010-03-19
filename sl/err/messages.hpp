@@ -1,31 +1,15 @@
-#ifndef SL_ERRORLOGGER_HPP
-#define SL_ERRORLOGGER_HPP
+#ifndef SL_ERR_MESSAGES_HPP
+#define SL_ERR_MESSAGES_HPP
 
-#include <sstream>
-#include <vector>
-#include <string>
+#include <ostream>
 #include <boost/preprocessor/seq/enum.hpp>
-#include "FilePosition.hpp"
+#include <sl/err/Message.hpp>
 
 namespace sl
 {
 
-namespace warn
-{
-}
-
 namespace err
 {
-
-struct Message
-{
-    FilePosition pos;
-    std::string id;
-    std::string text;    
-
-    Message() { }
-    Message(const FilePosition& pos, const std::string& id, const std::string& text) : pos(pos), id(id), text(text) { }
-};
 
 #define SL_ERROR_MESSAGE(name, id, args, message) \
 inline Message name(const FilePosition& pos, BOOST_PP_SEQ_ENUM(args) ) \
@@ -58,31 +42,6 @@ std::ostream& operator<<(std::ostream& os, const Message& m);
 
 }
 
-class ErrorLogger
-{
-public:
-
-    ErrorLogger(const std::string& filename) : filename_(filename) { }
-
-    ErrorLogger& operator<<(err::Message&& msg)
-    {
-        errors_.push_back(msg);
-
-        return *this;
-    }
-
-    void sort();
-
-    void print(std::ostream& os);
-
-    bool hasErrors() { return !errors_.empty(); }
-
-private:
-
-    std::string filename_;
-    std::vector<err::Message> errors_;
-};
-
 }
 
-#endif /* SL_ERRORLOGGER_HPP */
+#endif /* SL_ERR_MESSAGES_HPP */

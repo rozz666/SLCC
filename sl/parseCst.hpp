@@ -3,8 +3,8 @@
 
 #include <iosfwd>
 #include <boost/optional.hpp>
-#include "ErrorLogger.hpp"
-#include "cst.hpp"
+#include <sl/ErrorLogger.hpp>
+#include <sl/cst.hpp>
 
 namespace sl
 {

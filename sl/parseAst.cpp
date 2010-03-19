@@ -1,7 +1,8 @@
 #include <unordered_map>
 #include <boost/foreach.hpp>
-#include "parseAst.hpp"
-#include "builtin.hpp"
+#include <sl/parseAst.hpp>
+#include <sl/builtin.hpp>
+#include <sl/err/messages.hpp>
 
 namespace sl
 {

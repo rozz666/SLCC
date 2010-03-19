@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "ErrorLogger.hpp"
+#include <sl/ErrorLogger.hpp>
 
 namespace sl
 {
