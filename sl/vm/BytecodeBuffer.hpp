@@ -2,7 +2,7 @@
 #define SL_VM_BYTECODEBUFFER_HPP
 
 #include <vector>
-#include <sl/vm/def.hpp>
+#include <sl/def.hpp>
 
 namespace sl
 {

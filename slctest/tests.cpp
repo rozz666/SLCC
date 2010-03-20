@@ -94,8 +94,8 @@ void object::test<1>()
     sl::vm::Module module = compileFile("tests\\test1.sl");
     sl::vm::Environment env(1024);
 
-    using sl::vm::int_t;
-    using sl::vm::float_t;
+    using sl::int_t;
+    using sl::float_t;
 
     ensure("identity [int]", module.call<int_t>(sl::vm::FunctionCall("identity$i").p(12345), env) == 12345);
     ensure("plus test [int]", module.call<int_t>(sl::vm::FunctionCall("plus$i").p(6), env) == 6);
@@ -151,8 +151,8 @@ void object::test<4>()
     sl::vm::Module module = compileFile("tests\\test4.sl");
     sl::vm::Environment env(1024);
 
-    using sl::vm::int_t;
-    using sl::vm::float_t;
+    using sl::int_t;
+    using sl::float_t;
 
     ensure("swap [int]", module.call<int_t>(sl::vm::FunctionCall("test_swap_int$"), env) == 1);
     ensure("swap [float]", module.call<int_t>(sl::vm::FunctionCall("test_swap_float$"), env) == 1);
@@ -168,8 +168,8 @@ void object::test<5>()
     sl::vm::Module module = compileFile("tests\\test5.sl");
     sl::vm::Environment env(1024);
 
-    using sl::vm::int_t;
-    using sl::vm::float_t;
+    using sl::int_t;
+    using sl::float_t;
 
     ensure("pass by ref [int]", module.call<int_t>(sl::vm::FunctionCall("pass_by_ref_int$"), env) == 1);
     ensure("pass by ref [float]", module.call<int_t>(sl::vm::FunctionCall("pass_by_ref_float$"), env) == 1);
@@ -186,8 +186,8 @@ void object::test<6>()
     sl::vm::Environment env(1024);
     sl::vm::DataAddr sp = env.sp();
 
-    using sl::vm::int_t;
-    using sl::vm::float_t;
+    using sl::int_t;
+    using sl::float_t;
 
     ensure("max1", module.call<int_t>(sl::vm::FunctionCall("max1$ii").p(2).p(1), env) == 2);
     ensure_equals("stack1", env.sp(), sp);
@@ -225,8 +225,8 @@ void object::test<8>()
     sl::vm::Environment env(1024);
     sl::vm::DataAddr sp = env.sp();
 
-    using sl::vm::int_t;
-    using sl::vm::float_t;
+    using sl::int_t;
+    using sl::float_t;
 
     ensure_equals("while test1", module.call<int_t>(sl::vm::FunctionCall("while_test$i").p(0), env), 0);
     ensure_equals("stack1", env.sp(), sp);

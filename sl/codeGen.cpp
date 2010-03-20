@@ -10,7 +10,7 @@
 namespace sl
 {
 
-ast::Type expressionType(const ast::Expression& expr);
+BasicType expressionType(const ast::Expression& expr);
 FilePosition expressionPos(const ast::Expression& expr);
 
 namespace
@@ -134,31 +134,18 @@ typedef std::map<std::string, const ast::FunctionDef *> FunctionDefMap;
 
 void generateFunction(const ast::FunctionDef& f, vm::BytecodeBuffer& bb, FunctionAddrMap& fam);
 
-unsigned typeSize(ast::Type type)
-{
-    switch (type)
-    {
-        case ast::int_: return 4;
-        case ast::float_: return 4;
-        case ast::bool_: return 4;
-    }
-
-    assert(!"Bad type!");
-
-    return 0;
-}
 
 class VariableTable
 {
 public:
 
-    VariableTable(ast::Type returnType) : addrOfReturn_(8), returnType_(returnType) { }
+    VariableTable(BasicType returnType) : addrOfReturn_(8), returnType_(returnType) { }
 
     void insert(const ast::Variable *var, vm::BPAddr addr)
     {
         addr_.insert(std::make_pair(var, addr));
         
-        vm::BPAddr aor = addr + typeSize(var->type());
+        vm::BPAddr aor = addr + ast::typeSize(var->type());
         if (aor > addrOfReturn_) addrOfReturn_ = aor;
     }
 
@@ -177,13 +164,13 @@ public:
     }
 
     vm::BPAddr addrOfReturn() const { return addrOfReturn_; }
-    ast::Type returnType() const { return returnType_; }
+    BasicType returnType() const { return returnType_; }
 
 private:
     typedef std::map<const ast::Variable *, vm::BPAddr> C;
     C addr_;
     vm::BPAddr addrOfReturn_;
-    ast::Type returnType_;
+    BasicType returnType_;
 };
 
 class NaiveStackAlloc
@@ -255,7 +242,7 @@ typedef NormalStackAlloc StackAlloc;
 
 
 
-ast::Type constantType(const ast::Constant& c);
+BasicType constantType(const ast::Constant& c);
 
 void generateExpression(const ast::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
 void generateExpressionRef(const ast::Expression& e, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt);
@@ -496,7 +483,7 @@ std::uint8_t parametersTotalSize(const ast::FunctionDef& fd)
 
     BOOST_FOREACH(const std::shared_ptr<ast::Variable>& p, fd.parameters())
     {
-        size += typeSize(p->type());
+        size += ast::typeSize(p->type());
     }
 
     assert(size <= std::numeric_limits<std::uint8_t>::max());
@@ -517,10 +504,10 @@ public:
 
         builtinFunctionGen[bf](pc_, cg_, fam_, salloc_, vt_);
 
-        if (discardReturnValue_ && bf->type() != ast::void_)
+        if (discardReturnValue_ && bf->type() != void_)
         {
             cg_.emit(vm::POP);
-            cg_.emit(std::uint8_t(typeSize(bf->type())));
+            cg_.emit(std::uint8_t(ast::typeSize(bf->type())));
         }
     }
 
@@ -532,10 +519,10 @@ public:
 
         assert(it != fam_.end());
 
-        if (fd->type() != ast::void_)
+        if (fd->type() != void_)
         {
             cg_.emit(vm::CONST4);
-            assert(typeSize(fd->type()) == sizeof(std::int32_t));
+            assert(ast::typeSize(fd->type()) == sizeof(int_t));
             cg_.emit(std::int32_t(0)); // return value placeholder
         }
 
@@ -563,10 +550,10 @@ public:
         cg_.emit<std::int32_t>(it->second);
         cg_.emit(vm::CALL);
 
-        if (discardReturnValue_ && fd->type() != ast::void_)
+        if (discardReturnValue_ && fd->type() != void_)
         {
             cg_.emit(vm::POP);
-            cg_.emit(std::uint8_t(parametersTotalSize(*fd) + typeSize(fd->type())));
+            cg_.emit(std::uint8_t(parametersTotalSize(*fd) + ast::typeSize(fd->type())));
         }
         else
         {
@@ -652,7 +639,7 @@ public:
 
     void operator()(const ast::Cast& c) const
     {
-        ast::Type exprType = expressionType(c.expr());
+        BasicType exprType = expressionType(c.expr());
 
         if (c.type() == exprType)
         {
@@ -665,12 +652,12 @@ public:
 
             switch (c.type())
             {
-                case ast::int_: // float to int
+                case int_: // float to int
 
                     cg_.emit(vm::F2I);
                     break;
                    
-                case ast::float_: // float to int
+                case float_: // float to int
 
                     cg_.emit(vm::I2F);
                     break;
@@ -841,7 +828,7 @@ public:
 
     void operator()(const ast::VariableDecl& vd) const
     {
-        vt_.insert(&vd.var(), salloc_.alloc(typeSize(vd.var().type())) - typeSize(vd.var().type()));
+        vt_.insert(&vd.var(), salloc_.alloc(ast::typeSize(vd.var().type())) - ast::typeSize(vd.var().type()));
 
         if (vd.expr())
         {
@@ -856,7 +843,7 @@ public:
     {
         // TODO: should be remove it from VT?
         //vt_.erase(&vd.var());
-        salloc_.free(vt_.addrOf(&vd.var()) + typeSize(vd.var().type()));
+        salloc_.free(vt_.addrOf(&vd.var()) + ast::typeSize(vd.var().type()));
     }
 
 private:
@@ -876,7 +863,7 @@ void allocParameters(const ast::FunctionDef& f, VariableTable& vt)
     {
         vt.insert(&**it, vm::BPAddr(off));
 
-        off += typeSize((*it)->type());
+        off += ast::typeSize((*it)->type());
     }
 }
 

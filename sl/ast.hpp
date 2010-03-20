@@ -1,5 +1,5 @@
-#ifndef SL_ST_HPP
-#define SL_ST_HPP
+#ifndef SL_AST_HPP
+#define SL_AST_HPP
 
 #include <string>
 #include <memory>
@@ -10,55 +10,14 @@
 #include <boost/variant.hpp>
 #include <boost/foreach.hpp>
 #include <sl/FilePosition.hpp>
+#include <sl/basicTypes.hpp>
+#include <sl/ast/types.hpp>
+#include <sl/ast/isConvertible.hpp>
 
 namespace sl
 {
 namespace ast
 {
-
-enum Type
-{
-    int_,
-    float_,
-    bool_,
-    void_
-};
-
-inline const char *typeSuffix(Type type)
-{
-    switch (type)
-    {
-        case int_: return "i";
-        case float_: return "f";
-        case bool_: return "b";
-    }
-
-    assert(!"Invalid type");
-
-    return "";
-}
-
-inline const char *typeName(Type type)
-{
-    switch (type)
-    {
-        case int_: return "int";
-        case float_: return "float";
-        case bool_: return "bool";
-    }
-
-    assert(!"Invalid type");
-
-    return "";
-}
-
-inline bool isConvertible(Type from, Type to)
-{
-    return
-        (from == to) ||
-        (to == float_ && from == int_) ||
-        (to == int_ && from == float_);
-}
 
 class Variable;
 
@@ -108,7 +67,7 @@ functionParameters(const Container& params)
 template <typename Container>
 inline 
 typename boost::enable_if<
-    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, ast::Type>,
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, BasicType>,
     std::string
 >::type
 functionParameters(const Container& params)
@@ -118,7 +77,7 @@ functionParameters(const Container& params)
 
     os << "(";
 
-    BOOST_FOREACH(ast::Type v, params)
+    BOOST_FOREACH(BasicType v, params)
     {
         if (comma) os << ", ";
         comma = true;
@@ -146,21 +105,21 @@ functionMangledName(const std::string& name, const Container& params)
     return functionMangledName(name, functionSuffix(params));
 }
 
-struct ConstantType : public boost::static_visitor<Type>
+struct ConstantType : public boost::static_visitor<BasicType>
 {
-    Type operator()(const int& ) const
+    BasicType operator()(const int& ) const
     {
-        return ast::int_;
+        return int_;
     }
 
-    Type operator()(const float& ) const
+    BasicType operator()(const float& ) const
     {
-        return ast::float_;
+        return float_;
     }
 
-    Type operator()(const bool& ) const
+    BasicType operator()(const bool& ) const
     {
-        return ast::bool_;
+        return bool_;
     }
 };
 
@@ -174,7 +133,7 @@ public:
 
     FilePosition pos() const { return pos_; }
     Value value() const { return value_; }
-    Type type() const
+    BasicType type() const
     {
         ConstantType ct;
         return value_.apply_visitor(ct);
@@ -190,18 +149,18 @@ class Variable
 {
 public:
 
-    Variable(const std::string& name, const FilePosition& pos, Type type, bool ref) : name_(name), pos_(pos), type_(type), ref_(ref) { }
+    Variable(const std::string& name, const FilePosition& pos, BasicType type, bool ref) : name_(name), pos_(pos), type_(type), ref_(ref) { }
 
     const std::string& name() const { return name_; }
     FilePosition pos() const { return pos_; }
-    Type type() const { return type_; }
+    BasicType type() const { return type_; }
     bool ref() const { return ref_; }
 
 private:
 
     std::string name_;
     FilePosition pos_;
-    Type type_;
+    BasicType type_;
     bool ref_;
 };
 
@@ -238,17 +197,17 @@ class Cast
 {
 public:
 
-    Cast(const FilePosition& pos, const Expression& expr, Type type) : pos_(pos), expr_(expr), type_(type) { }
+    Cast(const FilePosition& pos, const Expression& expr, BasicType type) : pos_(pos), expr_(expr), type_(type) { }
 
     FilePosition pos() const { return pos_; }
     const Expression& expr() const { return expr_; }
-    Type type() const { return type_; }
+    BasicType type() const { return type_; }
 
 private:
 
     FilePosition pos_;
     Expression expr_;
-    Type type_;
+    BasicType type_;
 };
 
 class Assignment
@@ -283,8 +242,8 @@ class VariableDecl
 {
 public:
 
-    VariableDecl(const std::string& name, const FilePosition& pos, Type type) : var_(new Variable(name, pos, type, false)) { }
-    VariableDecl(const std::string& name, const FilePosition& pos, Type type, const Expression& expr) : var_(new Variable(name, pos, type, false)), expr_(expr) { }
+    VariableDecl(const std::string& name, const FilePosition& pos, BasicType type) : var_(new Variable(name, pos, type, false)) { }
+    VariableDecl(const std::string& name, const FilePosition& pos, BasicType type, const Expression& expr) : var_(new Variable(name, pos, type, false)), expr_(expr) { }
 
     Variable& var() { return *var_; }
     const Variable& var() const { return *var_; }
@@ -364,11 +323,11 @@ class BuiltinFunction
 {
 public:
 
-    BuiltinFunction(const std::string& name, Type type) : name_(name), type_(type) { }
+    BuiltinFunction(const std::string& name, BasicType type) : name_(name), type_(type) { }
 
-    BuiltinFunction(const std::string& name, Type arg0, Type type) : name_(name), suffix_(typeSuffix(arg0)), type_(type) { }
+    BuiltinFunction(const std::string& name, BasicType arg0, BasicType type) : name_(name), suffix_(typeSuffix(arg0)), type_(type) { }
 
-    BuiltinFunction(const std::string& name, Type arg0, Type arg1, Type type) : name_(name), type_(type)
+    BuiltinFunction(const std::string& name, BasicType arg0, BasicType arg1, BasicType type) : name_(name), type_(type)
     {
         suffix_ = typeSuffix(arg0);
         suffix_ += typeSuffix(arg1);
@@ -376,13 +335,13 @@ public:
 
     const std::string& name() const { return name_; }
     const std::string& suffix() const { return suffix_; }
-    Type type() const { return type_; }
+    BasicType type() const { return type_; }
 
 private:
 
     std::string name_;
     std::string suffix_;     
-    Type type_;
+    BasicType type_;
 };
 
 class FunctionDef
@@ -400,8 +359,8 @@ public:
     const std::string& name() const { return name_; }
     const std::string& suffix() const { return suffix_; }
     FilePosition pos() const { return pos_; }
-    Type type() const { return *type_; }
-    void type(ast::Type val) { type_ = val; }
+    BasicType type() const { return *type_; }
+    void type(BasicType val) { type_ = val; }
 
     const ParameterContainer& parameters() const { return parameters_; }
 
@@ -417,7 +376,7 @@ private:
     std::string name_;
     std::string suffix_;
     FilePosition pos_;
-    boost::optional<Type> type_;
+    boost::optional<BasicType> type_;
     ParameterContainer parameters_;
     boost::optional<CompoundStatement> body_;
 };
@@ -444,13 +403,13 @@ inline std::string functionMangledName(const FunctionRef& f)
     return f.apply_visitor(fmn);
 }
 
-struct FunctionType : public boost::static_visitor<Type>
+struct FunctionType : public boost::static_visitor<BasicType>
 {
     template <typename T>
-    Type operator()(const T& f) const { return f->type(); }
+    BasicType operator()(const T& f) const { return f->type(); }
 };
 
-inline Type functionType(const FunctionRef& f)
+inline BasicType functionType(const FunctionRef& f)
 {
     FunctionType ft;
     return f.apply_visitor(ft);
@@ -615,4 +574,4 @@ private:
 }
 }
 
-#endif /* SL_ST_HPP */
+#endif /* SL_AST_HPP */

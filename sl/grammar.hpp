@@ -125,26 +125,26 @@ namespace ascii = ::boost::spirit::ascii;
 namespace detail
 {
 
-struct Type : qi::symbols<char, cst::Type>
+struct Type : qi::symbols<char, BasicType>
 {
     Type()
     {
         add
-            ("int", cst::int_)
-            ("float", cst::float_)
-            ("bool", cst::bool_);
+            ("int", int_)
+            ("float", float_)
+            ("bool", bool_);
     }
 };
 
-struct ReturnType : qi::symbols<char, cst::Type>
+struct ReturnType : qi::symbols<char, BasicType>
 {
     ReturnType()
     {
         add
-            ("int", cst::int_)
-            ("float", cst::float_)
-            ("bool", cst::bool_)
-            ("void", cst::void_);
+            ("int", int_)
+            ("float", float_)
+            ("bool", bool_)
+            ("void", void_);
     }
 };
 

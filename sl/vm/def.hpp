@@ -1,23 +1,16 @@
 #ifndef SL_VM_DEF_HPP
 #define SL_VM_DEF_HPP
 
-#include <cstdint>
+#include <sl/def.hpp>
 
 namespace sl
 {
 namespace vm
 {
 
-typedef std::uint8_t byte;
-
-static_assert(sizeof(byte) == 1, "byte is 8-bit");
-
-typedef std::uint32_t CodeAddr;
-typedef std::uint32_t DataAddr;
-typedef std::int32_t BPAddr;
-
-typedef std::int32_t int_t;
-typedef float float_t;
+typedef uint_t CodeAddr;
+typedef uint_t DataAddr;
+typedef int_t BPAddr;
 
 }
 }

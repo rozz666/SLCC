@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <boost/foreach.hpp>
+#include <sl/basicTypes.hpp>
 #include <sl/parseAst.hpp>
 #include <sl/builtin.hpp>
 #include <sl/err/messages.hpp>
@@ -7,46 +8,30 @@
 namespace sl
 {
 
-
-ast::Type convertType(cst::Type type)
+struct ExpressionType : public boost::static_visitor<BasicType>
 {
-    switch (type)
-    {
-        case cst::int_: return ast::int_;
-        case cst::float_: return ast::float_;
-        case cst::bool_: return ast::bool_;
-        case cst::void_: return ast::void_;
-    }
-
-    assert(!"Invalid type");
-
-    return ast::Type();
-}
-
-struct ExpressionType : public boost::static_visitor<ast::Type>
-{
-    ast::Type operator()(const ast::Constant& c) const
+    BasicType operator()(const ast::Constant& c) const
     {
         return c.type();
     }
 
-    ast::Type operator()(const ast::Variable *v) const
+    BasicType operator()(const ast::Variable *v) const
     {
         return v->type();
     }
 
-    ast::Type operator()(const ast::FunctionCall& fc) const
+    BasicType operator()(const ast::FunctionCall& fc) const
     {
         return functionType(fc.f());
     }
 
-    ast::Type operator()(const ast::Cast& c) const
+    BasicType operator()(const ast::Cast& c) const
     {
         return c.type();
     }
 };
 
-ast::Type expressionType(const ast::Expression& expr)
+BasicType expressionType(const ast::Expression& expr)
 {
     ExpressionType et;
     return expr.apply_visitor(et);
@@ -87,16 +72,16 @@ boost::optional<ast::Expression> parseExpression(const cst::Expression& expr, as
 
 boost::optional<ast::FunctionCall> makeUnaryOperatorCall(const FilePosition& pos, const std::string& opName, const ast::Expression& right, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    ast::Type rightType = expressionType(right);
+    BasicType rightType = expressionType(right);
 
-    if (boost::optional<ast::FunctionRef> f = ft.find(ast::functionMangledName(opName, typeSuffix(rightType))))
+    if (boost::optional<ast::FunctionRef> f = ft.find(ast::functionMangledName(opName, ast::typeSuffix(rightType))))
     {
         return ast::FunctionCall(pos, *f, &right, &right + 1);
     }
     else
     {
         std::ostringstream os;
-        os << opName << "(" << typeName(rightType) << ")"; 
+        os << opName << "(" << ast::typeName(rightType) << ")"; 
         errorLogger << err::function_not_found(pos, os.str());
 
         return boost::none;
@@ -130,7 +115,7 @@ public:
     boost::optional<ast::Expression> operator()(const cst::FunctionCall& fc) const
     {
         std::vector<ast::Expression> expr;
-        std::vector<ast::Type> paramTypes;
+        std::vector<BasicType> paramTypes;
         std::string suffix;
 
         expr.reserve(fc.expr.size());
@@ -140,7 +125,7 @@ public:
         {
             if (boost::optional<ast::Expression> pe = parseExpression(e, vts_, ft_, errorLogger_))
             {
-                ast::Type et = expressionType(*pe);
+                BasicType et = expressionType(*pe);
                 paramTypes.push_back(et);
                 suffix += ast::typeSuffix(et);
 
@@ -198,10 +183,10 @@ boost::optional<ast::Expression> parseUnaryExpression(const cst::UnaryExpression
 
 boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& pos, const std::string& opName, const ast::Expression& left, const ast::Expression& right, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    ast::Type leftType = expressionType(left);
-    ast::Type rightType = expressionType(right);
+    BasicType leftType = expressionType(left);
+    BasicType rightType = expressionType(right);
 
-    if (boost::optional<ast::FunctionRef> f = ft.find(ast::functionMangledName(opName, std::string(typeSuffix(leftType)) + typeSuffix(rightType))))
+    if (boost::optional<ast::FunctionRef> f = ft.find(ast::functionMangledName(opName, std::string(ast::typeSuffix(leftType)) + ast::typeSuffix(rightType))))
     {
         std::vector<ast::Expression> expr;
 
@@ -214,7 +199,7 @@ boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& po
     else
     {
         std::ostringstream os;
-        os << opName << "(" << typeName(leftType) << ", " << typeName(rightType) << ")";
+        os << opName << "(" << ast::typeSuffix(leftType) << ", " << ast::typeSuffix(rightType) << ")";
         errorLogger << err::function_not_found(pos, os.str());
 
         return boost::none;
@@ -405,13 +390,13 @@ public:
 
         if (!expr) return boost::none;
 
-        ast::Type exprType = expressionType(*expr);
+        BasicType exprType = expressionType(*expr);
 
         if (exprType != var->type())
         {
-            if (!isConvertible(exprType, var->type()))
+            if (!ast::isConvertible(exprType, var->type()))
             {
-                errorLogger_ << err::not_convertible(assignment.expr.firstPos, typeName(exprType), typeName(var->type())); 
+                errorLogger_ << err::not_convertible(assignment.expr.firstPos, ast::typeSuffix(exprType), ast::typeSuffix(var->type())); 
 
                 return boost::none;
             }
@@ -453,7 +438,7 @@ public:
 
         if (!cond) return boost::none;
 
-        if (expressionType(*cond) != ast::bool_)
+        if (expressionType(*cond) != bool_)
         {
             errorLogger_ << err::bool_expr_expected(expressionPos(*cond));
             return boost::none;
@@ -479,7 +464,7 @@ public:
 
         if (!cond) return boost::none;
 
-        if (expressionType(*cond) != ast::bool_)
+        if (expressionType(*cond) != bool_)
         {
             errorLogger_ << err::bool_expr_expected(expressionPos(*cond));
             return boost::none;
@@ -500,12 +485,12 @@ public:
 
                 if (!expr) return boost::none;
 
-                ast::Type type = convertType(*decl.type);
-                ast::Type exprType = expressionType(*expr);
+                BasicType type = *decl.type;
+                BasicType exprType = expressionType(*expr);
 
-                if (!isConvertible(exprType, type))
+                if (!ast::isConvertible(exprType, type))
                 {
-                    errorLogger_ << err::not_convertible(decl.expr->firstPos, typeName(exprType), typeName(type));
+                    errorLogger_ << err::not_convertible(decl.expr->firstPos, ast::typeSuffix(exprType), ast::typeSuffix(type));
                     return boost::none;
                 }
 
@@ -521,7 +506,7 @@ public:
             }
             else
             {   
-                ast::VariableDecl out(decl.name.str, decl.name.pos, convertType(*decl.type));
+                ast::VariableDecl out(decl.name.str, decl.name.pos, *decl.type);
                 if (!vts_.insert(out.var()))
                 {
                     varDeclError(decl.name);
@@ -543,9 +528,9 @@ public:
 
             if (!expr) return boost::none;
 
-            ast::Type exprType = expressionType(*expr);
+            BasicType exprType = expressionType(*expr);
 
-            if (exprType == ast::void_)
+            if (exprType == void_)
             {
                 errorLogger_ << err::void_variable(decl.name.pos, decl.name.str);
                 return boost::none;
@@ -613,17 +598,17 @@ ast::CompoundStatement parseCompoundStatement(const cst::CompoundStatement& cs, 
     return out;
 }
 
-class ParseReturnType : public boost::static_visitor<boost::optional<ast::Type> >
+class ParseReturnType : public boost::static_visitor<boost::optional<BasicType> >
 {
 public:
     ParseReturnType(ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger) : vts_(vts), ft_(ft), errorLogger_(errorLogger) { }
 
-    boost::optional<ast::Type> operator()(const cst::Type& t) const
+    boost::optional<BasicType> operator()(const BasicType& t) const
     {
-        return convertType(t);
+        return t;
     }
 
-    boost::optional<ast::Type> operator()(const cst::Expression& e) const
+    boost::optional<BasicType> operator()(const cst::Expression& e) const
     {
         boost::optional<ast::Expression> expr = parseExpression(e, vts_, ft_, errorLogger_);
 
@@ -639,7 +624,7 @@ private:
     ErrorLogger& errorLogger_;
 };
 
-boost::optional<ast::Type> parseReturnType(const cst::FunctionReturnType frt, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
+boost::optional<BasicType> parseReturnType(const cst::FunctionReturnType frt, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     ParseReturnType prt(vts, ft, errorLogger);
     return frt.apply_visitor(prt);
@@ -749,7 +734,7 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
             auto p = params.find(fp.name.str);
             if (p == params.end())
             {
-                std::shared_ptr<ast::Variable> v(new ast::Variable(fp.name.str, fp.name.pos, convertType(fp.type), fp.ref));
+                std::shared_ptr<ast::Variable> v(new ast::Variable(fp.name.str, fp.name.pos, fp.type, fp.ref));
 
                 pc.push_back(v);
                 params.insert(std::make_pair(fp.name.str, fp.name.pos));
@@ -789,7 +774,7 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
             vts.insert(*p);
         }
 
-        boost::optional<ast::Type> fType = parseReturnType(f.second->type, vts, functionTable, errorLogger);
+        boost::optional<BasicType> fType = parseReturnType(f.second->type, vts, functionTable, errorLogger);
 
         if (!fType) return m;
 
