@@ -13,8 +13,8 @@ namespace cst
 
 struct SignMultiplicativeExpression
 {
-    FilePosition signPos;
-    UnOp sign;                           
+    FilePosition opPos;
+    UnOp op;
     FilePosition exprPos;
     MultiplicativeExpression expr;
 };
@@ -24,8 +24,8 @@ struct SignMultiplicativeExpression
 
 BOOST_FUSION_ADAPT_STRUCT(
     sl::cst::SignMultiplicativeExpression,
-    (sl::FilePosition, signPos)
-    (sl::cst::UnOp, sign)
+    (sl::FilePosition, opPos)
+    (sl::cst::UnOp, op)
     (sl::FilePosition, exprPos)
     (sl::cst::MultiplicativeExpression, expr)
 )

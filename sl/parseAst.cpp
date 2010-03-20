@@ -67,7 +67,8 @@ FilePosition expressionPos(const ast::Expression& expr)
 }
 
 
-boost::optional<ast::Expression> parseExpression(const cst::Expression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger);
+template <typename ExpressionType>
+boost::optional<ast::Expression> parseExpression(const ExpressionType& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger);
 
 
 boost::optional<ast::FunctionCall> makeUnaryOperatorCall(const FilePosition& pos, const std::string& opName, const ast::Expression& right, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
@@ -175,12 +176,6 @@ private:
     ErrorLogger& errorLogger_;
 };
 
-boost::optional<ast::Expression> parseUnaryExpression(const cst::UnaryExpression& f, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
-{
-    ParseUnaryExpression pf(vts, ft, errorLogger);
-    return f.apply_visitor(pf);
-}
-
 boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& pos, const std::string& opName, const ast::Expression& left, const ast::Expression& right, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     BasicType leftType = expressionType(left);
@@ -206,15 +201,22 @@ boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& po
     }
 }
 
-boost::optional<ast::Expression> parseMultiplicativeExpression(const cst::MultiplicativeExpression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
+boost::optional<ast::Expression> parseExpression(const cst::UnaryExpression& f, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
 {
-    if (boost::optional<ast::Expression> left = parseUnaryExpression(expr.first, vts, ft, errorLogger))
-    {
-        BOOST_FOREACH(const cst::MulOpUnaryExpression& mf, expr.next)
+    ParseUnaryExpression pf(vts, ft, errorLogger);
+    return f.apply_visitor(pf);
+}
+
+template <typename ExpressionType>
+boost::optional<ast::Expression> parseExpression(const ExpressionType& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
+{
+    if (boost::optional<ast::Expression> left = parseExpression(expr.first, vts, ft, errorLogger))
+    {                           
+        for (auto it = expr.next.begin(); it != expr.next.end(); ++it)
         {
-            if (boost::optional<ast::Expression> right = parseUnaryExpression(mf.expr, vts, ft, errorLogger))
+            if (boost::optional<ast::Expression> right = parseExpression(it->expr, vts, ft, errorLogger))
             {
-                left = makeBinaryOperatorCall(mf.opPos, builtin::operatorName(mf.op), *left, *right, ft, errorLogger);
+                left = makeBinaryOperatorCall(it->opPos, builtin::operatorName(it->op), *left, *right, ft, errorLogger);
 
                 if (!left) return boost::none;
             }
@@ -230,125 +232,6 @@ boost::optional<ast::Expression> parseMultiplicativeExpression(const cst::Multip
     return boost::none;
 }
 
-boost::optional<ast::Expression> parseAdditiveExpression(const cst::AdditiveExpression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
-{
-    if (boost::optional<ast::Expression> left = parseMultiplicativeExpression(expr.first, vts, ft, errorLogger))
-    {
-        BOOST_FOREACH(const cst::SignMultiplicativeExpression& st, expr.next)
-        {
-            if (boost::optional<ast::Expression> right = parseMultiplicativeExpression(st.expr, vts, ft, errorLogger))
-            {
-                left = makeBinaryOperatorCall(st.signPos, builtin::operatorName(st.sign), *left, *right, ft, errorLogger);
-
-                if (!left) return boost::none;
-            }
-            else
-            {
-                return boost::none;
-            }
-        }
-
-        return *left;
-    }
-
-    return boost::none;
-}
-
-boost::optional<ast::Expression> parseRelationalExpression(const cst::RelationalExpression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
-{
-    if (boost::optional<ast::Expression> left = parseAdditiveExpression(expr.first, vts, ft, errorLogger))
-    {
-        BOOST_FOREACH(const cst::RelOpAdditiveExpression& st, expr.next)
-        {
-            if (boost::optional<ast::Expression> right = parseAdditiveExpression(st.expr, vts, ft, errorLogger))
-            {
-                left = makeBinaryOperatorCall(st.opPos, builtin::operatorName(st.op), *left, *right, ft, errorLogger);
-
-                if (!left) return boost::none;
-            }
-            else
-            {
-                return boost::none;
-            }
-        }
-
-        return *left;
-    }
-
-    return boost::none;
-}
-
-boost::optional<ast::Expression> parseEqualityExpression(const cst::EqualityExpression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
-{
-    if (boost::optional<ast::Expression> left = parseRelationalExpression(expr.first, vts, ft, errorLogger))
-    {
-        BOOST_FOREACH(const cst::EqOpRelationalExpression& st, expr.next)
-        {
-            if (boost::optional<ast::Expression> right = parseRelationalExpression(st.expr, vts, ft, errorLogger))
-            {
-                left = makeBinaryOperatorCall(st.opPos, builtin::operatorName(st.op), *left, *right, ft, errorLogger);
-
-                if (!left) return boost::none;
-            }
-            else
-            {
-                return boost::none;
-            }
-        }
-
-        return *left;
-    }
-
-    return boost::none;
-}
-
-boost::optional<ast::Expression> parseLogicalAndExpression(const cst::LogicalAndExpression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
-{
-    if (boost::optional<ast::Expression> left = parseEqualityExpression(expr.first, vts, ft, errorLogger))
-    {
-        BOOST_FOREACH(const cst::LAndOpEqualityExpression& st, expr.next)
-        {
-            if (boost::optional<ast::Expression> right = parseEqualityExpression(st.expr, vts, ft, errorLogger))
-            {
-                left = makeBinaryOperatorCall(st.opPos, builtin::operatorName(st.op), *left, *right, ft, errorLogger);
-
-                if (!left) return boost::none;
-            }
-            else
-            {
-                return boost::none;
-            }
-        }
-
-        return *left;
-    }
-
-    return boost::none;
-}
-
-boost::optional<ast::Expression> parseExpression(const cst::Expression& expr, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
-{
-    if (boost::optional<ast::Expression> left = parseLogicalAndExpression(expr.first, vts, ft, errorLogger))
-    {
-        BOOST_FOREACH(const cst::LOrOpLogicalAndExpression& st, expr.next)
-        {
-            if (boost::optional<ast::Expression> right = parseLogicalAndExpression(st.expr, vts, ft, errorLogger))
-            {
-                left = makeBinaryOperatorCall(st.opPos, builtin::operatorName(st.op), *left, *right, ft, errorLogger);
-
-                if (!left) return boost::none;
-            }
-            else
-            {
-                return boost::none;
-            }
-        }
-
-        return *left;
-    }
-
-    return boost::none;
-}
 
 ast::CompoundStatement parseCompoundStatement(const cst::CompoundStatement& cs, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger);
 
