@@ -1,13 +1,16 @@
-#include <vector>
-#include <cmath>
 #include <iostream>
+#include <cstring>
+#include <sl/def.hpp>
 #include <sl/vm/opcodes.hpp>
-#include <sl/vm.hpp>
+#include <sl/vm/Environment.hpp>
 
 namespace sl
 {
 
 namespace vm
+{
+
+namespace
 {
 
 void copy1(const void *src, void *dst)
@@ -25,6 +28,8 @@ void copy2(const void *src, void *dst)
 void copy4(const void *src, void *dst)
 {
     std::memcpy(dst, src, 4);
+}
+
 }
 
 #define SLVM_OP4(type, op) \
@@ -60,12 +65,6 @@ void copy4(const void *src, void *dst)
 
 void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 {
-    typedef std::int32_t int_t;
-    typedef float float_t;
-
-    static_assert(sizeof(int_t) == 4, "int_t must have 4 bytes");
-    static_assert(sizeof(float_t) == 4, "float_t must have 4 bytes");
-
     std::ptrdiff_t off = addr;
     std::uint8_t *memory = &memory_.front();
     std::ptrdiff_t sp = sp_;
