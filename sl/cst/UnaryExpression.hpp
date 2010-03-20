@@ -24,4 +24,9 @@ typedef boost::variant<
 
 }
 }
+
+#include <sl/cst/FunctionCall.hpp>
+#include <sl/cst/Expression.hpp>
+#include <sl/cst/UnOpUnaryExpression.hpp>
+
 #endif /* SL_CST_UNARYEXPRESSION_HPP */

@@ -2,7 +2,7 @@
 #define SL_VM_MODULE_HPP
 
 #include <cassert>
-#include <map>
+#include <unordered_map>
 #include <sl/vm/BytecodeBuffer.hpp>
 
 namespace sl
@@ -55,7 +55,7 @@ public:
 private:
 
     BytecodeBuffer code_;
-    std::map<std::string, CodeAddr> functions_;
+    std::unordered_map<std::string, CodeAddr> functions_;
 };
 
 }

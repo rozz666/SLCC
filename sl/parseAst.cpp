@@ -140,7 +140,7 @@ public:
         if (!f)
         {
             std::ostringstream os;
-            os << fc.name.str << ast::functionParameters(paramTypes);
+            os << fc.name.str << ast::strParameters(paramTypes);
             errorLogger_ << err::function_not_found(fc.name.pos, os.str());
             return boost::none;
         }
@@ -719,7 +719,7 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
 
     registerBuiltinFunctions(functionTable);
 
-    typedef std::map<ast::FunctionDef *, const cst::Function *> FF;
+    typedef std::unordered_map<ast::FunctionDef *, const cst::Function *> FF;
     FF ff;
 
     // make forward declarations
@@ -752,7 +752,7 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
         if (!functionTable.insert(&*cf))
         {
             std::ostringstream os;
-            os << f.name.str << ast::functionParameters(pc2);
+            os << f.name.str << ast::strParameters(pc2);
 
             errorLogger << err::function_already_declared(f.name.pos, os.str());
         }
