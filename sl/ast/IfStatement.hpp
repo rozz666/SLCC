@@ -3,7 +3,7 @@
 
 #include <boost/optional.hpp>
 #include <sl/ast/Expression.hpp>
-#include <sl/ast/CompoundStatement.hpp>
+#include <sl/ast/Statement.hpp>
 
 namespace sl
 {

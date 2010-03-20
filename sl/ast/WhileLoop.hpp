@@ -2,7 +2,7 @@
 #define SL_AST_WHILELOOP_HPP
 
 #include <sl/ast/Expression.hpp>
-#include <sl/ast/CompoundStatement.hpp>
+#include <sl/ast/Statement.hpp>
 
 namespace sl
 {

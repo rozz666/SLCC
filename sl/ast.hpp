@@ -13,7 +13,6 @@
 #include <sl/ast/VariableDelete.hpp>
 #include <sl/ast/Statement.hpp>
 #include <sl/ast/FunctionRef.hpp>
-#include <sl/ast/CompoundStatement.hpp>
 #include <sl/ast/IfStatement.hpp>
 #include <sl/ast/WhileLoop.hpp>
 #include <sl/ast/BuiltinFunction.hpp>

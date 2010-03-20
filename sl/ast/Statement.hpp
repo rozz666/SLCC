@@ -28,10 +28,14 @@ typedef boost::variant<
     VariableDelete
 > Statement;
 
+struct CompoundStatement
+{
+    std::vector<Statement> statements;
+};
+
 }
 }
 
-#include <sl/ast/CompoundStatement.hpp>
 #include <sl/ast/IfStatement.hpp>
 #include <sl/ast/WhileLoop.hpp>
 

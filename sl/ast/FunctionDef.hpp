@@ -7,7 +7,7 @@
 #include <boost/optional.hpp>
 #include <sl/basicTypes.hpp>
 #include <sl/ast/functionSuffix.hpp>
-#include <sl/ast/CompoundStatement.hpp>
+#include <sl/ast/Statement.hpp>
 
 namespace sl
 {
