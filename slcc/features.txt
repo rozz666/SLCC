@@ -1,11 +1,11 @@
 To Do:
+Modules
+Correct lexical parsing
 Overloaded functions matching
 Order independent functions
 Public functions
 typeof
 passing by references
-if
-while
 
 Done:
 Basic operators: +, -, *, /, =
@@ -22,3 +22,5 @@ swap
 void functions
 error handling
 geti, getf, put
+if
+while

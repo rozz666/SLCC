@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <sl/cst/Identifier.hpp>
-#include <sl/cst/Function.hpp>
+#include <sl/cst/GlobalDecl.hpp>
 
 namespace sl
 {
@@ -14,7 +14,7 @@ namespace cst
 struct Module
 {
     Identifier name;
-    std::vector<Function> functions;
+    std::vector<GlobalDecl> decls;
 };
 
 }
@@ -23,7 +23,7 @@ struct Module
 BOOST_FUSION_ADAPT_STRUCT(
     sl::cst::Module,
     (sl::cst::Identifier, name)
-    (std::vector<sl::cst::Function>, functions)
+    (std::vector<sl::cst::GlobalDecl>, decls)
 )
 
 #endif /* SL_CST_MODULE_HPP */

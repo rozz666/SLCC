@@ -595,19 +595,15 @@ void registerBuiltinFunctions(ast::FunctionTable& ft)
     ft.insert(&function_put_f);
 }
 
-ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
+typedef std::unordered_map<ast::FunctionDef *, const cst::Function *> FF;
+
+class ParseGlobalDecl : public boost::static_visitor<>
 {
-    ast::Module m(module.name.str);
-    ast::FunctionTable functionTable;
+public:
 
-    registerBuiltinFunctions(functionTable);
+    ParseGlobalDecl(ast::Module& m, FF& ff, ErrorLogger& errorLogger, ast::FunctionTable ft) : m_(m), ff_(ff), errorLogger_(errorLogger), ft_(ft) { }
 
-    typedef std::unordered_map<ast::FunctionDef *, const cst::Function *> FF;
-    FF ff;
-
-    // make forward declarations
-
-    BOOST_FOREACH(const cst::Function& f, module.functions)
+    void operator()(const cst::Function& f)
     {
         ast::FunctionDef::ParameterContainer pc;
         std::unordered_map<std::string, FilePosition> params;
@@ -624,24 +620,58 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
             }
             else
             {
-                errorLogger << err::variable_already_declared(fp.name.pos, fp.name.str);
-                errorLogger << err::variable_earlier_declaration(p->second, p->first);
+                errorLogger_ << err::variable_already_declared(fp.name.pos, fp.name.str);
+                errorLogger_ << err::variable_earlier_declaration(p->second, p->first);
             }
         }
 
         ast::FunctionDef::ParameterContainer pc2(pc);
         std::auto_ptr<ast::FunctionDef> cf(new ast::FunctionDef(f.name.str, f.name.pos, std::move(pc)));
 
-        if (!functionTable.insert(&*cf))
+        if (!ft_.insert(&*cf))
         {
             std::ostringstream os;
             os << f.name.str << ast::strParameters(pc2);
 
-            errorLogger << err::function_already_declared(f.name.pos, os.str());
+            errorLogger_ << err::function_already_declared(f.name.pos, os.str());
         }
 
-        ff.insert(std::make_pair(&*cf, &f));
-        m.insertFunction(cf);
+        ff_.insert(std::make_pair(&*cf, &f));
+        m_.insertFunction(cf);
+    }
+
+    void operator()(const cst::Import& import)
+    {
+    }
+
+private:
+
+    ast::Module& m_;
+    FF& ff_;
+    ErrorLogger& errorLogger_;
+    ast::FunctionTable ft_;
+};
+
+void parseGlobalDecl(const sl::cst::GlobalDecl& gd, ast::Module& m, FF& ff, ErrorLogger& errorLogger, ast::FunctionTable ft)
+{
+    ParseGlobalDecl pgd(m, ff, errorLogger, ft);
+    gd.apply_visitor(pgd);
+}
+
+ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
+{
+    ast::Module m(module.name.str);
+    ast::FunctionTable functionTable;
+
+    registerBuiltinFunctions(functionTable);
+
+    FF ff;
+
+    // make forward declarations
+
+    BOOST_FOREACH(const cst::GlobalDecl& gd, module.decls)
+    {
+        parseGlobalDecl(gd, m, ff, errorLogger, functionTable);
     }
 
     // parameters and return types

@@ -298,7 +298,9 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
             (functionCall > ';');
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
         function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (returnType | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
-        module %= "module" > identifier > ';' >> *function >> qi::eoi;
+        import %= lit("import") >> identifier;
+        globalDecl %= function | import;
+        module %= "module" > identifier > ';' >> *globalDecl >> qi::eoi;
 
         identifier.name("identifier");
         constant.name("constant");
@@ -317,6 +319,8 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
         statement.name("statement");
         compoundStatement.name("compound statement");
         function.name("function definition");
+        import.name("import");
+        globalDecl.name("global declaration");
         module.name("module body");
 
         on_error<fail>
@@ -359,6 +363,8 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
     qi::rule<Iterator, cst::Statement(), ascii::space_type> statement;
     qi::rule<Iterator, cst::CompoundStatement(), ascii::space_type> compoundStatement;
     qi::rule<Iterator, cst::Function(), ascii::space_type> function;
+    qi::rule<Iterator, cst::Import(), ascii::space_type> import;
+    qi::rule<Iterator, cst::GlobalDecl(), ascii::space_type> globalDecl;
     qi::rule<Iterator, cst::Module(), ascii::space_type> module;
 };
 
