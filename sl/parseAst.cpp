@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include <unordered_map>
 #include <boost/foreach.hpp>
 #include <sl/basicTypes.hpp>
@@ -601,7 +602,7 @@ class ParseGlobalDecl : public boost::static_visitor<>
 {
 public:
 
-    ParseGlobalDecl(ast::Module& m, FF& ff, ErrorLogger& errorLogger, ast::FunctionTable ft) : m_(m), ff_(ff), errorLogger_(errorLogger), ft_(ft) { }
+    ParseGlobalDecl(ast::Module& m, FF& ff, ErrorLogger& errorLogger, ast::FunctionTable& ft) : m_(m), ff_(ff), errorLogger_(errorLogger), ft_(ft) { }
 
     void operator()(const cst::Function& f)
     {
@@ -640,19 +641,17 @@ public:
         m_.insertFunction(cf);
     }
 
-    void operator()(const cst::Import& import)
-    {
-    }
+    void operator()(const cst::Import& ) { } // ignore
 
 private:
 
     ast::Module& m_;
     FF& ff_;
     ErrorLogger& errorLogger_;
-    ast::FunctionTable ft_;
+    ast::FunctionTable& ft_;
 };
 
-void parseGlobalDecl(const sl::cst::GlobalDecl& gd, ast::Module& m, FF& ff, ErrorLogger& errorLogger, ast::FunctionTable ft)
+void parseGlobalDecl(const sl::cst::GlobalDecl& gd, ast::Module& m, FF& ff, ErrorLogger& errorLogger, ast::FunctionTable& ft)
 {
     ParseGlobalDecl pgd(m, ff, errorLogger, ft);
     gd.apply_visitor(pgd);
@@ -725,6 +724,58 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
     }
 
     return m;
+}
+
+class ParseImport;
+
+bool parseModules(const std::string& name, ast::ModuleMap& mm, ModuleLoader loader, ErrorLogger& errorLogger, ParseImport& pi);
+
+class ParseImport : public boost::static_visitor<bool>
+{
+public:
+
+    ParseImport(ast::ModuleMap& mm, ModuleLoader loader, ErrorLogger& errorLogger) : mm_(mm), loader_(loader), errorLogger_(errorLogger) { }
+
+    bool operator()(const cst::Function& ) { return true; } // ignore
+
+    bool operator()(const cst::Import& import)
+    {
+        if (tried_.find(import.module.str) != tried_.end()) return true;
+
+        tried_.insert(import.module.str);
+
+        return parseModules(import.module.str, mm_, loader_, errorLogger_, *this);
+    }
+
+private:
+
+    std::unordered_set<std::string> tried_;
+    ast::ModuleMap& mm_;
+    ModuleLoader loader_;
+    ErrorLogger& errorLogger_;
+};
+
+bool parseModules(const std::string& name, ast::ModuleMap& mm, ModuleLoader loader, ErrorLogger& errorLogger, ParseImport& pi)
+{
+    boost::optional<cst::Module> module = loader(name, errorLogger);
+
+    if (!module) return false;
+
+    BOOST_FOREACH(const cst::GlobalDecl& gd, module->decls)
+    {
+        if (!gd.apply_visitor(pi)) return false;
+    }
+
+    mm.insert(name, std::move(*module));
+
+    return true;
+}
+
+bool parseModules(const std::string& name, ast::ModuleMap& mm, ModuleLoader loader, ErrorLogger& errorLogger)
+{
+    ParseImport pi(mm, loader, errorLogger);
+
+    return parseModules(name, mm, loader, errorLogger, pi);
 }
 
 }

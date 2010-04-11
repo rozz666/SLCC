@@ -16,11 +16,17 @@ class Program
 public:
 
     Program(Module&& module, Environment&& env)
-        : module_(module), env_(env) { }
-
-    int execute()
+        : module_(module), env_(env)
     {
-        return module_.call<int_t>(FunctionCall("main$"), env_);
+        if (!module_.hasFunction("main$"))
+        {
+            throw std::runtime_error("No main function in program!");
+        }
+    }
+
+    void execute()
+    {
+        module_.call<void>(FunctionCall("main$"), env_);
     }
 
 private:

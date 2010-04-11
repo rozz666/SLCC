@@ -298,8 +298,8 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
             (functionCall > ';');
         compoundStatement = '{' >> (*statement)[_val = _1] > '}';
         function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (returnType | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
-        import %= lit("import") >> identifier;
-        globalDecl %= function | import;
+        import %= lit("import") >> identifier > ';';
+        globalDecl %= import | function;
         module %= "module" > identifier > ';' >> *globalDecl >> qi::eoi;
 
         identifier.name("identifier");

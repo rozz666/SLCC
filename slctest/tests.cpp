@@ -85,6 +85,26 @@ bool validFile(const std::string& fname)
     return !errorLogger.hasErrors();
 }
 
+struct LoadModule
+{
+    std::string basePath;
+
+    LoadModule(const std::string& basePath) : basePath(basePath) { }
+
+    boost::optional<sl::cst::Module> operator()(const std::string& name, sl::ErrorLogger& errorLogger)
+    {
+        std::ifstream fin(basePath + name + ".sl");
+
+        if (!fin.is_open())
+        {
+            // error
+            return boost::none;
+        }
+
+        return sl::parseFile(fin, errorLogger);
+    }
+};
+
 template <>
 template <>
 void object::test<1>()
@@ -236,5 +256,43 @@ void object::test<8>()
     ensure_equals("stack3", env.sp(), sp);
 }
 
+template <>
+template <>
+void object::test<9>()
+{
+    using namespace sl;
+
+    set_test_name("module cycle");
+
+    ErrorLogger errorLogger("???");
+    ast::ModuleMap mm;
+    LoadModule lm("tests\\modules\\");
+
+    ensure("parse modules", parseModules("cycle1", mm, lm, errorLogger));
+    ensure_equals("size", mm.size(), 2u);
+    ensure("cycle1", mm.contains("cycle1"));
+    ensure("cycle2", mm.contains("cycle2"));
+}
+
+template <>
+template <>
+void object::test<10>()
+{
+    using namespace sl;
+
+    set_test_name("module tree");
+
+    ErrorLogger errorLogger("???");
+    ast::ModuleMap mm;
+    LoadModule lm("tests\\modules\\");
+
+    ensure("parse modules", parseModules("tree1", mm, lm, errorLogger));
+    ensure_equals("size", mm.size(), 5u);
+    ensure("tree1", mm.contains("tree1"));
+    ensure("tree2", mm.contains("tree2"));
+    ensure("tree3", mm.contains("tree3"));
+    ensure("tree4", mm.contains("tree4"));
+    ensure("tree5", mm.contains("tree5"));
+}
 
 }

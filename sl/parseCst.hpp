@@ -1,5 +1,5 @@
-#ifndef SL_PARSEAST_HPP
-#define SL_PARSEAST_HPP
+#ifndef SL_PARSECST_HPP
+#define SL_PARSECST_HPP
 
 #include <iosfwd>
 #include <boost/optional.hpp>
@@ -13,4 +13,4 @@ boost::optional<cst::Module> parseFile(std::istream& is, ErrorLogger& errorLogge
 
 }
 
-#endif /* SL_PARSEAST_HPP */
+#endif /* SL_PARSECST_HPP */
