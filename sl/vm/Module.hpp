@@ -41,16 +41,16 @@ public:
 
         env.sp(env.sp() - fc.paramSize() - sizeof(retT) - sizeof(CodeAddr));
 
-        if (fc.paramSize()) std::memcpy(&env[env.sp() + sizeof(CodeAddr)], fc.params(), fc.paramSize());
+        if (fc.paramSize()) std::memcpy(&env.memory()[env.sp() + sizeof(CodeAddr)], fc.params(), fc.paramSize());
 
         CodeAddr retAddr = ~CodeAddr(0);
-        std::memcpy(&env[env.sp()], &retAddr, sizeof(retAddr));
+        std::memcpy(&env.memory()[env.sp()], &retAddr, sizeof(retAddr));
 
         env.execute(&code_.front(), f->second);
         env.sp(env.sp() + fc.paramSize());
 
         retT ret;
-        std::memcpy(&ret, &env[env.sp()], sizeof(ret));
+        std::memcpy(&ret, &env.memory()[env.sp()], sizeof(ret));
 
         env.sp(env.sp() + sizeof(retT));
 
@@ -66,10 +66,10 @@ public:
 
         env.sp(env.sp() - fc.paramSize() - sizeof(CodeAddr));
 
-        if (fc.paramSize()) std::memcpy(&env[env.sp() + sizeof(CodeAddr)], fc.params(), fc.paramSize());
+        if (fc.paramSize()) std::memcpy(&env.memory()[env.sp() + sizeof(CodeAddr)], fc.params(), fc.paramSize());
 
         CodeAddr retAddr = ~CodeAddr(0);
-        std::memcpy(&env[env.sp()], &retAddr, sizeof(retAddr));
+        std::memcpy(&env.memory()[env.sp()], &retAddr, sizeof(retAddr));
 
         env.execute(&code_.front(), f->second);
         env.sp(env.sp() + fc.paramSize());

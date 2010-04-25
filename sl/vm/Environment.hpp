@@ -13,6 +13,8 @@ class Environment
 {
 public:
 
+    typedef std::vector<byte> Memory;
+
     Environment(Environment&& right) : sp_(right.sp_), bp_(right.bp_)
     {
         memory_.swap(right.memory_);
@@ -26,15 +28,15 @@ public:
     DataAddr bp() const { return bp_; }
     void bp(DataAddr val) { bp_ = val; }
 
-    const byte& operator[](DataAddr idx) const { return memory_[idx]; }
-    byte& operator[](DataAddr idx) { return memory_[idx]; }
+    Memory& memory() { return memory_; }
+    const Memory& memory() const { return memory_; }
 
     void execute(const byte *code, CodeAddr addr);
 
 private:
 
     DataAddr sp_, bp_;
-    std::vector<byte> memory_;
+    Memory memory_;
 };
 
 }

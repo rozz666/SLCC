@@ -10,6 +10,7 @@ namespace vm
 enum Opcode
 {
     NOP         = 0x00,
+    EXIT        = 0x01, // TODO: add to spec
     CONST4      = 0x0a,
     LADDR       = 0x10,
     LOAD4       = 0x11,

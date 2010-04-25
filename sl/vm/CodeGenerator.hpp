@@ -16,7 +16,7 @@ public:
 
     CodeAddr emit(Opcode oc)
     {
-        code_.push_back(std::uint8_t(oc));
+        code_.push_back(byte(oc));
         return code_.size() - 1;
     }
 

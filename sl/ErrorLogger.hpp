@@ -14,6 +14,8 @@ class ErrorLogger
 {
 public:
 
+    typedef std::vector<err::Message> Errors;
+
     ErrorLogger(const std::string& filename) : filename_(filename) { }
 
     ErrorLogger& operator<<(err::Message&& msg)
@@ -27,12 +29,12 @@ public:
 
     void print(std::ostream& os);
 
-    bool hasErrors() { return !errors_.empty(); }
+    const Errors& errors() { return errors_; }
 
 private:
 
     std::string filename_;
-    std::vector<err::Message> errors_;
+    Errors errors_;
 };
 
 }

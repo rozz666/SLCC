@@ -18,7 +18,7 @@ struct Test_data { };
 
 typedef test_group<Test_data> tg;
 typedef tg::object object;
-tg BPath_group("SL_TEST");
+tg BPath_group("SL_FUNC_TEST");
 
 struct CompileError : public std::runtime_error
 {
@@ -76,13 +76,13 @@ bool validFile(const std::string& fname)
 
     parseModule(*module, errorLogger);
 
-    if (errorLogger.hasErrors())
+    if (!errorLogger.errors().empty())
     {
         std::ofstream lf(fname + "log");
         errorLogger.print(lf);
     }
 
-    return !errorLogger.hasErrors();
+    return errorLogger.errors().empty();
 }
 
 struct LoadModule

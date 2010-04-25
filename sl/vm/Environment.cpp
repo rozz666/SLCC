@@ -70,7 +70,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
     std::ptrdiff_t sp = sp_;
     std::ptrdiff_t bp = bp_;
 
-    while (off != -1)
+    while (off != -1 && code[off] != EXIT) // TODO: remove first condition
     {
         switch (code[off++])
         {
