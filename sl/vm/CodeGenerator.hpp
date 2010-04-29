@@ -1,6 +1,7 @@
 #ifndef SL_VM_CODEGENERATOR_HPP
 #define SL_VM_CODEGENERATOR_HPP
 
+#include <sl/assert.hpp>
 #include <sl/vm/def.hpp>
 #include <sl/vm/opcodes.hpp>
 #include <sl/vm/BytecodeBuffer.hpp>
@@ -14,46 +15,43 @@ class CodeGenerator
 {
 public:
 
-    CodeAddr emit(Opcode oc)
+    BytecodeBuffer code;
+
+	CodeAddr emit(Opcode oc)
     {
-        code_.push_back(byte(oc));
-        return code_.size() - 1;
+        code.push_back(byte(oc));
+        return code.size() - 1;
     }
 
     template <typename T>
     CodeAddr emit(T val)
     {
-        code_.resize(code_.size() + sizeof(val));
-        std::memcpy(&code_[code_.size() - sizeof(val)], &val, sizeof(val));
-        return code_.size() - sizeof(val);
+        code.resize(code.size() + sizeof(val));
+        std::memcpy(&code[code.size() - sizeof(val)], &val, sizeof(val));
+        return code.size() - sizeof(val);
     }
 
-    template <typename T>
+    void emit(CodeAddr addr, Opcode oc)
+    {
+        SL_ASSERT(addr < code.size());
+        code[addr] = byte(oc);
+    }
+
+	template <typename T>
     void emit(CodeAddr addr, T val)
     {
-        assert(addr + sizeof(val) <= code_.size());
-        std::memcpy(&code_[addr], &val, sizeof(val));
+        SL_ASSERT(addr + sizeof(val) <= code.size());
+        std::memcpy(&code[addr], &val, sizeof(val));
     }
 
     template <typename T>
     T read(CodeAddr addr)
     {
         T val;
-        assert(addr + sizeof(val) <= code_.size());
-        std::memcpy(&val, &code_[addr], sizeof(val));
+        SL_ASSERT(addr + sizeof(val) <= code.size());
+        std::memcpy(&val, &code[addr], sizeof(val));
         return val;
     }
-
-    byte& operator[](CodeAddr addr)
-    {
-        return code_[addr];
-    }
-
-    BytecodeBuffer& code() { return code_; }
-
-private:
-
-    BytecodeBuffer code_;
 };
 
 

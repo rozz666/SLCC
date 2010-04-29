@@ -20,7 +20,7 @@ struct VM_Test_data
     {
         origEnv = env;
         cg.emit(vm::EXIT);
-        env.execute(&cg.code().front(), 0);
+        env.execute(&cg.code.front(), 0);
     }
 
     template <typename T>

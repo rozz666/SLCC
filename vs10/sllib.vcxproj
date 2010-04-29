@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{26AABD44-1404-4521-8EC6-18BC181DD194}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sllib</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(SolutionDir)$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(SolutionDir)$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4512</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <BuildLog>
+      <Path>$(SolutionDir)$(Configuration)\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4512</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <BuildLog>
+      <Path>$(SolutionDir)$(Configuration)\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\sl\assert.cpp" />
+    <ClCompile Include="..\sl\ast\Constant.cpp" />
+    <ClCompile Include="..\sl\ast\functionMangledName.cpp" />
+    <ClCompile Include="..\sl\ast\FunctionRef.cpp" />
+    <ClCompile Include="..\sl\ast\isLValue.cpp" />
+    <ClCompile Include="..\sl\ast\types.cpp" />
+    <ClCompile Include="..\sl\builtin.cpp" />
+    <ClCompile Include="..\sl\codeGen.cpp" />
+    <ClCompile Include="..\sl\ErrorLogger.cpp" />
+    <ClCompile Include="..\sl\parseAst.cpp" />
+    <ClCompile Include="..\sl\parseCst.cpp" />
+    <ClCompile Include="..\sl\vm\Environment.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\sl\assert.hpp" />
+    <ClInclude Include="..\sl\ast.hpp" />
+    <ClInclude Include="..\sl\ast\Assignment.hpp" />
+    <ClInclude Include="..\sl\ast\BuiltinFunction.hpp" />
+    <ClInclude Include="..\sl\ast\Cast.hpp" />
+    <ClInclude Include="..\sl\ast\Constant.hpp" />
+    <ClInclude Include="..\sl\ast\Expression.hpp" />
+    <ClInclude Include="..\sl\ast\FunctionCall.hpp" />
+    <ClInclude Include="..\sl\ast\FunctionDef.hpp" />
+    <ClInclude Include="..\sl\ast\functionMangledName.hpp" />
+    <ClInclude Include="..\sl\ast\FunctionRef.hpp" />
+    <ClInclude Include="..\sl\ast\functionSuffix.hpp" />
+    <ClInclude Include="..\sl\ast\FunctionTable.hpp" />
+    <ClInclude Include="..\sl\ast\IfStatement.hpp" />
+    <ClInclude Include="..\sl\ast\isConvertible.hpp" />
+    <ClInclude Include="..\sl\ast\isLValue.hpp" />
+    <ClInclude Include="..\sl\ast\Module.hpp" />
+    <ClInclude Include="..\sl\ast\ReturnStatement.hpp" />
+    <ClInclude Include="..\sl\ast\Statement.hpp" />
+    <ClInclude Include="..\sl\ast\strParameters.hpp" />
+    <ClInclude Include="..\sl\ast\types.hpp" />
+    <ClInclude Include="..\sl\ast\Variable.hpp" />
+    <ClInclude Include="..\sl\ast\VariableDecl.hpp" />
+    <ClInclude Include="..\sl\ast\VariableDelete.hpp" />
+    <ClInclude Include="..\sl\ast\VariableTable.hpp" />
+    <ClInclude Include="..\sl\ast\VariableTableStack.hpp" />
+    <ClInclude Include="..\sl\ast\WhileLoop.hpp" />
+    <ClInclude Include="..\sl\basicTypes.hpp" />
+    <ClInclude Include="..\sl\cst\AdditiveExpression.hpp" />
+    <ClInclude Include="..\sl\cst\Assignment.hpp" />
+    <ClInclude Include="..\sl\cst\CompoundStatement.hpp" />
+    <ClInclude Include="..\sl\cst\Constant.hpp" />
+    <ClInclude Include="..\sl\cst\EqOpRelationalExpression.hpp" />
+    <ClInclude Include="..\sl\cst\EqualityExpression.hpp" />
+    <ClInclude Include="..\sl\cst\Expression.hpp" />
+    <ClInclude Include="..\sl\cst\Function.hpp" />
+    <ClInclude Include="..\sl\cst\FunctionCall.hpp" />
+    <ClInclude Include="..\sl\cst\FunctionParameter.hpp" />
+    <ClInclude Include="..\sl\cst\FunctionReturnType.hpp" />
+    <ClInclude Include="..\sl\cst\Identifier.hpp" />
+    <ClInclude Include="..\sl\cst\IfStatement.hpp" />
+    <ClInclude Include="..\sl\cst\LAndOpEqualityExpression.hpp" />
+    <ClInclude Include="..\sl\cst\LogicalAndExpression.hpp" />
+    <ClInclude Include="..\sl\cst\LOrOpLogicalAndExpression.hpp" />
+    <ClInclude Include="..\sl\cst\Module.hpp" />
+    <ClInclude Include="..\sl\cst\MulOpUnaryExpression.hpp" />
+    <ClInclude Include="..\sl\cst\MultiplicativeExpression.hpp" />
+    <ClInclude Include="..\sl\cst\operators.hpp" />
+    <ClInclude Include="..\sl\cst\RelationalExpression.hpp" />
+    <ClInclude Include="..\sl\cst\RelOpAdditiveExpression.hpp" />
+    <ClInclude Include="..\sl\cst\ReturnStatement.hpp" />
+    <ClInclude Include="..\sl\cst\SignMultiplicativeExpression.hpp" />
+    <ClInclude Include="..\sl\cst\Statement.hpp" />
+    <ClInclude Include="..\sl\cst\UnaryExpression.hpp" />
+    <ClInclude Include="..\sl\cst\UnOpUnaryExpression.hpp" />
+    <ClInclude Include="..\sl\cst\Variable.hpp" />
+    <ClInclude Include="..\sl\cst\VariableDecl.hpp" />
+    <ClInclude Include="..\sl\cst\VariableDelete.hpp" />
+    <ClInclude Include="..\sl\cst\WhileLoop.hpp" />
+    <ClInclude Include="..\sl\def.hpp" />
+    <ClInclude Include="..\sl\builtin.hpp" />
+    <ClInclude Include="..\sl\codeGen.hpp" />
+    <ClInclude Include="..\sl\cst.hpp" />
+    <ClInclude Include="..\sl\DependencyGraph.hpp" />
+    <ClInclude Include="..\sl\ErrorLogger.hpp" />
+    <ClInclude Include="..\sl\err\Message.hpp" />
+    <ClInclude Include="..\sl\err\messages.hpp" />
+    <ClInclude Include="..\sl\FilePosition.hpp" />
+    <ClInclude Include="..\sl\grammar.hpp" />
+    <ClInclude Include="..\sl\parseAst.hpp" />
+    <ClInclude Include="..\sl\parseCst.hpp" />
+    <ClInclude Include="..\sl\vm.hpp" />
+    <ClInclude Include="..\sl\vm\BytecodeBuffer.hpp" />
+    <ClInclude Include="..\sl\vm\CodeGenerator.hpp" />
+    <ClInclude Include="..\sl\vm\def.hpp" />
+    <ClInclude Include="..\sl\vm\Environment.hpp" />
+    <ClInclude Include="..\sl\vm\FunctionCall.hpp" />
+    <ClInclude Include="..\sl\vm\Module.hpp" />
+    <ClInclude Include="..\sl\vm\opcodes.hpp" />
+    <ClInclude Include="..\sl\vm\Program.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

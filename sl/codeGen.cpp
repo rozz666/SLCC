@@ -341,9 +341,9 @@ void gen_operator_land_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeG
     cg.emit(vm::CONST4);
     vm::CodeAddr c2 = cg.emit<std::int32_t>(0xdeadbeef);
     cg.emit(vm::JUMP);
-    cg.emit<std::int32_t>(c1, cg.code().size());
+    cg.emit<std::int32_t>(c1, cg.code.size());
     generateExpression(pc[1], cg, fam, salloc, vt);
-    cg.emit<std::int32_t>(c2, cg.code().size());
+    cg.emit<std::int32_t>(c2, cg.code.size());
 }
 
 void gen_operator_lor_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
@@ -361,9 +361,9 @@ void gen_operator_lor_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeGe
     cg.emit(vm::CONST4);
     vm::CodeAddr c2 = cg.emit<std::int32_t>(0xdeadbeef);
     cg.emit(vm::JUMP);
-    cg.emit<std::int32_t>(c1, cg.code().size());
+    cg.emit<std::int32_t>(c1, cg.code.size());
     generateExpression(pc[1], cg, fam, salloc, vt);
-    cg.emit<std::int32_t>(c2, cg.code().size());
+    cg.emit<std::int32_t>(c2, cg.code.size());
 }
 
 void gen_function_swap4(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
@@ -749,16 +749,16 @@ public:
         vm::CodeAddr end = cg_.emit(std::int32_t(0xbebebebe));
         cg_.emit(vm::JUMP);
 
-        cg_.emit(je, cg_.code().size());
+        cg_.emit(je, cg_.code.size());
 
         (*this)(ifs.onTrue());
 
-        cg_.emit(end, cg_.code().size());
+        cg_.emit(end, cg_.code.size());
     }
 
     void operator()(const ast::WhileLoop& loop) const
     {
-        vm::CodeAddr lloop = cg_.code().size();
+        vm::CodeAddr lloop = cg_.code.size();
         cg_.emit(vm::CONST4);
         vm::CodeAddr je = cg_.emit(std::int32_t(0xbebebebe));
 
@@ -768,7 +768,7 @@ public:
         cg_.emit(vm::CONST4);
         vm::CodeAddr end = cg_.emit(std::int32_t(0xbebebebe));
         cg_.emit(vm::JUMP);
-        cg_.emit(je, cg_.code().size());
+        cg_.emit(je, cg_.code.size());
 
         (*this)(loop.body());
 
@@ -776,7 +776,7 @@ public:
         cg_.emit(std::int32_t(lloop));
         cg_.emit(vm::JUMP);
 
-        cg_.emit(end, cg_.code().size());
+        cg_.emit(end, cg_.code.size());
     }
 
     void operator()(const ast::Assignment& a) const
@@ -1066,7 +1066,7 @@ vm::BytecodeBuffer generateBytecode(const ast::Module& module, FunctionAddrMap& 
 
     cg.emit<std::int32_t>(startAddr, faddr);
 
-    return cg.code();
+    return cg.code;
 }
 
 void exportToAsm(const vm::BytecodeBuffer& bb, std::ostream& os)

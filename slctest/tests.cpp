@@ -29,7 +29,7 @@ sl::vm::Module compileFile(const std::string& fname)
 {
     using namespace sl;
 
-    std::ifstream fin(fname.c_str());
+	std::ifstream fin(fname.c_str());
 
     assert(fin.is_open());
 

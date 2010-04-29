@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
             sl::ast::Module parsed = parseModule(*module, errorLogger);
 
-            if (!errorLogger.hasErrors())
+            if (errorLogger.errors().empty())
             {
                 sl::FunctionAddrMap fam;
 

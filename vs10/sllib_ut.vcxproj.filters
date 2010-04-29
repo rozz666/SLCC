@@ -1,0 +1,324 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\sl">
+      <UniqueIdentifier>{4cfb70be-0529-46dc-af14-3def6eac52e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sl\ast">
+      <UniqueIdentifier>{af427f6b-acaa-43ba-b841-0515707aa506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sl\cst">
+      <UniqueIdentifier>{463da114-8408-4c42-8d5f-3ca8eea0fb07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sl\err">
+      <UniqueIdentifier>{b6c68679-0df4-4848-b722-e085c467ce98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sl\vm">
+      <UniqueIdentifier>{4b61c8b7-50a9-4efb-be92-e14f5aad6420}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\sl">
+      <UniqueIdentifier>{d116be43-5021-4c09-ac0f-b842de7859c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sl\ast">
+      <UniqueIdentifier>{d4f0d8f9-194d-4456-86fa-0554fd4c4086}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sl\cst">
+      <UniqueIdentifier>{44be0b90-84d2-48d1-b250-da7bfdaf856e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sl\vm">
+      <UniqueIdentifier>{dd8da57c-4669-4ee7-8e6b-0267308d48ad}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\sl\ast\Constant.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\ast\functionMangledName.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\ast\FunctionRef.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\ast\isLValue.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\ast\types.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\builtin.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\codeGen.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\ErrorLogger.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\parseAst.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\parseCst.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\vm\Environment.cpp">
+      <Filter>Source Files\sl\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\assert.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\sl\ast.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Assignment.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\BuiltinFunction.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Cast.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Constant.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Expression.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\FunctionCall.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\FunctionDef.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\functionMangledName.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\FunctionRef.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\functionSuffix.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\FunctionTable.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\IfStatement.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\isConvertible.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\isLValue.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Module.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\ReturnStatement.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Statement.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\strParameters.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\types.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\Variable.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\VariableDecl.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\VariableDelete.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\VariableTable.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\VariableTableStack.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\WhileLoop.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\basicTypes.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\builtin.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\codeGen.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\AdditiveExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Assignment.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\CompoundStatement.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Constant.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\EqOpRelationalExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\EqualityExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Expression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Function.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\FunctionCall.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\FunctionParameter.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\FunctionReturnType.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Identifier.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\IfStatement.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\LAndOpEqualityExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\LogicalAndExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\LOrOpLogicalAndExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Module.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\MulOpUnaryExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\MultiplicativeExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\operators.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\RelationalExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\RelOpAdditiveExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\ReturnStatement.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\SignMultiplicativeExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Statement.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\UnaryExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\UnOpUnaryExpression.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\Variable.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\VariableDecl.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\VariableDelete.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\cst\WhileLoop.hpp">
+      <Filter>Header Files\sl\cst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\def.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\DependencyGraph.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ErrorLogger.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\err\Message.hpp">
+      <Filter>Header Files\sl\err</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\err\messages.hpp">
+      <Filter>Header Files\sl\err</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\FilePosition.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\grammar.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\parseAst.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\parseCst.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\BytecodeBuffer.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\CodeGenerator.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\def.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\Environment.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\FunctionCall.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\Module.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\opcodes.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\Program.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\assert.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
