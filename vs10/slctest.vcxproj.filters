@@ -27,5 +27,8 @@
     <ClCompile Include="..\slctest\vm_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="slctest\ErrorLogger_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -14,11 +14,6 @@ std::ostream& operator<<(std::ostream& os, const Message& m)
 
 }
 
-void ErrorLogger::sort()
-{
-    std::sort(errors_.begin(), errors_.end(), [](const err::Message& l, const err::Message& r) { return l.pos < r.pos; });
-}
-
 void ErrorLogger::print(std::ostream& os)
 {
     const std::string& filename = filename_;

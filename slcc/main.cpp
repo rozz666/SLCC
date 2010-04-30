@@ -98,7 +98,6 @@ int main(int argc, char **argv)
             }
             else
             {
-                errorLogger.sort();
                 errorLogger.print(std::cerr);
             }
         }

@@ -18,7 +18,7 @@ struct Test_data { };
 
 typedef test_group<Test_data> tg;
 typedef tg::object object;
-tg BPath_group("SL_FUNC_TEST");
+tg SLFunc_group("SL_FUNC_TEST");
 
 struct CompileError : public std::runtime_error
 {

@@ -9,14 +9,11 @@ namespace vm = sl::vm;
 struct CodeGenerator_Test_data
 {
     vm::CodeGenerator cg;
-    const vm::CodeGenerator& ccg;
-
-    CodeGenerator_Test_data() : ccg(cg) { }
 };
 
 typedef test_group<CodeGenerator_Test_data> tg;
 typedef tg::object object;
-tg BPath_group("SL_CODE_GENERATOR_UT");
+tg CG_group("SL_CODE_GENERATOR_UT");
 
 template <>
 template <>

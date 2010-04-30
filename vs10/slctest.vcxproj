@@ -15,6 +15,7 @@
     <ClCompile Include="..\slctest\main.cpp" />
     <ClCompile Include="..\slctest\tests.cpp" />
     <ClCompile Include="..\slctest\vm_ut.cpp" />
+    <ClCompile Include="slctest\ErrorLogger_ut.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DE4443B3-6721-4F2D-91D1-7B9200F5C76D}</ProjectGuid>

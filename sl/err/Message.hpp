@@ -16,7 +16,6 @@ struct Message
     std::string id;
     std::string text;    
 
-    Message() { }
     Message(const FilePosition& pos, const std::string& id, const std::string& text) : pos(pos), id(id), text(text) { }
 };
 

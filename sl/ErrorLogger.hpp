@@ -25,11 +25,11 @@ public:
         return *this;
     }
 
-    void sort();
-
     void print(std::ostream& os);
 
-    const Errors& errors() { return errors_; }
+    const Errors& errors() const { return errors_; }
+
+	const std::string& filename() const { return filename_; }
 
 private:
 
