@@ -24,10 +24,10 @@
     <ClCompile Include="..\slctest\tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\slctest\vm_ut.cpp">
+    <ClCompile Include="..\slctest\Environment_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="slctest\ErrorLogger_ut.cpp">
+    <ClCompile Include="..\slctest\ErrorLogger_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
