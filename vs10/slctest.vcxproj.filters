@@ -21,13 +21,13 @@
     <ClCompile Include="..\slctest\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\slctest\tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\slctest\Environment_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\slctest\ErrorLogger_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\slctest\CC_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

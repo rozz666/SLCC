@@ -18,7 +18,7 @@ struct Test_data { };
 
 typedef test_group<Test_data> tg;
 typedef tg::object object;
-tg SLFunc_group("SL_FUNC_TEST");
+tg SLFunc_group("Functional tests");
 
 struct CompileError : public std::runtime_error
 {
