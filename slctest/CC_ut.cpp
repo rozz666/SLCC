@@ -14,11 +14,11 @@
 namespace tut
 {
 
-struct Test_data { };
+struct Empty { };
 
-typedef test_group<Test_data> tg;
+typedef test_group<Empty> tg;
 typedef tg::object object;
-tg SLFunc_group("Functional tests");
+tg CC_group("Functional tests");
 
 struct CompileError : public std::runtime_error
 {
