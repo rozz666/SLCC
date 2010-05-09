@@ -38,6 +38,7 @@ SL_ERROR_MESSAGE(void_variable, E0006, (const std::string& name), "Cannot declar
 SL_ERROR_MESSAGE(no_variable_type, E0007, (const std::string& name), "Cannot declare a variable with no type: " << name)
 SL_ERROR_MESSAGE(not_convertible, E0008, (const std::string& from)(const std::string& to), "Cannot convert an expression of type " << from << " into type " << to)
 SL_ERROR_MESSAGE_NP(bool_expr_expected, E0009, "Expected a boolean expression")
+SL_ERROR_MESSAGE_NP(module_declaration_missing, E0010, "Module declaration missing");
 
 std::ostream& operator<<(std::ostream& os, const Message& m);
 

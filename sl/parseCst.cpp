@@ -11,6 +11,13 @@ boost::optional<cst::Module> parseFile(std::istream& is, ErrorLogger& errorLogge
 
     source.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
 
+	if (source.empty())
+	{
+		errorLogger << err::module_declaration_missing(FilePosition(1, 1));
+
+		return boost::none;
+	}
+
     typedef boost::spirit::classic::position_iterator<Source::const_iterator, boost::spirit::classic::file_position> PosIterator;
 
     using boost::spirit::ascii::space;
