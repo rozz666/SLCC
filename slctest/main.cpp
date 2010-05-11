@@ -1,5 +1,5 @@
 #include <tut/tut.hpp>
-#include <tut/tut_reporter.hpp>
+#include <tut/tut_color_console_reporter.hpp>
 #include <iostream>
 
 namespace tut
@@ -11,7 +11,7 @@ test_runner_singleton runner;
 
 int main()
 {
-    tut::reporter reporter;
+    tut::color_console_reporter reporter;
     tut::runner.get().set_callback(&reporter);
 
     try
