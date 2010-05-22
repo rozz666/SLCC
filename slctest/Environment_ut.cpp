@@ -1,20 +1,25 @@
+#include <sstream>
 #include <tut/tut.hpp> 
 #include <sl/vm.hpp>
 #include <boost/type_traits/make_signed.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace tut
 {
 
 namespace vm = sl::vm;
 
-struct VM_Test_data
+struct VM_Test_data : boost::noncopyable
 {
     static const std::size_t memorySize = 1024;
     vm::Environment env;
     vm::Environment origEnv;
     vm::CodeGenerator cg;
+    std::stringstream inputStream;
+    std::stringstream outputStream;
     
-    VM_Test_data() : env(memorySize), origEnv(env) { }
+    VM_Test_data() : env(memorySize, inputStream, outputStream), origEnv(env) { }
 
     void run()
     {
@@ -1237,5 +1242,84 @@ void object::test<103>()
     set_test_name("NEQF");
     test_binary_op<sl::float_t, sl::int_t>(vm::NEQF, 3.22f, 3.22f, 0);
 }
+
+template <>
+template <>
+void object::test<104>()
+{
+    set_test_name("INPI");
+
+    cg.emit(vm::INPI);
+    const sl::int_t value = 0x12345678;
+    const vm::BPAddr valueSize = sizeof(value);
+    inputStream << value;
+
+    run();
+
+    ensure_pushed(valueSize);
+    ensure_equals_on_stack("value", 0, value);
+    ensure_no_memory_corruption();
+    ensure_no_bp_change();
+}
+
+template <>
+template <>
+void object::test<105>()
+{
+    set_test_name("INPF");
+
+    cg.emit(vm::INPF);
+    const sl::float_t value = 346.36f;
+    const vm::BPAddr valueSize = sizeof(value);
+    inputStream << value;
+
+    run();
+
+    ensure_pushed(valueSize);
+    ensure_equals_on_stack("value", 0, value);
+    ensure_no_memory_corruption();
+    ensure_no_bp_change();
+}
+
+template <>
+template <>
+void object::test<106>()
+{
+    set_test_name("OUTI");
+
+    cg.emit(vm::OUTI);
+    const sl::int_t value = 0x12345678;
+    const vm::BPAddr valueSize = sizeof(value);
+
+    push(value);
+
+    run();
+
+    ensure_equals("printed value", outputStream.str(), boost::lexical_cast<std::string>(value) + "\n");
+    ensure_popped(valueSize);
+    ensure_no_memory_corruption(valueSize);
+    ensure_no_bp_change();
+}
+
+template <>
+template <>
+void object::test<107>()
+{
+    set_test_name("invalid instruction");
+
+    cg.emit(sl::byte(0xff));
+
+    try
+    {
+        run();
+        fail("sl::vm::InvalidInstruction not thrown");
+    }
+    catch (const sl::vm::InvalidInstruction& )
+    {
+        ensure_no_memory_corruption();
+        ensure_no_bp_change();
+    }
+}
+
 
 }

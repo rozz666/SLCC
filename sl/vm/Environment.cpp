@@ -1,5 +1,7 @@
-#include <iostream>
+#include <istream>
+#include <ostream>
 #include <cstring>
+#include <sstream>
 #include <sl/def.hpp>
 #include <sl/vm/opcodes.hpp>
 #include <sl/vm/Environment.hpp>
@@ -353,7 +355,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
             case INPI:
             {
                 int_t val;
-                std::cin >> val;
+                *inputStream >> val;
                 sp -= 4;
                 copy4(&val, memory + sp);
                 break;
@@ -361,8 +363,8 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 
             case INPF:
             {
-                int_t val;
-                std::cin >> val;
+                float_t val;
+                *inputStream >> val;
                 sp -= 4;
                 copy4(&val, memory + sp);
                 break;
@@ -373,8 +375,15 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 int_t val;
                 copy4(memory + sp, &val);
                 sp += 4;
-                std::cout << val << std::endl;
+                *outputStream << val << std::endl;
                 break;
+            }
+
+            default:
+            {
+                std::ostringstream os;
+                os << "Invalid instruction 0x" << unsigned(code[off - 1]);
+                throw InvalidInstruction(os.str());
             }
         }
     }

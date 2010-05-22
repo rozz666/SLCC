@@ -112,7 +112,7 @@ void object::test<1>()
     set_test_name("operators");
 
     sl::vm::Module module = compileFile("tests\\test1.sl");
-    sl::vm::Environment env(1024);
+    sl::vm::Environment env(1024, std::cin, std::cout);
 
     using sl::int_t;
     using sl::float_t;
@@ -169,7 +169,7 @@ void object::test<4>()
     set_test_name("swap");
 
     sl::vm::Module module = compileFile("tests\\test4.sl");
-    sl::vm::Environment env(1024);
+    sl::vm::Environment env(1024, std::cin, std::cout);
 
     using sl::int_t;
     using sl::float_t;
@@ -186,7 +186,7 @@ void object::test<5>()
     set_test_name("passing by reference");
 
     sl::vm::Module module = compileFile("tests\\test5.sl");
-    sl::vm::Environment env(1024);
+    sl::vm::Environment env(1024, std::cin, std::cout);
 
     using sl::int_t;
     using sl::float_t;
@@ -203,7 +203,7 @@ void object::test<6>()
     set_test_name("if");
 
     sl::vm::Module module = compileFile("tests\\test6.sl");
-    sl::vm::Environment env(1024);
+    sl::vm::Environment env(1024, std::cin, std::cout);
     sl::vm::DataAddr sp = env.sp();
 
     using sl::int_t;
@@ -242,7 +242,7 @@ void object::test<8>()
     set_test_name("while loop");
 
     sl::vm::Module module = compileFile("tests\\test7.sl");
-    sl::vm::Environment env(1024);
+    sl::vm::Environment env(1024, std::cin, std::cout);
     sl::vm::DataAddr sp = env.sp();
 
     using sl::int_t;

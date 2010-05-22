@@ -1,6 +1,7 @@
 #ifndef SL_VM_ENVIRONMENT_HPP
 #define SL_VM_ENVIRONMENT_HPP
 
+#include <iosfwd>
 #include <vector>
 #include <sl/vm/def.hpp>
 
@@ -8,6 +9,18 @@ namespace sl
 {
 namespace vm
 {
+
+class RuntimeError : public std::runtime_error
+{
+public:
+    RuntimeError(const std::string& message) : std::runtime_error(message) { }
+};
+
+class InvalidInstruction : public RuntimeError
+{
+public:
+    InvalidInstruction(const std::string& message) : RuntimeError(message) { }
+};
 
 class Environment
 {
@@ -20,7 +33,8 @@ public:
         memory_.swap(right.memory_);
     }
 
-    explicit Environment(std::size_t memorySize) : memory_(memorySize, 0xac), sp_(memorySize), bp_(sp_) { }
+    explicit Environment(std::size_t memorySize, std::istream& inputStream, std::ostream& outputStream)
+        : sp_(memorySize), bp_(sp_), memory_(memorySize, 0xac), inputStream(&inputStream), outputStream(&outputStream) { }
 
     DataAddr sp() const { return sp_; }
     void sp(DataAddr val) { sp_ = val; }
@@ -37,6 +51,8 @@ private:
 
     DataAddr sp_, bp_;
     Memory memory_;
+    std::istream *inputStream;
+    std::ostream *outputStream;
 };
 
 }
