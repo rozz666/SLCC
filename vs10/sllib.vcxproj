@@ -173,6 +173,7 @@
     <ClInclude Include="..\sl\grammar.hpp" />
     <ClInclude Include="..\sl\parseAst.hpp" />
     <ClInclude Include="..\sl\parseCst.hpp" />
+    <ClInclude Include="..\sl\sha1.hpp" />
     <ClInclude Include="..\sl\vm.hpp" />
     <ClInclude Include="..\sl\vm\BytecodeBuffer.hpp" />
     <ClInclude Include="..\sl\vm\CodeGenerator.hpp" />

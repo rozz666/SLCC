@@ -84,7 +84,7 @@ void object::test<1>()
 	setCode(),
 		"   ",
 		"        module    ",
-		"    Kasia;"
+		"    Kasia;",
 		"    ";
 
 	parse();

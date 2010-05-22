@@ -36,5 +36,8 @@
     <ClCompile Include="..\slctest\FilePosition_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\slctest\sha1_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

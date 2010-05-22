@@ -320,5 +320,8 @@
     <ClInclude Include="..\sl\assert.hpp">
       <Filter>Header Files\sl</Filter>
     </ClInclude>
+    <ClInclude Include="..\sl\sha1.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
