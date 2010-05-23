@@ -5,64 +5,58 @@
 #include <tut/tut.hpp>
 #include <cassert>
 
-/**
- * Template Unit Tests Framework for C++.
- * http://tut.dozen.ru
- *
- * @author Vladimir Dyuzhev, Vladimir.Dyuzhev@gmail.com
- */
 namespace
 {
 
 class console
 {
-	HANDLE handle;
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
+    HANDLE handle;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 public:
 
-	console()
-	{
-		handle = GetStdHandle(STD_OUTPUT_HANDLE);
-		GetConsoleScreenBufferInfo(handle, &csbi);
-	}
+    console()
+    {
+        handle = GetStdHandle(STD_OUTPUT_HANDLE);
+        GetConsoleScreenBufferInfo(handle, &csbi);
+    }
 
-	void reset_color()
-	{
-		SetConsoleTextAttribute(handle, csbi.wAttributes);
-	}
+    void reset_color()
+    {
+        SetConsoleTextAttribute(handle, csbi.wAttributes);
+    }
 
-	void set_color(WORD color)
-	{
-		CONSOLE_SCREEN_BUFFER_INFO csbi = this->csbi;
+    void set_color(WORD color)
+    {
+        CONSOLE_SCREEN_BUFFER_INFO csbi = this->csbi;
 
-		csbi.wAttributes &= (BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY);
-		csbi.wAttributes |= color & (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+        csbi.wAttributes &= (BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY);
+        csbi.wAttributes |= color & (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
 
-		SetConsoleTextAttribute(handle, csbi.wAttributes);
-	}
+        SetConsoleTextAttribute(handle, csbi.wAttributes);
+    }
 
 } console;
 
 std::ostream& cr(std::ostream& os)
 {
-	os.flush();
-	console.reset_color();
-	return os;
+    os.flush();
+    console.reset_color();
+    return os;
 }
 
 std::ostream& green(std::ostream& os)
 {
-	os.flush();
-	console.set_color(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-	return os;
+    os.flush();
+    console.set_color(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+    return os;
 }
 
 std::ostream& red(std::ostream& os)
 {
-	os.flush();
-	console.set_color(FOREGROUND_RED | FOREGROUND_INTENSITY);
-	return os;
+    os.flush();
+    console.set_color(FOREGROUND_RED | FOREGROUND_INTENSITY);
+    return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const tut::test_result& tr)
@@ -70,7 +64,7 @@ std::ostream& operator<<(std::ostream& os, const tut::test_result& tr)
     switch(tr.result)
     {
     case tut::test_result::ok:
-		os << green << "." << cr;
+        os << green << "." << cr;
         break;
     case tut::test_result::fail:
         os << red << '[' << tr.test << "=F]" << cr;
@@ -176,7 +170,7 @@ public:
 
         if (not_passed.size() > 0)
         {
-			os << std::endl << "Failed tests:" << std::endl;
+            os << std::endl << "Failed tests:" << std::endl;
 
             not_passed_list::const_iterator i = not_passed.begin();
             while (i != not_passed.end())
@@ -225,7 +219,7 @@ public:
                     break;
                 }
 
-				os << cr;
+                os << cr;
 
                 if (!tr.message.empty())
                 {

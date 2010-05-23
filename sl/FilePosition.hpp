@@ -14,12 +14,12 @@ struct FilePosition
 
 inline bool operator==(const FilePosition& left, const FilePosition& right)
 {
-	return left.line == right.line && left.column == right.column;
+    return left.line == right.line && left.column == right.column;
 }
 
 inline bool operator!=(const FilePosition& left, const FilePosition& right)
 {
-	return !(left == right);
+    return !(left == right);
 }
 
 inline bool operator<(const FilePosition& left, const FilePosition& right)

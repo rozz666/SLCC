@@ -17,6 +17,9 @@
     <Filter Include="Header Files\sl\err">
       <UniqueIdentifier>{b6c68679-0df4-4848-b722-e085c467ce98}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sl\test">
+      <UniqueIdentifier>{1fa9b2ff-96ff-46ad-a6b3-2bdf2fb38cdb}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Header Files\sl\vm">
       <UniqueIdentifier>{4b61c8b7-50a9-4efb-be92-e14f5aad6420}</UniqueIdentifier>
     </Filter>
@@ -36,6 +39,9 @@
     </Filter>
     <Filter Include="Source Files\sl\cst">
       <UniqueIdentifier>{44be0b90-84d2-48d1-b250-da7bfdaf856e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sl\test">
+      <UniqueIdentifier>{7b4a5fec-f089-424d-be34-ea2d734ef668}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\sl\vm">
       <UniqueIdentifier>{dd8da57c-4669-4ee7-8e6b-0267308d48ad}</UniqueIdentifier>
@@ -289,6 +295,27 @@
     </ClInclude>
     <ClInclude Include="..\sl\parseCst.hpp">
       <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test.hpp">
+      <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\ConsoleReporter.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\Reporter.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\Runner.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\TestOps.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\TestSuite.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\TestSuiteBase.hpp">
+      <Filter>Header Files\sl\test</Filter>
     </ClInclude>
     <ClInclude Include="..\sl\vm.hpp">
       <Filter>Header Files\sl</Filter>

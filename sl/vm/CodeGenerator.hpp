@@ -17,7 +17,7 @@ public:
 
     BytecodeBuffer code;
 
-	CodeAddr emit(Opcode oc)
+    CodeAddr emit(Opcode oc)
     {
         code.push_back(byte(oc));
         return code.size() - 1;
@@ -37,7 +37,7 @@ public:
         code[addr] = byte(oc);
     }
 
-	template <typename T>
+    template <typename T>
     void emit(CodeAddr addr, T val)
     {
         SL_ASSERT(addr + sizeof(val) <= code.size());

@@ -173,6 +173,13 @@
     <ClInclude Include="..\sl\grammar.hpp" />
     <ClInclude Include="..\sl\parseAst.hpp" />
     <ClInclude Include="..\sl\parseCst.hpp" />
+    <ClInclude Include="..\sl\test.hpp" />
+    <ClInclude Include="..\sl\test\ConsoleReporter.hpp" />
+    <ClInclude Include="..\sl\test\Reporter.hpp" />
+    <ClInclude Include="..\sl\test\Runner.hpp" />
+    <ClInclude Include="..\sl\test\TestOps.hpp" />
+    <ClInclude Include="..\sl\test\TestSuite.hpp" />
+    <ClInclude Include="..\sl\test\TestSuiteBase.hpp" />
     <ClInclude Include="..\sl\vm.hpp" />
     <ClInclude Include="..\sl\vm\BytecodeBuffer.hpp" />
     <ClInclude Include="..\sl\vm\CodeGenerator.hpp" />

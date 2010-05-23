@@ -57,12 +57,12 @@ void object::test<4>()
 
     set_test_name("value");
 
-	std::string str1 = "The quick brown fox jumps over the lazy dog";
+    std::string str1 = "The quick brown fox jumps over the lazy dog";
     ensure_equals("value1", sha1(str1.begin(), str1.end()), Sha1(0x2fd4e1c6, 0x7a2d28fc, 0xed849ee1, 0xbb76e739, 0x1b93eb12));
-	std::string str2 = "The quick brown fox jumps over the lazy cog";
-	ensure_equals("value2", sha1(str2.begin(), str2.end()), Sha1(0xde9f2c7f, 0xd25e1b3a, 0xfad3e85a, 0x0bd17d9b, 0x100db4b3));
-	std::string str3(1024, 'x');
-	ensure_equals("value3", sha1(str3.begin(), str3.end()), Sha1(0xd5a3c9bd, 0x7e746c98, 0xb4aea0e9, 0x194fb955, 0x5b3c22ad));
+    std::string str2 = "The quick brown fox jumps over the lazy cog";
+    ensure_equals("value2", sha1(str2.begin(), str2.end()), Sha1(0xde9f2c7f, 0xd25e1b3a, 0xfad3e85a, 0x0bd17d9b, 0x100db4b3));
+    std::string str3(1024, 'x');
+    ensure_equals("value3", sha1(str3.begin(), str3.end()), Sha1(0xd5a3c9bd, 0x7e746c98, 0xb4aea0e9, 0x194fb955, 0x5b3c22ad));
 }
 
 template <>
@@ -71,10 +71,10 @@ void object::test<5>()
 {
     set_test_name("leftRotate");
 
-    ensure_equals(sl::detail::leftRotate(0x12345678, 0), 0x12345678);
-    ensure_equals(sl::detail::leftRotate(0x12345678, 16), 0x56781234);
-    ensure_equals(sl::detail::leftRotate(0x12345678, 4), 0x23456781);
-    ensure_equals(sl::detail::leftRotate(0x12345678, 24), 0x78123456);
+    ensure_equals(sl::detail::leftRotate(0x12345678, 0), 0x12345678u);
+    ensure_equals(sl::detail::leftRotate(0x12345678, 16), 0x56781234u);
+    ensure_equals(sl::detail::leftRotate(0x12345678, 4), 0x23456781u);
+    ensure_equals(sl::detail::leftRotate(0x12345678, 24), 0x78123456u);
 }
 
 template <>
@@ -83,8 +83,8 @@ void object::test<6>()
 {
     set_test_name("swapEndianness");
 
-    ensure_equals(sl::detail::swapEndianness(0x12345678), 0x78563412);
-    ensure_equals(sl::detail::swapEndianness(0x87654321), 0x21436587);
+    ensure_equals(sl::detail::swapEndianness(0x12345678), 0x78563412u);
+    ensure_equals(sl::detail::swapEndianness(0x87654321), 0x21436587u);
 }
 
 }

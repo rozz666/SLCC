@@ -20,7 +20,7 @@ int main()
     }
     catch (const std::exception& ex)
     {
-		std::cerr << "tut raised ex: " << ex.what() << std::endl;
+        std::cerr << "tut raised ex: " << ex.what() << std::endl;
         return 1;
     }
 } 
