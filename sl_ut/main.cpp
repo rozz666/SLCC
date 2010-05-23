@@ -1,6 +1,6 @@
 #include <tut/tut.hpp>
-#include <tut/tut_color_console_reporter.hpp>
 #include <iostream>
+#include "tut_color_console_reporter.hpp"
 
 namespace tut
 {
