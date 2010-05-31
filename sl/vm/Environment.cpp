@@ -379,10 +379,19 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 break;
             }
 
+            case OUTF:
+            {
+                float_t val;
+                copy4(memory + sp, &val);
+                sp += 4;
+                *outputStream << val << std::endl;
+                break;
+            }
+
             default:
             {
                 std::ostringstream os;
-                os << "Invalid instruction 0x" << unsigned(code[off - 1]);
+                os << "Invalid instruction 0x" << std::hex << unsigned(code[off - 1]);
                 throw InvalidInstruction(os.str());
             }
         }

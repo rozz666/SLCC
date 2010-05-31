@@ -30,6 +30,7 @@ inline Message name(const FilePosition& pos) \
 
 SL_ERROR_MESSAGE(unknown_identifier, E0001, (const std::string& identifier), "Unknown identifier: " << identifier)
 SL_ERROR_MESSAGE(function_already_declared, E0002, (const std::string& identifier), "Function already declared: " << identifier)
+SL_ERROR_MESSAGE(function_earlier_declaration, E0002, (const std::string& identifier), "Earlier declaration of " << identifier)
 SL_ERROR_MESSAGE(variable_already_declared, E0003, (const std::string& identifier), "Variable already declared: " << identifier)
 SL_ERROR_MESSAGE(variable_earlier_declaration, E0003, (const std::string& identifier), "Earlier declaration of " << identifier)
 SL_ERROR_MESSAGE(syntax_error, E0004, (const std::string& what), "Syntax error. Exprected " << what)

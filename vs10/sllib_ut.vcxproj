@@ -99,6 +99,7 @@
     <ClCompile Include="..\sl\ErrorLogger.cpp" />
     <ClCompile Include="..\sl\parseAst.cpp" />
     <ClCompile Include="..\sl\parseCst.cpp" />
+    <ClCompile Include="..\sl\test\Console.cpp" />
     <ClCompile Include="..\sl\vm\Environment.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +175,7 @@
     <ClInclude Include="..\sl\parseAst.hpp" />
     <ClInclude Include="..\sl\parseCst.hpp" />
     <ClInclude Include="..\sl\test.hpp" />
+    <ClInclude Include="..\sl\test\Console.hpp" />
     <ClInclude Include="..\sl\test\ConsoleReporter.hpp" />
     <ClInclude Include="..\sl\test\Reporter.hpp" />
     <ClInclude Include="..\sl\test\Runner.hpp" />

@@ -25,7 +25,7 @@ public:
         return *this;
     }
 
-    void print(std::ostream& os);
+    void print(std::ostream& os) const;
 
     const Errors& errors() const { return errors_; }
 

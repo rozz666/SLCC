@@ -20,6 +20,8 @@ public:
     virtual void finishTest() = 0;
     virtual void outputMismatch(const std::string& actual, const std::string& expected) = 0;
     virtual void compilationError(const std::string& msg) = 0;
+    virtual void errorMissing(const std::string& expected) = 0;
+    virtual void unexpectedError(const std::string& expected) = 0;
     virtual void fileNotFound(const std::string& name) = 0;
 
 protected:

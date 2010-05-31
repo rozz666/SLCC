@@ -78,6 +78,9 @@
     <ClCompile Include="..\sl\parseCst.cpp">
       <Filter>Source Files\sl</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl\test\Console.cpp">
+      <Filter>Source Files\sl\test</Filter>
+    </ClCompile>
     <ClCompile Include="..\sl\vm\Environment.cpp">
       <Filter>Source Files\sl\vm</Filter>
     </ClCompile>
@@ -298,6 +301,9 @@
     </ClInclude>
     <ClInclude Include="..\sl\test.hpp">
       <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\test\Console.hpp">
+      <Filter>Header Files\sl\test</Filter>
     </ClInclude>
     <ClInclude Include="..\sl\test\ConsoleReporter.hpp">
       <Filter>Header Files\sl\test</Filter>

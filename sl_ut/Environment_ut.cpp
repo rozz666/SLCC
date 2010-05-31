@@ -1305,6 +1305,30 @@ template <>
 template <>
 void object::test<107>()
 {
+    set_test_name("OUTF");
+
+    cg.emit(vm::OUTF);
+    const sl::float_t value = 346.36f;
+    const vm::BPAddr valueSize = sizeof(value);
+
+    push(value);
+
+    run();
+
+    std::ostringstream os;
+
+    os << value << "\n";
+
+    ensure_equals("printed value", outputStream.str(), os.str());
+    ensure_popped(valueSize);
+    ensure_no_memory_corruption(valueSize);
+    ensure_no_bp_change();
+}
+
+template <>
+template <>
+void object::test<108>()
+{
     set_test_name("invalid instruction");
 
     cg.emit(sl::byte(0xff));

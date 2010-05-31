@@ -3,6 +3,8 @@
 
 #include <fstream>
 #include <string>
+#include <boost/lexical_cast.hpp>
+#include <boost/dynamic_bitset.hpp>
 #include <sl/vm/BytecodeBuffer.hpp>
 #include <sl/vm/Environment.hpp>
 #include <sl/err/messages.hpp>
@@ -54,12 +56,66 @@ private:
     Reporter *reporter_;
 };
 
-class TestOps
+class ExpectOps
+{
+public:
+
+    ExpectOps() : ignore_(true) { }
+    ExpectOps(const ErrorLogger& errorLogger, boost::dynamic_bitset<>& expected, Reporter& reporter)
+        : ignore_(false), last_(true), logger_(&errorLogger), expected_(&expected), reporter_(&reporter) { }
+
+    ExpectOps(const ExpectOps& right) : ignore_(right.ignore_), last_(right.last_), logger_(right.logger_), expected_(right.expected_), reporter_(right.reporter_)
+    {
+        right.last_ = false;
+    }
+
+    ExpectOps expect(const err::Message& msg)
+    {
+        if (ignore_) return *this;
+
+        auto it = std::find_if(
+            logger_->errors().begin(),
+            logger_->errors().end(),
+            [&msg](const err::Message& right) { return right.id == msg.id && right.pos == msg.pos && right.text == msg.text; });
+
+        if (it == logger_->errors().end())
+        {
+            reporter_->errorMissing(boost::lexical_cast<std::string>(msg));
+        }
+        else
+        {
+            expected_->set(std::distance(logger_->errors().begin(), it));
+        }
+
+        last_ = false;
+
+        return *this;
+    }
+
+    ~ExpectOps()
+    {
+        if (!last_) return;
+
+        for (ErrorLogger::Errors::size_type i = 0; i != logger_->errors().size(); ++i)
+        {
+            if (!expected_->test(i)) reporter_->unexpectedError(boost::lexical_cast<std::string>(logger_->errors()[i]));
+        }
+    }
+
+private:
+    bool ignore_;
+    mutable bool last_;
+    const ErrorLogger *logger_;
+    boost::dynamic_bitset<> *expected_;
+    Reporter *reporter_;
+};
+
+class TestOps : boost::noncopyable
 {
 public:
 
     TestOps(const std::string& file, Reporter& reporter)
-        : logger_(file), reporter_(&reporter), fileOk_(compile(file))    { }
+        : logger_(file), reporter_(&reporter), fileOk_(compile(file)), expected_(logger_.errors().size()) { }
 
     TestOps(TestOps&& right) : logger_(right.logger_), reporter_(right.reporter_)
     {
@@ -86,20 +142,11 @@ public:
         return MatchOps(bytecode_, *reporter_).match(input, output);
     }        
 
-    void expect(const sl::err::Message& msg)
+    ExpectOps expect(const sl::err::Message& msg)
     { 
-        if (!fileOk_) return;
-
-        if (logger_.errors().size() == 1)
-        {
-            const sl::err::Message& actual = logger_.errors().front();
-            
-            if (actual.id == msg.id && actual.pos == msg.pos && actual.text == msg.text) return;
-        }
-
-        std::ostringstream os;
-        logger_.print(os);
-        reporter_->compilationError(os.str());
+        if (!fileOk_) return ExpectOps();
+     
+        return ExpectOps(logger_, expected_, *reporter_).expect(msg);
     }
 
 private:
@@ -108,6 +155,7 @@ private:
     Reporter *reporter_;
     sl::vm::BytecodeBuffer bytecode_;
     bool fileOk_;
+    boost::dynamic_bitset<> expected_;
 
     bool compile(const std::string& file)
     {

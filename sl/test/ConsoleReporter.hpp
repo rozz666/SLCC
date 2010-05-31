@@ -2,8 +2,9 @@
 #define SL_TEST_CONSOLEREPORTER_HPP
 
 #include <iostream>
-#include <sl/test/Reporter.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <sl/test/Reporter.hpp>
+#include <sl/test/Console.hpp>
 
 namespace sl
 {
@@ -25,28 +26,33 @@ public:
     {
         std::cout << "\nsummary:";
 
-        if (okCount_ > 0) std::cout << " ok: " << okCount_;
-        if (failedCount_ > 0) std::cout << " failed: " << failedCount_;
-        if (errorCount_ > 0) std::cout << " errors: " << errorCount_;
+        if (okCount_ > 0) std::cout << " ok: " << green << okCount_ << rc;
+        if (failedCount_ > 0) std::cout << " failed: " << red << failedCount_ << rc;
+        if (errorCount_ > 0) std::cout << " errors: " << red << errorCount_ << rc;
 
         std::cout << std::endl;
     }
 
     virtual void runTestSuite(unsigned, const std::string& name)
     {
-        std::cout << "running " << name << ":" << std::endl;
+        std::cout << name << ":" << std::flush;
     }
 
     virtual void finishTestSuite()
     {
-        std::string e = errors_.str();
+        std::cout << std::endl;
 
-        if (!e.empty()) std::cout << "\n" << e << std::flush;
+        for (auto it = errors_.begin(); it != errors_.end(); ++it)
+        {
+            std::cout << it->first << ":" << std::endl;
+            std::cout << it->second.str() << std::endl;
+        }
+
+        errors_.clear();
     }
 
     virtual void runTest(const std::string& name)
     {
-        std::cout << "   running " << name << ": ";
         result_ = PASSED;
         testName_ = name;
     }
@@ -57,24 +63,24 @@ public:
         {
             case PASSED:
                 ++okCount_;
-                std::cout << "passed";
+                std::cout << green << ".";
                 break;
             case FAILED:
                 ++failedCount_;
-                std::cout << "failed";
+                std::cout << red << "F";
                 break;
             case ERROR:
                 ++errorCount_;
-                std::cout << "error";
+                std::cout << red << "E";
                 break;
         }
-        std::cout << std::endl;
+        std::cout << rc << std::flush;
     }
 
     virtual void outputMismatch(const std::string& actual, const std::string& expected)
     {
         result_ = FAILED;
-        errors_ << "   " << testName_ << " output mismatch:\n      expected: " << boost::replace_all_copy(expected, "\n", " ") << " actual: " << boost::replace_all_copy(actual, "\n", " ") << std::endl;
+        errors_[testName_] << " output mismatch:\n      expected: " << boost::replace_all_copy(expected, "\n", " ") << " actual: " << boost::replace_all_copy(actual, "\n", " ") << std::endl;
     }
 
     virtual void compilationError(const std::string& msg)
@@ -83,13 +89,25 @@ public:
         std::string m = msg;
         m.erase(m.length() - 1);
         boost::replace_all(m, "\n", "\n      ");
-        errors_ << "   " << testName_ << " compilation error(s):\n      " << m << std::endl;
+        errors_[testName_] << " compilation error(s):\n      " << m << std::endl;
+    }
+
+    virtual void errorMissing(const std::string& expected)
+    {
+        result_ = FAILED;
+        errors_[testName_] << " error missing: " << expected << std::endl;
+    }
+
+    virtual void unexpectedError(const std::string& msg)
+    {
+        result_ = FAILED;
+        errors_[testName_] << " unexpected error: " << msg << std::endl;
     }
 
     virtual void fileNotFound(const std::string& name)
     {
         result_ = ERROR;
-        errors_ << "   " << testName_ << " file not found: " << name << std::endl;
+        errors_[testName_] << " file not found: " << name << std::endl;
     }
 
 private:
@@ -103,7 +121,7 @@ private:
 
     TestResult result_;
     std::string testName_;
-    std::ostringstream errors_;
+    std::map<std::string, std::ostringstream> errors_;
     unsigned okCount_;
     unsigned failedCount_;
     unsigned errorCount_;
