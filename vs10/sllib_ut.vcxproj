@@ -120,6 +120,7 @@
     <ClInclude Include="..\sl\ast\isConvertible.hpp" />
     <ClInclude Include="..\sl\ast\isLValue.hpp" />
     <ClInclude Include="..\sl\ast\Module.hpp" />
+    <ClInclude Include="..\sl\ast\ModuleMap.hpp" />
     <ClInclude Include="..\sl\ast\ReturnStatement.hpp" />
     <ClInclude Include="..\sl\ast\Statement.hpp" />
     <ClInclude Include="..\sl\ast\strParameters.hpp" />

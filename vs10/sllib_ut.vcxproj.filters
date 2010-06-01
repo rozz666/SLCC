@@ -137,6 +137,9 @@
     <ClInclude Include="..\sl\ast\Module.hpp">
       <Filter>Header Files\sl\ast</Filter>
     </ClInclude>
+    <ClInclude Include="..\sl\ast\ModuleMap.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
     <ClInclude Include="..\sl\ast\ReturnStatement.hpp">
       <Filter>Header Files\sl\ast</Filter>
     </ClInclude>
