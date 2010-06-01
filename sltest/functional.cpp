@@ -5,8 +5,6 @@ sl::test::TestSuite<1> suite("Functional tests");
 template <>
 void sl::test::TestSuite<1>::run()
 {
-    using namespace sl::err;
-
     test("Identity", "identity.sl")
         .match("10", "10\n")
         .match("15", "15\n")
@@ -79,29 +77,6 @@ void sl::test::TestSuite<1>::run()
         .match("-5 5", "5\n5\n5\n5\n")
         .match("10 20", "20\n20\n20\n20\n");
 
-    test("Empty", "empty.sl")
-        .expect(module_declaration_missing(at(1, 1)));
-
-    test("Whitespace", "whitespace.sl")
-        .expect(module_declaration_missing(at(1, 10)));
-
-    test("Double variable declaration", "doublevdecl.sl")
-        .expect(variable_already_declared(at(3, 14), "a"))
-        .expect(variable_earlier_declaration(at(3, 7), "a"))
-        .expect(variable_already_declared(at(11, 9), "a"))
-        .expect(variable_earlier_declaration(at(10, 9), "a"));
-
-    test("Double function declaration", "doublefdecl.sl")
-        .expect(function_already_declared(at(8, 1), "f(int)"))
-        .expect(function_earlier_declaration(at(3, 1), "f(int)"))
-        .expect(function_already_declared(at(13, 1), "f(int)"))
-        .expect(function_earlier_declaration(at(3, 1), "f(int)"));
-
     test("new delete", "newdelete.sl")
         .match("", "1\n5\n2\n5\n3\n1\n1\n6\n");
-
-    test("bad delete", "baddelete.sl")
-        .expect(unknown_identifier(at(9, 16), "a"))
-        .expect(unknown_identifier(at(19, 16), "a"))
-        .expect(unknown_identifier(at(27, 5), "a"));
 }

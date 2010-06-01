@@ -88,6 +88,7 @@
     <ProjectReference />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\sltest\errors.cpp" />
     <ClCompile Include="..\sltest\main.cpp" />
     <ClCompile Include="..\sltest\functional.cpp" />
   </ItemGroup>
