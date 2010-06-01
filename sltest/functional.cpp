@@ -75,7 +75,9 @@ void sl::test::TestSuite<1>::run()
 
     test("if", "iftest.sl")
         .match("-5 5", "5\n5\n5\n5\n")
-        .match("10 20", "20\n20\n20\n20\n");
+        .match("5 -5", "5\n5\n5\n5\n")
+        .match("10 20", "20\n20\n20\n20\n")
+        .match("20 10", "20\n20\n20\n20\n");
 
     test("new delete", "newdelete.sl")
         .match("", "1\n5\n2\n5\n3\n1\n1\n6\n");
