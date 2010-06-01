@@ -1,4 +1,4 @@
-module test6;
+module iftest;
 
 max1(int a, int b) -> int
 {
@@ -44,4 +44,12 @@ max4(int a, int b) -> int
     return a;
 }
 
-main() ->int { }
+main() -> void
+{
+    new a = geti();
+    new b = geti();
+    put(max1(a, b));
+    put(max2(a, b));
+    put(max3(a, b));
+    put(max4(a, b));
+}

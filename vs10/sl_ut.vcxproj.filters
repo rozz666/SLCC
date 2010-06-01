@@ -27,13 +27,13 @@
     <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sl_ut\CC_ut.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sl_ut\parseCST_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sl_ut\FilePosition_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\parseModules_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sl_ut\sha1_ut.cpp">

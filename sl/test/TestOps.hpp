@@ -139,6 +139,12 @@ public:
             return MatchOps();
         }
 
+        if (bytecode_.empty())
+        {
+            reporter_->compilationError("No bytecode\n");
+            return MatchOps();
+        }
+
         return MatchOps(bytecode_, *reporter_).match(input, output);
     }        
 
