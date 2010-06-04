@@ -11,4 +11,4 @@ f() -> void
     new a = 2;
 }
 
-main() ->int { }
+main() -> void { }

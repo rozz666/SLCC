@@ -730,6 +730,22 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
         df.body(std::move(cs));
     }
 
+    boost::optional<ast::FunctionRef> mainFunc = functionTable.find(ast::functionMangledName("main", ""));
+
+    if (!mainFunc)
+    {
+        errorLogger << err::missing_main(FilePosition(1, 1));
+        return m;
+    }
+
+    const ast::FunctionDef& mainDef = *boost::get<const ast::FunctionDef *>(*mainFunc);
+
+    if (mainDef.type() != void_)
+    {
+        errorLogger << err::invalid_main_type(mainDef.pos());
+        return m;
+    }
+
     return m;
 }
 

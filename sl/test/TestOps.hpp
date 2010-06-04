@@ -177,6 +177,8 @@ private:
         {
             ast::Module parsed = parseModule(*module, logger_);
 
+            if (!logger_.errors().empty()) return true;
+
             FunctionAddrMap fam;
 
             generateBytecode(parsed, fam).swap(bytecode_);
