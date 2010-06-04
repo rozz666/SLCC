@@ -73,21 +73,21 @@ public:
     {
         if (ignore_) return *this;
 
-        auto it = std::find_if(
-            logger_->errors().begin(),
-            logger_->errors().end(),
-            [&msg](const err::Message& right) { return right.id == msg.id && right.pos == msg.pos && right.text == msg.text; });
+        boost::dynamic_bitset<>& expected = *expected_;
 
-        if (it == logger_->errors().end())
+        for (ErrorLogger::Errors::size_type i = 0; i != logger_->errors().size(); ++i)
         {
-            reporter_->errorMissing(boost::lexical_cast<std::string>(msg));
-        }
-        else
-        {
-            expected_->set(std::distance(logger_->errors().begin(), it));
+            const err::Message& m = logger_->errors()[i];
+
+            if (!expected.test(i) && m.id == msg.id && m.pos == msg.pos && m.text == msg.text)
+            {
+                expected.set(i);
+
+                return *this;
+            }
         }
 
-        last_ = false;
+        reporter_->errorMissing(boost::lexical_cast<std::string>(msg));
 
         return *this;
     }

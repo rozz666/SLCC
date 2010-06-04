@@ -11,13 +11,6 @@ boost::optional<cst::Module> parseFile(std::istream& is, ErrorLogger& errorLogge
 
     source.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
 
-    if (source.empty())
-    {
-        errorLogger << err::module_declaration_missing(FilePosition(1, 1));
-
-        return boost::none;
-    }
-
     typedef boost::spirit::classic::position_iterator<Source::const_iterator, boost::spirit::classic::file_position> PosIterator;
 
     using boost::spirit::ascii::space;
@@ -31,7 +24,15 @@ boost::optional<cst::Module> parseFile(std::istream& is, ErrorLogger& errorLogge
     bool r = boost::spirit::qi::phrase_parse(iter, end, grammar, space, module);
 
     if (r && iter == end) return module;
-    else return boost::none;
+    else
+    {
+        if (errorLogger.errors().empty())
+        {
+            errorLogger << err::module_declaration_missing(FilePosition(iter.get_position().line, iter.get_position().column));
+        }
+
+        return boost::none;
+    }
 }
 
 

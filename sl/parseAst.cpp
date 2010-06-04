@@ -635,6 +635,13 @@ public:
             os << f.name.str << ast::strParameters(pc2);
 
             errorLogger_ << err::function_already_declared(f.name.pos, os.str());
+
+            ast::FunctionRef fr = *ft_.find(functionMangledName(*cf));
+            
+            if (fr.type() == typeid(const ast::FunctionDef *))
+            {
+                errorLogger_ << err::function_earlier_declaration(boost::get<const ast::FunctionDef *>(fr)->pos(), os.str());
+            }
         }
 
         ff_.insert(std::make_pair(&*cf, &f));

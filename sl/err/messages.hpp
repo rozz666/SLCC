@@ -40,6 +40,8 @@ SL_ERROR_MESSAGE(no_variable_type, E0007, (const std::string& name), "Cannot dec
 SL_ERROR_MESSAGE(not_convertible, E0008, (const std::string& from)(const std::string& to), "Cannot convert an expression of type " << from << " into type " << to)
 SL_ERROR_MESSAGE_NP(bool_expr_expected, E0009, "Expected a boolean expression")
 SL_ERROR_MESSAGE_NP(module_declaration_missing, E0010, "Module declaration missing");
+SL_ERROR_MESSAGE_NP(missing_main, E0011, "Missing main()");
+SL_ERROR_MESSAGE_NP(invalid_main_type, E0012, "main() must be void");
 
 std::ostream& operator<<(std::ostream& os, const Message& m);
 

@@ -1,0 +1,3 @@
+module badmain;
+
+main() -> int { }
