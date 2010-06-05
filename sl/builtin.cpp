@@ -17,7 +17,7 @@ const char *operatorName(cst::UnOp s)
         case cst::lnot_: return "operator!";
     }
 
-    assert(!"Not all operator handled");
+    SL_ASSERT(!"Not all operators handled");
 
     return "";
 }
@@ -31,7 +31,7 @@ const char *operatorName(cst::MulOp o)
         case cst::mod_: return "operator%";
     }
 
-    assert(!"Not all operator handled");
+    SL_ASSERT(!"Not all operators handled");
 
     return "";
 }
@@ -46,7 +46,7 @@ const char *operatorName(cst::RelOp o)
         case cst::greaterEqual_: return "operator>=";
     }
 
-    assert(!"Not all operator handled");
+    SL_ASSERT(!"Not all operators handled");
 
     return "";
 }
@@ -59,7 +59,7 @@ const char *operatorName(cst::EqOp o)
         case cst::notEqual_: return "operator!=";
     }
 
-    assert(!"Not all operator handled");
+    SL_ASSERT(!"Not all operators handled");
 
     return "";
 }

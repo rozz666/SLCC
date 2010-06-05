@@ -158,7 +158,7 @@ public:
     {
         auto it = addr_.find(var);
 
-        assert(it != addr_.end());
+        SL_ASSERT(it != addr_.end());
 
         return it->second;
     }
@@ -213,7 +213,7 @@ public:
 
         if ((i + size) > mem_.size()) mem_.resize(i + size, 0);
 
-        assert(size <= std::numeric_limits<C::value_type>::max());
+        SL_ASSERT(size <= std::numeric_limits<C::value_type>::max());
 
         mem_[i] = C::value_type(size);
 
@@ -225,7 +225,7 @@ public:
     void free(vm::BPAddr addr)
     {
         addr = -addr;
-        assert(addr >= 0 && addr < vm::BPAddr(mem_.size()) && mem_[addr] != 0);
+        SL_ASSERT(addr >= 0 && addr < vm::BPAddr(mem_.size()) && mem_[addr] != 0);
         mem_[addr] = 0;
     }
 
@@ -249,33 +249,33 @@ void generateExpressionRef(const ast::Expression& e, vm::CodeGenerator& cg, Func
 
 void gen_operator_plus_i(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
 }
 
 void gen_operator_plus_f(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
 }
 
 void gen_operator_minus_i(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::NEGI);
 }
 
 void gen_operator_minus_f(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::NEGF);
 }
 
 void gen_operator_lnot_b(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::CONST4);
     cg.emit<std::int32_t>(1);
@@ -285,7 +285,7 @@ void gen_operator_lnot_b(const ast::FunctionCall::ParamContainer& pc, vm::CodeGe
 #define SL_GEN_OPERATORS(name, opcode) \
 void gen_operator_##name##_ii(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
-    assert(pc.size() == 2); \
+    SL_ASSERT(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
     generateExpression(pc[1], cg, fam, salloc, vt); \
     cg.emit(vm::opcode##I); \
@@ -293,7 +293,7 @@ void gen_operator_##name##_ii(const ast::FunctionCall::ParamContainer& pc, vm::C
  \
 void gen_operator_##name##_fi(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
-    assert(pc.size() == 2); \
+    SL_ASSERT(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
     generateExpression(pc[1], cg, fam, salloc, vt); \
     cg.emit(vm::I2F); \
@@ -302,7 +302,7 @@ void gen_operator_##name##_fi(const ast::FunctionCall::ParamContainer& pc, vm::C
  \
 void gen_operator_##name##_if(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
-    assert(pc.size() == 2); \
+    SL_ASSERT(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
     cg.emit(vm::I2F); \
     generateExpression(pc[1], cg, fam, salloc, vt); \
@@ -311,7 +311,7 @@ void gen_operator_##name##_if(const ast::FunctionCall::ParamContainer& pc, vm::C
  \
 void gen_operator_##name##_ff(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt) \
 { \
-    assert(pc.size() == 2); \
+    SL_ASSERT(pc.size() == 2); \
     generateExpression(pc[0], cg, fam, salloc, vt); \
     generateExpression(pc[1], cg, fam, salloc, vt); \
     cg.emit(vm::opcode##F); \
@@ -331,7 +331,7 @@ SL_GEN_OPERATORS(neq, NEQ)
 
 void gen_operator_land_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 2);
+    SL_ASSERT(pc.size() == 2);
     cg.emit(vm::CONST4);
     vm::CodeAddr c1 = cg.emit<std::int32_t>(0xdeadbeef);
     generateExpression(pc[0], cg, fam, salloc, vt);
@@ -348,7 +348,7 @@ void gen_operator_land_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeG
 
 void gen_operator_lor_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 2);
+    SL_ASSERT(pc.size() == 2);
     cg.emit(vm::CONST4);
     vm::CodeAddr c1 = cg.emit<std::int32_t>(0xdeadbeef);
     generateExpression(pc[0], cg, fam, salloc, vt);
@@ -368,7 +368,7 @@ void gen_operator_lor_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeGe
 
 void gen_function_swap4(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 2);
+    SL_ASSERT(pc.size() == 2);
     // TODO: avoid double evaluation
     generateExpressionRef(pc[0], cg, fam, salloc, vt);
     generateExpression(pc[1], cg, fam, salloc, vt);
@@ -380,26 +380,26 @@ void gen_function_swap4(const ast::FunctionCall::ParamContainer& pc, vm::CodeGen
 
 void gen_function_geti(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& , StackAlloc& , VariableTable& )
 {
-    assert(pc.size() == 0);
+    SL_ASSERT(pc.size() == 0);
     cg.emit(vm::INPI);
 }
 
 void gen_function_getf(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& , StackAlloc& , VariableTable& )
 {
-    assert(pc.size() == 0);
+    SL_ASSERT(pc.size() == 0);
     cg.emit(vm::INPF);
 }
 
 void gen_function_put_i(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::OUTI);
 }
 
 void gen_function_put_f(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
-    assert(pc.size() == 1);
+    SL_ASSERT(pc.size() == 1);
     generateExpression(pc[0], cg, fam, salloc, vt);
     cg.emit(vm::OUTF);
 }
@@ -487,7 +487,7 @@ std::uint8_t parametersTotalSize(const ast::FunctionDef& fd)
         size += ast::typeSize(p->type());
     }
 
-    assert(size <= std::numeric_limits<std::uint8_t>::max());
+    SL_ASSERT(size <= std::numeric_limits<std::uint8_t>::max());
 
     return std::uint8_t(size);
 }
@@ -501,7 +501,7 @@ public:
 
     void operator()(const ast::BuiltinFunction *bf) const
     {
-        assert(builtinFunctionGen.find(bf) != builtinFunctionGen.end());
+        SL_ASSERT(builtinFunctionGen.find(bf) != builtinFunctionGen.end());
 
         builtinFunctionGen[bf](pc_, cg_, fam_, salloc_, vt_);
 
@@ -518,16 +518,16 @@ public:
 
         auto it = fam_.find(fn);
 
-        assert(it != fam_.end());
+        SL_ASSERT(it != fam_.end());
 
         if (fd->type() != void_)
         {
             cg_.emit(vm::CONST4);
-            assert(ast::typeSize(fd->type()) == sizeof(int_t));
+            SL_ASSERT(ast::typeSize(fd->type()) == sizeof(int_t));
             cg_.emit(std::int32_t(0)); // return value placeholder
         }
 
-        assert(pc_.size() == fd->parameters().size());
+        SL_ASSERT(pc_.size() == fd->parameters().size());
 
         auto pd = fd->parameters().begin();
         auto e = pc_.begin();
@@ -665,7 +665,7 @@ public:
                    
                 default:
 
-                    assert(!"Bad type!");
+                    SL_ASSERT(!"Bad type!");
             }
         }
     }
@@ -788,7 +788,7 @@ public:
 
     void operator()(const ast::Assignment& a) const
     {
-        assert(a.var().type() == expressionType(a.expr()));
+        SL_ASSERT(a.var().type() == expressionType(a.expr()));
 
         if (a.var().ref())
         {
@@ -1039,7 +1039,7 @@ vm::BytecodeBuffer generateBytecode(const ast::Module& module, FunctionAddrMap& 
 
     BOOST_FOREACH(const ast::FunctionDef& f, module.functions())
     {
-        assert(f.body());
+        SL_ASSERT(f.body());
 
         fdm[ast::functionMangledName(f.name(), f.suffix())] = &f;
     }

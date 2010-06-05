@@ -1,88 +1,36 @@
 #ifndef TUT_CONSOLE_REPORTER
 #define TUT_CONSOLE_REPORTER
 
-#include <Windows.h>
 #include <tut/tut.hpp>
+#include <sl/test/Console.hpp>
 #include <cassert>
 
-namespace
-{
-
-class console
-{
-    HANDLE handle;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-
-public:
-
-    console()
-    {
-        handle = GetStdHandle(STD_OUTPUT_HANDLE);
-        GetConsoleScreenBufferInfo(handle, &csbi);
-    }
-
-    void reset_color()
-    {
-        SetConsoleTextAttribute(handle, csbi.wAttributes);
-    }
-
-    void set_color(WORD color)
-    {
-        CONSOLE_SCREEN_BUFFER_INFO csbi = this->csbi;
-
-        csbi.wAttributes &= (BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY);
-        csbi.wAttributes |= color & (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-
-        SetConsoleTextAttribute(handle, csbi.wAttributes);
-    }
-
-} console;
-
-std::ostream& cr(std::ostream& os)
-{
-    os.flush();
-    console.reset_color();
-    return os;
-}
-
-std::ostream& green(std::ostream& os)
-{
-    os.flush();
-    console.set_color(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-    return os;
-}
-
-std::ostream& red(std::ostream& os)
-{
-    os.flush();
-    console.set_color(FOREGROUND_RED | FOREGROUND_INTENSITY);
-    return os;
-}
+namespace {
 
 std::ostream& operator<<(std::ostream& os, const tut::test_result& tr)
 {
     switch(tr.result)
     {
     case tut::test_result::ok:
-        os << green << "." << cr;
+        os << sl::test::green << "." << sl::test::rc;
         break;
     case tut::test_result::fail:
-        os << red << '[' << tr.test << "=F]" << cr;
+        os << sl::test::red << '[' << tr.test << "=F]" << sl::test::rc;
         break;
     case tut::test_result::ex_ctor:
-        os << red << '[' << tr.test << "=C]" << cr;
+        os << sl::test::red << '[' << tr.test << "=C]" << sl::test::rc;
         break;
     case tut::test_result::ex:
-        os << red << '[' << tr.test << "=X]" << cr;
+        os << sl::test::red << '[' << tr.test << "=X]" << sl::test::rc;
         break;
     case tut::test_result::warn:
-        os << red << '[' << tr.test << "=W]" << cr;
+        os << sl::test::red << '[' << tr.test << "=W]" << sl::test::rc;
         break;
     case tut::test_result::term:
-        os << red << '[' << tr.test << "=T]" << cr;
+        os << sl::test::red << '[' << tr.test << "=T]" << sl::test::rc;
         break;
     case tut::test_result::rethrown:
-        os << red << '[' << tr.test << "=P]" << cr;
+        os << sl::test::red << '[' << tr.test << "=P]" << sl::test::rc;
         break;
     case tut::test_result::dummy:
         assert(!"Should never be called");
@@ -181,7 +129,7 @@ public:
 
                 os << "   group: " << tr.group
                 << ", test: test<" << tr.test << ">"
-                << (!tr.name.empty() ? (std::string(" : ") + tr.name) : std::string()) << cr
+                << (!tr.name.empty() ? (std::string(" : ") + tr.name) : std::string()) << sl::test::rc
                 << std::endl;
 
 #if defined(TUT_USE_POSIX)
@@ -190,7 +138,7 @@ public:
                     os << "   child pid: " << tr.pid << std::endl;
                 }
 #endif
-                os << "   problem: " << red;
+                os << "   problem: " << sl::test::red;
                 switch(tr.result)
                 {
                 case test_result::rethrown:
@@ -219,18 +167,18 @@ public:
                     break;
                 }
 
-                os << cr;
+                os << sl::test::rc;
 
                 if (!tr.message.empty())
                 {
                     if (tr.result == test_result::fail)
                     {
-                        os << "   failed assertion: " << red << tr.message << cr
+                        os << "   failed assertion: " << sl::test::red << tr.message << sl::test::rc
                             << std::endl;
                     }
                     else
                     {
-                        os << "   message: " << red << tr.message << cr
+                        os << "   message: " << sl::test::red << tr.message << sl::test::rc
                             << std::endl;
                     }
                 }

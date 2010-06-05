@@ -1,8 +1,8 @@
 #ifndef SL_AST_TYPES_HPP
 #define SL_AST_TYPES_HPP
 
-#include <cassert>
 #include <sl/def.hpp>
+#include <sl/assert.hpp>
 #include <sl/basicTypes.hpp>
 
 namespace sl
@@ -19,7 +19,7 @@ inline const char *typeSuffix(BasicType type)
         case bool_: return "b";
     }
 
-    assert(!"Invalid type");
+    SL_ASSERT(!"Invalid type");
 
     return "";
 }
@@ -34,7 +34,7 @@ inline const char *typeName(BasicType type)
         case void_: return "void";
     }
 
-    assert(!"Invalid type");
+    SL_ASSERT(!"Invalid type");
 
     return "";
 }
@@ -48,7 +48,7 @@ inline unsigned short typeSize(BasicType type)
         case bool_: return sizeof(int_t);
     }
 
-    assert(!"Bad type!");
+    SL_ASSERT(!"Invalid type");
 
     return 0;
 }

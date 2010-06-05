@@ -1,8 +1,8 @@
 #ifndef SL_VM_MODULE_HPP
 #define SL_VM_MODULE_HPP
 
-#include <cassert>
 #include <unordered_map>
+#include <sl/assert.hpp>
 #include <sl/vm/BytecodeBuffer.hpp>
 
 namespace sl
@@ -37,7 +37,7 @@ public:
     {
         auto f = functions_.find(fc.name());
 
-        assert(f != functions_.end());
+        SL_ASSERT(f != functions_.end());
 
         env.sp(env.sp() - fc.paramSize() - sizeof(retT) - sizeof(CodeAddr));
 
@@ -62,7 +62,7 @@ public:
     {
         auto f = functions_.find(fc.name());
 
-        assert(f != functions_.end());
+        SL_ASSERT(f != functions_.end());
 
         env.sp(env.sp() - fc.paramSize() - sizeof(CodeAddr));
 

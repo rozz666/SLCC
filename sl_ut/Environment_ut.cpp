@@ -1,3 +1,4 @@
+#include <cassert>
 #include <sstream>
 #include <tut/tut.hpp> 
 #include <sl/vm.hpp>
