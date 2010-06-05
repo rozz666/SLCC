@@ -369,6 +369,7 @@ void gen_operator_lor_bb(const ast::FunctionCall::ParamContainer& pc, vm::CodeGe
 void gen_function_swap4(const ast::FunctionCall::ParamContainer& pc, vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
 {
     assert(pc.size() == 2);
+    // TODO: avoid double evaluation
     generateExpressionRef(pc[0], cg, fam, salloc, vt);
     generateExpression(pc[1], cg, fam, salloc, vt);
     generateExpressionRef(pc[1], cg, fam, salloc, vt);
@@ -690,10 +691,16 @@ public:
     GenerateExpressionRef(vm::CodeGenerator& cg, FunctionAddrMap& fam, StackAlloc& salloc, VariableTable& vt)
         : cg_(cg), fam_(fam), salloc_(salloc), vt_(vt) { }
 
-    template <typename T>
-    void operator()(const T& ) const
+    template <typename Expression>
+    void operator()(const Expression& e) const
     {
-        assert(!"Not an lvalue");
+        SL_ASSERT(ast::typeSize(expressionType(e)) == 4);
+        GenerateExpression(cg_, fam_, salloc_, vt_)(e);
+        cg_.emit(vm::LSTORE4);
+        std::int16_t tmpAddr = std::int16_t(salloc_.alloc(4));
+        cg_.emit(tmpAddr);
+        cg_.emit(vm::LADDR);
+        cg_.emit(tmpAddr);
     }
 
     void operator()(const ast::Variable *v) const
