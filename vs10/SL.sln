@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C++ Express 2010
+# Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "slcc", "slcc.vcxproj", "{F4FEDDD9-0FD6-4E3E-8EAB-BEE827013985}"
 	ProjectSection(ProjectDependencies) = postProject
 		{26AABD44-1404-4521-8EC6-18BC181DD194} = {26AABD44-1404-4521-8EC6-18BC181DD194}
@@ -21,6 +21,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sl_ut", "sl_ut.vcxproj", "{
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sltest", "sltest.vcxproj", "{1DA94FBB-D18E-4634-9BBD-64FECD8DBE68}"
+	ProjectSection(ProjectDependencies) = postProject
+		{26AABD44-1404-4521-8EC6-18BC181DD194} = {26AABD44-1404-4521-8EC6-18BC181DD194}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
