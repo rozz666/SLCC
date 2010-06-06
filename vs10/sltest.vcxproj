@@ -88,9 +88,15 @@
     <ProjectReference />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\sltest\arithmetic.cpp" />
+    <ClCompile Include="..\sltest\conditional.cpp" />
     <ClCompile Include="..\sltest\errors.cpp" />
+    <ClCompile Include="..\sltest\logical.cpp" />
     <ClCompile Include="..\sltest\main.cpp" />
     <ClCompile Include="..\sltest\functional.cpp" />
+    <ClCompile Include="..\sltest\newdelete.cpp" />
+    <ClCompile Include="..\sltest\references.cpp" />
+    <ClCompile Include="..\sltest\whileloop.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

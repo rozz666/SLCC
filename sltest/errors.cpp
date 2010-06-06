@@ -36,7 +36,7 @@ void sl::test::TestSuite<2>::run()
         .expect(unknown_identifier(at(27, 5), "a"));
 
     test("no main", "nomain.sl")
-        .expect(missing_main(at(3, 1)));
+        .expect(missing_main(at(1, 1)));
 
     test("bad main", "badmain.sl")
         .expect(invalid_main_type(at(3, 1)));
