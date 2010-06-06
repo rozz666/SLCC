@@ -15,6 +15,7 @@
     <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp" />
     <ClCompile Include="..\sl_ut\FilePosition_ut.cpp" />
     <ClCompile Include="..\sl_ut\main.cpp" />
+    <ClCompile Include="..\sl_ut\Message_ut.cpp" />
     <ClCompile Include="..\sl_ut\parseModules_ut.cpp" />
     <ClCompile Include="..\sl_ut\Environment_ut.cpp" />
     <ClCompile Include="..\sl_ut\parseCST_ut.cpp" />

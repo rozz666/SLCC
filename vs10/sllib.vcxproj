@@ -97,6 +97,8 @@
     <ClCompile Include="..\sl\builtin.cpp" />
     <ClCompile Include="..\sl\codeGen.cpp" />
     <ClCompile Include="..\sl\ErrorLogger.cpp" />
+    <ClCompile Include="..\sl\err\Message.cpp" />
+    <ClCompile Include="..\sl\FilePosition.cpp" />
     <ClCompile Include="..\sl\parseAst.cpp" />
     <ClCompile Include="..\sl\parseCst.cpp" />
     <ClCompile Include="..\sl\test\Console.cpp" />

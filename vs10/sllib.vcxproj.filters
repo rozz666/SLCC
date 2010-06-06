@@ -46,6 +46,9 @@
     <Filter Include="Source Files\sl\vm">
       <UniqueIdentifier>{dd8da57c-4669-4ee7-8e6b-0267308d48ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\sl\err">
+      <UniqueIdentifier>{7186a630-a07a-4d3b-83f7-769a95daa778}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sl\ast\Constant.cpp">
@@ -86,6 +89,12 @@
     </ClCompile>
     <ClCompile Include="..\sl\assert.cpp">
       <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\FilePosition.cpp">
+      <Filter>Source Files\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\err\Message.cpp">
+      <Filter>Source Files\sl\err</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

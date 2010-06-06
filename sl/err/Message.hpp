@@ -1,6 +1,7 @@
 #ifndef SL_ERR_MESSAGE_HPP
 #define SL_ERR_MESSAGE_HPP
 
+#include <iosfwd>
 #include <string>
 #include <sl/FilePosition.hpp>
 
@@ -18,6 +19,8 @@ struct Message
 
     Message(const FilePosition& pos, const std::string& id, const std::string& text) : pos(pos), id(id), text(text) { }
 };
+
+std::ostream& operator<<(std::ostream& os, const Message& m);
 
 }
 }

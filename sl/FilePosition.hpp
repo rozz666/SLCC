@@ -1,6 +1,8 @@
 #ifndef SL_FILEPOSITION_HPP
 #define SL_FILEPOSITION_HPP
 
+#include <iosfwd>
+
 namespace sl
 {
 
@@ -26,6 +28,8 @@ inline bool operator<(const FilePosition& left, const FilePosition& right)
 {
     return left.line < right.line || (left.line == right.line && left.column < right.column);
 }
+
+std::ostream& operator<<(std::ostream& os, const FilePosition& fp);
 
 }
 

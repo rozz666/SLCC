@@ -70,4 +70,22 @@ void object::test<4>()
     ensure("less 2", sl::FilePosition(123, 456) < sl::FilePosition(124, 457));
 }
 
+template <>
+template <>
+void object::test<5>()
+{
+    set_test_name("operator<<");
+
+    {
+        std::ostringstream os;
+        os << sl::FilePosition(123, 456);
+        ensure_equals(os.str(), "(123, 456)");
+    }
+    {
+        std::ostringstream os;
+        os << sl::FilePosition(67, 234);
+        ensure_equals(os.str(), "(67, 234)");
+    }
+}
+
 }

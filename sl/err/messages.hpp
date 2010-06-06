@@ -43,8 +43,6 @@ SL_ERROR_MESSAGE_NP(module_declaration_missing, E0010, "Module declaration missi
 SL_ERROR_MESSAGE_NP(missing_main, E0011, "Missing main()");
 SL_ERROR_MESSAGE_NP(invalid_main_type, E0012, "main() must be void");
 
-std::ostream& operator<<(std::ostream& os, const Message& m);
-
 }
 
 }
