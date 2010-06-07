@@ -9,7 +9,7 @@
 namespace sl
 {
 
-boost::optional<cst::Module> parseFile(std::istream& is, ErrorLogger& errorLogger);
+boost::optional<cst::Module> parseFile(const std::string& filename, std::istream& is, ErrorLogger& errorLogger);
 
 }
 

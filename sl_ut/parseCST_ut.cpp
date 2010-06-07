@@ -28,8 +28,6 @@ struct parseCST_Test_data
     std::stringstream code;
     boost::optional<sl::cst::Module> module;
 
-    parseCST_Test_data() : el("(memory)") { }
-
     CodeBuffer setCode() { return CodeBuffer(code); }
 
     void ensure_success()
@@ -51,8 +49,8 @@ struct parseCST_Test_data
 
     void parse()
     {
-        el = sl::ErrorLogger("(memory)");
-        module = sl::parseFile(code, el);
+        el = sl::ErrorLogger();
+        module = sl::parseFile("", code, el);
     }
 
     const sl::err::Message& err(unsigned n)
@@ -78,7 +76,7 @@ void object::test<1>()
 
     ensure_success();
     ensure_equals("module name 1", module->name.str, "Asia");
-    ensure("module name position 1", module->name.pos == sl::FilePosition(1, 8));
+    ensure("module name position 1", module->name.pos == sl::FilePosition("", 1, 8));
     ensure("no declarations 1", module->decls.empty());
 
     setCode(),
@@ -91,7 +89,7 @@ void object::test<1>()
 
     ensure_success();
     ensure_equals("module name 2", module->name.str, "Kasia");
-    ensure("module name position 2", module->name.pos == sl::FilePosition(3, 5));
+    ensure("module name position 2", module->name.pos == sl::FilePosition("", 3, 5));
     ensure("no declarations 2", module->decls.empty());
 }
 
@@ -104,7 +102,7 @@ void object::test<2>()
     parse();
 
     ensure_failure(1);
-    ensure("position", err(0).pos == sl::FilePosition(1, 1));
+    ensure("position", err(0).pos == sl::FilePosition("", 1, 1));
     ensure_equals("error", err(0).text, sl::err::module_declaration_missing(err(0).pos).text);
 }
 
@@ -141,17 +139,17 @@ void object::test<3>()
     sl::cst::Function& f4 = boost::get<sl::cst::Function>(module->decls[4]);
     sl::cst::Function& f5 = boost::get<sl::cst::Function>(module->decls[5]);
     
-    ensure("position 0", f0.name.pos == sl::FilePosition(2, 1));
+    ensure("position 0", f0.name.pos == sl::FilePosition("", 2, 1));
     ensure_equals("name 0", f0.name.str, "_");
-    ensure("position 1", f1.name.pos == sl::FilePosition(3, 2));
+    ensure("position 1", f1.name.pos == sl::FilePosition("", 3, 2));
     ensure_equals("name 1", f1.name.str, "a");
-    ensure("position 2", f2.name.pos == sl::FilePosition(4, 3));
+    ensure("position 2", f2.name.pos == sl::FilePosition("", 4, 3));
     ensure_equals("name 2", f2.name.str, "a15");
-    ensure("position 3", f3.name.pos == sl::FilePosition(5, 4));
+    ensure("position 3", f3.name.pos == sl::FilePosition("", 5, 4));
     ensure_equals("name 3", f3.name.str, "_123135");
-    ensure("position 4", f4.name.pos == sl::FilePosition(6, 5));
+    ensure("position 4", f4.name.pos == sl::FilePosition("", 6, 5));
     ensure_equals("name 4", f4.name.str, "aAa");
-    ensure("position 5", f5.name.pos == sl::FilePosition(7, 6));
+    ensure("position 5", f5.name.pos == sl::FilePosition("", 7, 6));
     ensure_equals("name 5", f5.name.str, "_64_characters__________________________________________________");
 }
 

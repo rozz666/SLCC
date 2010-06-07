@@ -734,7 +734,7 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
 
     if (!mainFunc)
     {
-        errorLogger << err::missing_main(FilePosition(1, 1));
+        errorLogger << err::missing_main(FilePosition(module.name.pos.file, 1, 1));
         return m;
     }
 

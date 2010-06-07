@@ -13,7 +13,7 @@ struct LoadModuleBase
     boost::optional<sl::cst::Module> operator()(const std::string& name, sl::ErrorLogger& errorLogger)
     {
         std::istringstream is(modules[name]);
-        return sl::parseFile(is, errorLogger);
+        return sl::parseFile(name, is, errorLogger);
     }
 };
 
@@ -41,10 +41,7 @@ struct LoadModuleTree : LoadModuleBase
 struct parseModules_Test_data
 {
     sl::ErrorLogger errorLogger;
-    sl::ast::ModuleMap mm;
-
-    parseModules_Test_data()
-        : errorLogger("???") { }
+    sl::ast::ModuleMap mm;    
 };
 
 typedef test_group<parseModules_Test_data> tg;

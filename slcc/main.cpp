@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
     BOOST_FOREACH(const std::string& fn, inputFiles)
     {
-        ErrorLogger errorLogger(fn);
+        ErrorLogger errorLogger;
         std::ifstream fin(fn.c_str());
 
         if (!fin.is_open())
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
             continue;
         }
 
-        boost::optional<cst::Module> module = parseFile(fin, errorLogger);
+        boost::optional<cst::Module> module = parseFile(fn, fin, errorLogger);
 
         if (module)
         {

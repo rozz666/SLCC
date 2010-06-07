@@ -115,7 +115,7 @@ class TestOps : boost::noncopyable
 public:
 
     TestOps(const std::string& file, Reporter& reporter)
-        : logger_(file), reporter_(&reporter), fileOk_(compile(file)), expected_(logger_.errors().size()) { }
+        : reporter_(&reporter), fileOk_(compile(file)), expected_(logger_.errors().size()) { }
 
     TestOps(TestOps&& right) : logger_(right.logger_), reporter_(right.reporter_)
     {
@@ -173,7 +173,7 @@ private:
             return false;
         }
 
-        if (boost::optional<cst::Module> module = parseFile(fin, logger_))
+        if (boost::optional<cst::Module> module = parseFile(file, fin, logger_))
         {
             ast::Module parsed = parseModule(*module, logger_);
 

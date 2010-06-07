@@ -13,7 +13,7 @@ std::ostream& operator<<(std::ostream& os, const FilePosition& fp)
     {
         auto flags = os.flags();
 
-        os << std::dec << '(' << fp.line << ", " << fp.column << ")";
+        os << std::dec << fp.file << '(' << fp.line << ", " << fp.column << ")";
 
         os.flags(flags);
     }

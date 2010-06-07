@@ -84,7 +84,7 @@ namespace sl
         bool parse(Iterator& first, Iterator const& last, Context&, Skipper const& skipper, Attribute& attr) const
         {
             boost::spirit::qi::skip_over(first, last, skipper);
-            boost::spirit::traits::assign_to(sl::FilePosition(first.get_position().line, first.get_position().column), attr);
+            boost::spirit::traits::assign_to(sl::FilePosition(first.get_position().file, first.get_position().line, first.get_position().column), attr);
             return true;
         }
 
@@ -232,15 +232,15 @@ struct BoolLit : qi::symbols<char, bool>
 
 struct errorMessageImpl
 {
-    template <typename Logger, typename It, typename What>
+    template <typename Logger, typename String, typename It, typename What>
     struct result { typedef void type; };
 
-    template <typename Logger, typename It, typename What>
-    void operator()(Logger *logger, It it, What what) const
+    template <typename Logger, typename String, typename It, typename What>
+    void operator()(Logger *logger, String filename, It it, What what) const
     {
         std::ostringstream os;
         os << what;
-        *logger << err::syntax_error(FilePosition(it.get_position().line, it.get_position().column), os.str());
+        *logger << err::syntax_error(FilePosition(filename, it.get_position().line, it.get_position().column), os.str());
     }
 };
 
@@ -251,7 +251,8 @@ boost::phoenix::function<errorMessageImpl> errorMessage;
 template <typename Iterator>
 struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type> 
 {
-    Grammar(ErrorLogger& errorLogger) : Grammar::base_type(module, "module"), errorLogger_(&errorLogger)
+    Grammar(ErrorLogger& errorLogger, const std::string& filename)
+        : Grammar::base_type(module, "module"), errorLogger_(&errorLogger), filename_(filename)
     {
         using qi::int_;
         using qi::float_;
@@ -326,11 +327,12 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
         on_error<fail>
         (
             module,
-            errorMessage(errorLogger_, _3, _4)
+            errorMessage(errorLogger_, filename_, _3, _4)
         );
     }
 
     ErrorLogger *errorLogger_;
+    std::string filename_;
     detail::Type type;
     detail::ReturnType returnType;
     detail::UnOp unOp;

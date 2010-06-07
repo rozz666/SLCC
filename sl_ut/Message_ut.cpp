@@ -19,9 +19,9 @@ void object::test<1>()
 {
     set_test_name("ctors");
 
-    sl::err::Message msg(sl::FilePosition(123, 456), "X123", "This is an error");
+    sl::err::Message msg(sl::FilePosition("abc", 123, 456), "X123", "This is an error");
 
-    ensure_equals("pos", msg.pos, sl::FilePosition(123, 456));
+    ensure_equals("pos", msg.pos, sl::FilePosition("abc", 123, 456));
     ensure_equals("id", msg.id, "X123");
     ensure_equals("text", msg.text, "This is an error");
 
@@ -34,7 +34,7 @@ void object::test<2>()
     set_test_name("operator<<");
 
     std::ostringstream out, tmp;
-    sl::err::Message msg(sl::FilePosition(543, 6543), "ABCD", "Error message");
+    sl::err::Message msg(sl::FilePosition("abc", 543, 6543), "ABCD", "Error message");
 
     out << msg;
     tmp << msg.pos << ": error " << msg.id << ": " << msg.text;
