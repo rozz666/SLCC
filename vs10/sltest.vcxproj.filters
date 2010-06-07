@@ -42,5 +42,8 @@
     <ClCompile Include="..\sltest\whileloop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sltest\overloading.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

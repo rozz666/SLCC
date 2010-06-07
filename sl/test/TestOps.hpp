@@ -94,7 +94,7 @@ public:
 
     ~ExpectOps()
     {
-        if (!last_) return;
+        if (ignore_ || !last_) return;
 
         for (ErrorLogger::Errors::size_type i = 0; i != logger_->errors().size(); ++i)
         {

@@ -95,6 +95,7 @@
     <ClCompile Include="..\sltest\main.cpp" />
     <ClCompile Include="..\sltest\functional.cpp" />
     <ClCompile Include="..\sltest\newdelete.cpp" />
+    <ClCompile Include="..\sltest\overloading.cpp" />
     <ClCompile Include="..\sltest\references.cpp" />
     <ClCompile Include="..\sltest\whileloop.cpp" />
   </ItemGroup>
