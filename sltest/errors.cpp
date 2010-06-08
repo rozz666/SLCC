@@ -43,8 +43,8 @@ void sl::test::TestSuite<2>::run()
 
     test("bad overloading", "badoverloading.sl")
         .expect(function_not_found(at("badoverloading.sl", 17, 5), "f(bool)"))
-        .expect(function_not_found(at("badoverloading.sl", 18, 5), "f(float, float)"))
-        .expect(function_not_found(at("badoverloading.sl", 19, 5), "f(float, int)"))
+        .expect(ambiguous_call_to_function(at("badoverloading.sl", 18, 5), "f(float, float)"))
+        .expect(ambiguous_call_to_function(at("badoverloading.sl", 19, 5), "f(float, int)"))
         .expect(function_not_found(at("badoverloading.sl", 20, 5), "f(bool, int)"))
         .expect(function_not_found(at("badoverloading.sl", 21, 5), "f(bool, float)"))
         .expect(function_not_found(at("badoverloading.sl", 22, 5), "f(int, bool)"));

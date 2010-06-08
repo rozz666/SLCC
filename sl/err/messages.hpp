@@ -42,6 +42,7 @@ SL_ERROR_MESSAGE_NP(bool_expr_expected, E0009, "Expected a boolean expression")
 SL_ERROR_MESSAGE_NP(module_declaration_missing, E0010, "Module declaration missing");
 SL_ERROR_MESSAGE_NP(missing_main, E0011, "Missing main()");
 SL_ERROR_MESSAGE_NP(invalid_main_type, E0012, "main() must be void");
+SL_ERROR_MESSAGE(ambiguous_call_to_function, E00013, (const std::string& what), "Ambiguous call to overloaded function: " << what)
 
 }
 
