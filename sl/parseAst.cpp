@@ -1,6 +1,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <boost/foreach.hpp>
+#include <boost/array.hpp>
 #include <sl/basicTypes.hpp>
 #include <sl/parseAst.hpp>
 #include <sl/builtin.hpp>
@@ -75,8 +76,9 @@ boost::optional<ast::Expression> parseExpression(const ExpressionType& expr, ast
 boost::optional<ast::FunctionCall> makeUnaryOperatorCall(const FilePosition& pos, const std::string& opName, const ast::Expression& right, const ast::FunctionTable& ft, ErrorLogger& errorLogger)
 {
     BasicType rightType = expressionType(right);
+    boost::array<sl::BasicType, 1> argTypes = { rightType };
 
-    if (boost::optional<ast::FunctionRef> f = ft.find(ast::functionMangledName(opName, ast::typeSuffix(rightType))))
+    if (boost::optional<ast::FunctionRef> f = ft.findExact(opName, argTypes))
     {
         return ast::FunctionCall(pos, *f, &right, &right + 1);
     }
@@ -101,13 +103,13 @@ public:
         return ast::Constant(c.pos, c.value);
     }
 
-    boost::optional<ast::Expression> operator()(const cst::Variable& v) const
+    boost::optional<ast::Expression> operator()(const cst::Identifier& v) const
     {
-        const ast::Variable *pv = vts_.find(v.name.str);
+        const ast::Variable *pv = vts_.find(v.str);
 
         if (!pv)
         {
-            errorLogger_ << err::unknown_identifier(v.name.pos, v.name.str);
+            errorLogger_ << err::unknown_identifier(v.pos, v.str);
             return boost::none;
         }
 
@@ -118,7 +120,6 @@ public:
     {
         std::vector<ast::Expression> expr;
         std::vector<BasicType> paramTypes;
-        std::string suffix;
 
         expr.reserve(fc.expr.size());
         paramTypes.reserve(fc.expr.size());
@@ -127,9 +128,7 @@ public:
         {
             if (boost::optional<ast::Expression> pe = parseExpression(e, vts_, ft_, errorLogger_))
             {
-                BasicType et = expressionType(*pe);
-                paramTypes.push_back(et);
-                suffix += ast::typeSuffix(et);
+                paramTypes.push_back(expressionType(*pe));
 
                 expr.push_back(*pe);
             }
@@ -137,7 +136,7 @@ public:
 
         if (expr.size() < fc.expr.size()) return boost::none;
 
-        boost::optional<ast::FunctionRef> f = ft_.find(ast::functionMangledName(fc.name.str, suffix));
+        boost::optional<ast::FunctionRef> f = ft_.findExact(fc.name.str, paramTypes);
 
         if (!f)
         {
@@ -181,8 +180,9 @@ boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& po
 {
     BasicType leftType = expressionType(left);
     BasicType rightType = expressionType(right);
+    boost::array<sl::BasicType, 2> argTypes = { leftType, rightType };
 
-    if (boost::optional<ast::FunctionRef> f = ft.find(ast::functionMangledName(opName, std::string(ast::typeSuffix(leftType)) + ast::typeSuffix(rightType))))
+    if (boost::optional<ast::FunctionRef> f = ft.findExact(opName, argTypes))
     {
         std::vector<ast::Expression> expr;
 
@@ -635,8 +635,8 @@ public:
             os << f.name.str << ast::strParameters(pc2);
 
             errorLogger_ << err::function_already_declared(f.name.pos, os.str());
-
-            ast::FunctionRef fr = *ft_.find(functionMangledName(*cf));
+            
+            ast::FunctionRef fr = *ft_.findExact(cf->name(), functionArgTypes(*cf));
             
             if (fr.type() == typeid(const ast::FunctionDef *))
             {
@@ -730,7 +730,7 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
         df.body(std::move(cs));
     }
 
-    boost::optional<ast::FunctionRef> mainFunc = functionTable.find(ast::functionMangledName("main", ""));
+    boost::optional<ast::FunctionRef> mainFunc = functionTable.findExact("main", std::vector<sl::BasicType>());
 
     if (!mainFunc)
     {

@@ -14,6 +14,7 @@
     <ClCompile Include="..\sl_ut\CodeGenerator_ut.cpp" />
     <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp" />
     <ClCompile Include="..\sl_ut\FilePosition_ut.cpp" />
+    <ClCompile Include="..\sl_ut\FunctionTable_ut.cpp" />
     <ClCompile Include="..\sl_ut\main.cpp" />
     <ClCompile Include="..\sl_ut\Message_ut.cpp" />
     <ClCompile Include="..\sl_ut\parseModules_ut.cpp" />
@@ -52,14 +53,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\lib\tut-2009-08-30;E:\lib\boost_1_41_0;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\lib\boost_1_41_0\stage\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\lib\tut-2009-08-30;E:\lib\boost_1_41_0;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\lib\boost_1_41_0\stage\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

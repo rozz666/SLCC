@@ -4,7 +4,6 @@
 #include <sl/cst/operators.hpp>
 #include <sl/cst/Constant.hpp>
 #include <sl/cst/Identifier.hpp>
-#include <sl/cst/Variable.hpp>
 #include <sl/cst/UnaryExpression.hpp>
 #include <sl/cst/UnOpUnaryExpression.hpp>
 #include <sl/cst/MulOpUnaryExpression.hpp>

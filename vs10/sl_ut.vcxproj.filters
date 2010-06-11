@@ -42,6 +42,9 @@
     <ClCompile Include="..\sl_ut\Message_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl_ut\FunctionTable_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sl_ut\tut_color_console_reporter.hpp">

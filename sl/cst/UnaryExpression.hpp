@@ -3,7 +3,7 @@
 
 #include <boost/variant.hpp>
 #include <sl/cst/Constant.hpp>
-#include <sl/cst/Variable.hpp>
+#include <sl/cst/Identifier.hpp>
 
 namespace sl
 {
@@ -16,7 +16,7 @@ struct Expression;
 
 typedef boost::variant<
     Constant, 
-    Variable, 
+    Identifier, 
     boost::recursive_wrapper<FunctionCall>,
     boost::recursive_wrapper<Expression>,
     boost::recursive_wrapper<UnOpUnaryExpression>

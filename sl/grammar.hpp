@@ -14,7 +14,7 @@
 #include <sl/ErrorLogger.hpp>
 #include <sl/err/messages.hpp>
 #include <sl/cst.hpp>
-
+/*
 namespace boost
 {
 namespace spirit
@@ -50,12 +50,16 @@ struct transform_attribute<
     {
         boost::fusion::at_c<0>(val) = attr;
     }
+
+    static void fail(Exposed& )
+    {
+    }
 };
 
 }
 }
 }
-
+*/
 namespace sl
 {
     BOOST_SPIRIT_TERMINAL(inputPos);
@@ -271,8 +275,7 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
 
         identifier %= inputPos >> lexeme[char_("a-zA-Z_") >> *char_("a-zA-Z0-9_")];
         constant %= inputPos >> ((int_ >> !char_('.')) | float_ | boolLit);
-        variable %= identifier;
-        unaryExpression %= constant | functionCall | variable | ('(' >> expression >> ')') | unOpUnaryExpression;
+        unaryExpression %= constant | functionCall | identifier | ('(' >> expression >> ')') | unOpUnaryExpression;
         unOpUnaryExpression %= inputPos >> unOp >> inputPos >> unaryExpression;
         multiplicativeExpression %= inputPos >> unaryExpression >> *(inputPos >> mulOp >> inputPos >> unaryExpression);
         additiveExpression %= inputPos >> multiplicativeExpression >> *(inputPos >> sign >> inputPos >> multiplicativeExpression);
@@ -297,7 +300,7 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
             whileLoop |
             (assignment > ';') |
             (functionCall > ';');
-        compoundStatement = '{' >> (*statement)[_val = _1] > '}';
+        compoundStatement = inputPos >> '{' >> *statement >> inputPos > '}';
         function %= identifier >> '(' >> -(functionParameter % ',') >> ')' >> "->" >> (returnType | (lit("typeof") >> '(' >> expression >> ')')) >> compoundStatement;
         import %= lit("import") >> identifier > ';';
         globalDecl %= import | function;
@@ -305,7 +308,6 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
 
         identifier.name("identifier");
         constant.name("constant");
-        variable.name("variable");
         unaryExpression.name("unaryExpression");
         unOpUnaryExpression.name("unOpUnaryExpression");
         multiplicativeExpression.name("multiplicativeExpression");
@@ -345,7 +347,6 @@ struct Grammar : qi::grammar<Iterator, cst::Module(), ascii::space_type>
     detail::BoolLit boolLit;
     qi::rule<Iterator, cst::Identifier(), ascii::space_type> identifier;
     qi::rule<Iterator, cst::Constant(), ascii::space_type> constant;
-    qi::rule<Iterator, cst::Variable(), ascii::space_type> variable;
     qi::rule<Iterator, cst::UnaryExpression(), ascii::space_type> unaryExpression;
     qi::rule<Iterator, cst::UnOpUnaryExpression(), ascii::space_type> unOpUnaryExpression;
     qi::rule<Iterator, cst::MultiplicativeExpression(), ascii::space_type> multiplicativeExpression;

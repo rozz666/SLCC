@@ -90,7 +90,9 @@
   <ItemGroup>
     <ClCompile Include="..\sl\assert.cpp" />
     <ClCompile Include="..\sl\ast\Constant.cpp" />
+    <ClCompile Include="..\sl\ast\functionArgTypes.cpp" />
     <ClCompile Include="..\sl\ast\functionMangledName.cpp" />
+    <ClCompile Include="..\sl\ast\functionName.cpp" />
     <ClCompile Include="..\sl\ast\FunctionRef.cpp" />
     <ClCompile Include="..\sl\ast\isLValue.cpp" />
     <ClCompile Include="..\sl\ast\types.cpp" />
@@ -112,9 +114,11 @@
     <ClInclude Include="..\sl\ast\Cast.hpp" />
     <ClInclude Include="..\sl\ast\Constant.hpp" />
     <ClInclude Include="..\sl\ast\Expression.hpp" />
+    <ClInclude Include="..\sl\ast\functionArgTypes.hpp" />
     <ClInclude Include="..\sl\ast\FunctionCall.hpp" />
     <ClInclude Include="..\sl\ast\FunctionDef.hpp" />
     <ClInclude Include="..\sl\ast\functionMangledName.hpp" />
+    <ClInclude Include="..\sl\ast\functionName.hpp" />
     <ClInclude Include="..\sl\ast\FunctionRef.hpp" />
     <ClInclude Include="..\sl\ast\functionSuffix.hpp" />
     <ClInclude Include="..\sl\ast\FunctionTable.hpp" />
@@ -161,7 +165,6 @@
     <ClInclude Include="..\sl\cst\Statement.hpp" />
     <ClInclude Include="..\sl\cst\UnaryExpression.hpp" />
     <ClInclude Include="..\sl\cst\UnOpUnaryExpression.hpp" />
-    <ClInclude Include="..\sl\cst\Variable.hpp" />
     <ClInclude Include="..\sl\cst\VariableDecl.hpp" />
     <ClInclude Include="..\sl\cst\VariableDelete.hpp" />
     <ClInclude Include="..\sl\cst\WhileLoop.hpp" />

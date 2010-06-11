@@ -96,6 +96,12 @@
     <ClCompile Include="..\sl\err\Message.cpp">
       <Filter>Source Files\sl\err</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl\ast\functionName.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl\ast\functionArgTypes.cpp">
+      <Filter>Source Files\sl\ast</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sl\ast.hpp">
@@ -272,9 +278,6 @@
     <ClInclude Include="..\sl\cst\UnOpUnaryExpression.hpp">
       <Filter>Header Files\sl\cst</Filter>
     </ClInclude>
-    <ClInclude Include="..\sl\cst\Variable.hpp">
-      <Filter>Header Files\sl\cst</Filter>
-    </ClInclude>
     <ClInclude Include="..\sl\cst\VariableDecl.hpp">
       <Filter>Header Files\sl\cst</Filter>
     </ClInclude>
@@ -364,6 +367,12 @@
     </ClInclude>
     <ClInclude Include="..\sl\assert.hpp">
       <Filter>Header Files\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\functionArgTypes.hpp">
+      <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\ast\functionName.hpp">
+      <Filter>Header Files\sl\ast</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
