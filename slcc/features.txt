@@ -1,5 +1,6 @@
 To Do:
 Create binary protocol for test I/O
+Write UTs for testing framework
 Modules
 Correct lexical parsing
 Order independent functions
