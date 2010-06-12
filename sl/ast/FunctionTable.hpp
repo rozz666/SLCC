@@ -11,6 +11,7 @@
 #include <sl/ast/functionMangledName.hpp>
 #include <sl/ast/functionName.hpp>
 #include <sl/ast/functionArgTypes.hpp>
+#include <sl/ast/isConvertible.hpp>
 
 namespace sl
 {
@@ -42,11 +43,20 @@ public:
         Range r = functions_.equal_range(name);
         std::string mangledName = functionMangledName(name, functionSuffix(args));
         std::vector<FunctionRef> found;
+        std::vector<sl::BasicType> srcArgs(boost::begin(args), boost::end(args));
+        unsigned rank = 0;
         
         BOOST_FOREACH(C::const_reference f, r)
         {
-            if (functionMangledName(f.second) == mangledName)
-                found.push_back(f.second);
+            unsigned r = rankMatch(srcArgs, functionArgTypes(f.second));
+
+            if (r > rank)
+            {
+                found.clear();
+                rank = r;
+            }
+
+            if (r == rank && rank > 0) found.push_back(f.second);
         }
 
         return found;
@@ -68,6 +78,29 @@ public:
 private:
 
     C functions_;
+
+    static unsigned rankMatch(sl::BasicType src, sl::BasicType dest)
+    {
+        if (src == dest) return 2;
+        else if (isConvertible(src, dest)) return 1;
+        else return 0;
+    }
+
+    static unsigned rankMatch(const std::vector<sl::BasicType>& src, const std::vector<sl::BasicType>& dest)
+    {
+        if (src.size() != dest.size()) return 0;
+
+        unsigned rank = 2;
+
+        for (std::vector<sl::BasicType>::size_type i = 0; i != src.size(); ++i)
+        {
+            unsigned r = rankMatch(src[i], dest[i]);
+
+            if (r < rank) rank = r;
+        }
+
+        return rank;
+    }
 };
 
 }

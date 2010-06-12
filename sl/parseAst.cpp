@@ -78,11 +78,9 @@ boost::optional<ast::FunctionCall> makeUnaryOperatorCall(const FilePosition& pos
     BasicType rightType = expressionType(right);
     boost::array<sl::BasicType, 1> argTypes = { rightType };
 
-    if (boost::optional<ast::FunctionRef> f = ft.findExact(opName, argTypes))
-    {
-        return ast::FunctionCall(pos, *f, &right, &right + 1);
-    }
-    else
+    std::vector<ast::FunctionRef> f = ft.find(opName, argTypes);
+
+    if (f.empty())
     {
         std::ostringstream os;
         os << opName << "(" << ast::typeName(rightType) << ")"; 
@@ -90,6 +88,17 @@ boost::optional<ast::FunctionCall> makeUnaryOperatorCall(const FilePosition& pos
 
         return boost::none;
     }
+
+    if (f.size() > 1)
+    {
+        std::ostringstream os;
+        os << opName << "(" << ast::typeName(rightType) << ")"; 
+        errorLogger << err::ambiguous_call_to_function(pos, os.str());
+
+        return boost::none;
+    }
+
+    return ast::FunctionCall(pos, f[0], &right, &right + 1);
 }
 
 class ParseUnaryExpression : public boost::static_visitor<boost::optional<ast::Expression> >
@@ -136,17 +145,25 @@ public:
 
         if (expr.size() < fc.expr.size()) return boost::none;
 
-        boost::optional<ast::FunctionRef> f = ft_.findExact(fc.name.str, paramTypes);
+        std::vector<ast::FunctionRef> f = ft_.find(fc.name.str, paramTypes);
 
-        if (!f)
+        if (f.empty())
         {
             std::ostringstream os;
             os << fc.name.str << ast::strParameters(paramTypes);
             errorLogger_ << err::function_not_found(fc.name.pos, os.str());
             return boost::none;
         }
+        
+        if (f.size() > 1)
+        {
+            std::ostringstream os;
+            os << fc.name.str << ast::strParameters(paramTypes);
+            errorLogger_ << err::ambiguous_call_to_function(fc.name.pos, os.str());
+            return boost::none;
+        }
 
-        ast::FunctionCall out(fc.name.pos, *f, expr.begin(), expr.end());
+        ast::FunctionCall out(fc.name.pos, f[0], expr.begin(), expr.end());
 
         return out;
     }
@@ -182,17 +199,9 @@ boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& po
     BasicType rightType = expressionType(right);
     boost::array<sl::BasicType, 2> argTypes = { leftType, rightType };
 
-    if (boost::optional<ast::FunctionRef> f = ft.findExact(opName, argTypes))
-    {
-        std::vector<ast::Expression> expr;
+    std::vector<ast::FunctionRef> f = ft.find(opName, argTypes);
 
-        expr.reserve(2);
-        expr.push_back(left);
-        expr.push_back(right);
-
-        return ast::FunctionCall(pos, *f, expr.begin(), expr.end());
-    }
-    else
+    if (f.empty())
     {
         std::ostringstream os;
         os << opName << "(" << ast::typeSuffix(leftType) << ", " << ast::typeSuffix(rightType) << ")";
@@ -200,6 +209,23 @@ boost::optional<ast::FunctionCall> makeBinaryOperatorCall(const FilePosition& po
 
         return boost::none;
     }
+
+    if (f.size() > 1)
+    {
+        std::ostringstream os;
+        os << opName << "(" << ast::typeSuffix(leftType) << ", " << ast::typeSuffix(rightType) << ")";
+        errorLogger << err::ambiguous_call_to_function(pos, os.str());
+
+        return boost::none;
+    }
+
+    std::vector<ast::Expression> expr;
+
+    expr.reserve(2);
+    expr.push_back(left);
+    expr.push_back(right);
+
+    return ast::FunctionCall(pos, f[0], expr.begin(), expr.end());
 }
 
 boost::optional<ast::Expression> parseExpression(const cst::UnaryExpression& f, ast::VariableTableStack& vts, const ast::FunctionTable& ft, ErrorLogger& errorLogger)

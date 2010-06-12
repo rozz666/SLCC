@@ -1,11 +1,10 @@
 To Do:
+Create binary protocol for test I/O
 Modules
 Correct lexical parsing
-Overloaded functions matching
 Order independent functions
 Public functions
 typeof
-passing by references
 
 Done:
 Basic operators: +, -, *, /, =
@@ -24,3 +23,5 @@ error handling
 geti, getf, put
 if
 while
+Overloaded functions matching
+passing by references

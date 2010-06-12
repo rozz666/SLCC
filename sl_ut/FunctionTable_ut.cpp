@@ -37,10 +37,16 @@ struct FunctionTable_Test_data
         ensure(msg + " same", found[0] == sl::ast::FunctionRef(&f));
     }
 
-    void ensureNotFound(const std::string& msg, const sl::ast::BuiltinFunction& f, std::vector<sl::BasicType> argTypes)
+    void ensureNotFound(const std::string& msg, const std::string& name, std::vector<sl::BasicType> argTypes)
     {
-        std::vector<sl::ast::FunctionRef> found = ft.find(f.name(), argTypes);
+        std::vector<sl::ast::FunctionRef> found = ft.find(name, argTypes);
         ensure_equals(msg + " not found", found.size(), 0u);
+    }
+
+    void ensureAmbiguous(const std::string& msg, const std::string& name, std::vector<sl::BasicType> argTypes)
+    {
+        std::vector<sl::ast::FunctionRef> found = ft.find(name, argTypes);
+        ensure(msg + " ambiguous", found.size() > 1);
     }
 };
 
@@ -111,6 +117,7 @@ void object::test<3>()
     sl::ast::BuiltinFunction f2a("f2", sl::int_, sl::int_, sl::void_);
     sl::ast::BuiltinFunction f2b("f2", sl::int_, sl::float_, sl::void_);
     sl::ast::BuiltinFunction f3("f3", sl::float_, sl::float_, sl::void_);
+    sl::ast::BuiltinFunction f4("f4", sl::bool_, sl::void_);
 
     ensure("insert 1", ft.insert(&f1));
     ensure("insert 2a", ft.insert(&f2a));
@@ -121,6 +128,32 @@ void object::test<3>()
     ensureFound("f2a", f2a, boost::assign::list_of(sl::int_)(sl::int_));
     ensureFound("f2b", f2b, boost::assign::list_of(sl::int_)(sl::float_));
     ensureFound("f3", f3, boost::assign::list_of(sl::float_)(sl::float_));
+    ensureNotFound("f4 1", "f4", boost::assign::list_of(sl::int_));
+    ensureNotFound("f4 2", "f4", boost::assign::list_of(sl::float_));
+}
+
+template <>
+template <>
+void object::test<4>()
+{
+    set_test_name("find with conversions");
+
+    sl::ast::BuiltinFunction f1("f1", sl::int_, sl::void_);
+    sl::ast::BuiltinFunction f2a("f2", sl::int_, sl::int_, sl::void_);
+    sl::ast::BuiltinFunction f2b("f2", sl::int_, sl::float_, sl::void_);
+    sl::ast::BuiltinFunction f3("f3", sl::float_, sl::float_, sl::void_);
+
+    ensure("insert 1", ft.insert(&f1));
+    ensure("insert 2a", ft.insert(&f2a));
+    ensure("insert 2b", ft.insert(&f2b));
+    ensure("insert 3", ft.insert(&f3));
+
+    ensureFound("f1", f1, boost::assign::list_of(sl::float_));
+    ensureAmbiguous("f2a or f2b 1", "f2", boost::assign::list_of(sl::float_)(sl::int_));
+    ensureAmbiguous("f2a or f2b 2", "f2", boost::assign::list_of(sl::float_)(sl::float_));
+    ensureFound("f3", f3, boost::assign::list_of(sl::int_)(sl::float_));
+    ensureFound("f3", f3, boost::assign::list_of(sl::int_)(sl::int_));
+    ensureFound("f3", f3, boost::assign::list_of(sl::float_)(sl::int_));
 }
 
 }
