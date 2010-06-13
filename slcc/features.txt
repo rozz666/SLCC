@@ -26,3 +26,4 @@ if
 while
 Overloaded functions matching
 passing by references
+objects can be moved in memory
