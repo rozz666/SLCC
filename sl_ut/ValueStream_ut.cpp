@@ -7,6 +7,7 @@ namespace tut
 
 struct ValueStream_Test_data
 {
+    sl::test::ValueStream vs;
 };
 
 typedef test_group<ValueStream_Test_data> tg;
@@ -17,8 +18,6 @@ template <>
 template <>
 void object::test<1>()
 {
-    sl::test::ValueStream vs;
-
     sl::int_t val1 = 1;
     sl::int_t val2 = 2;
     vs.put(val1);
@@ -32,8 +31,6 @@ template <>
 template <>
 void object::test<2>()
 {
-    sl::test::ValueStream vs;
-
     ensure_not("no value", vs.get<sl::int_t>().is_initialized());
 }
 
@@ -41,8 +38,6 @@ template <>
 template <>
 void object::test<3>()
 {
-    sl::test::ValueStream vs;
-
     sl::float_t val1 = 1.1f;
     sl::float_t val2 = 2.2f;
     vs.put(val1);
@@ -56,8 +51,6 @@ template <>
 template <>
 void object::test<4>()
 {
-    sl::test::ValueStream vs;
-
     sl::float_t val1 = 1.1f;
     sl::int_t val2 = 2;
     vs.put(val1);
@@ -71,8 +64,6 @@ template <>
 template <>
 void object::test<5>()
 {
-    sl::test::ValueStream vs;
-
     sl::float_t val = 1.1f;
     vs.put(val);
 

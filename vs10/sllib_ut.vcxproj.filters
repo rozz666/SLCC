@@ -338,6 +338,9 @@
     <ClInclude Include="..\sl\test\TestSuiteBase.hpp">
       <Filter>Header Files\sl\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\sl\test\ValueStream.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
     <ClInclude Include="..\sl\vm.hpp">
       <Filter>Header Files\sl</Filter>
     </ClInclude>
