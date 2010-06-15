@@ -105,6 +105,7 @@
     <ClCompile Include="..\sl\parseCst.cpp" />
     <ClCompile Include="..\sl\test\Console.cpp" />
     <ClCompile Include="..\sl\vm\Environment.cpp" />
+    <ClCompile Include="..\sl\vm\StdStreamIO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sl\assert.hpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="..\sl\vm\Module.hpp" />
     <ClInclude Include="..\sl\vm\opcodes.hpp" />
     <ClInclude Include="..\sl\vm\Program.hpp" />
+    <ClInclude Include="..\sl\vm\StdStreamIO.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

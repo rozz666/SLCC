@@ -45,6 +45,9 @@
     <ClCompile Include="..\sl_ut\FunctionTable_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl_ut\StdStreamIO_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

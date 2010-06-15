@@ -102,6 +102,9 @@
     <ClCompile Include="..\sl\ast\functionArgTypes.cpp">
       <Filter>Source Files\sl\ast</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl\vm\StdStreamIO.cpp">
+      <Filter>Source Files\sl\vm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sl\ast.hpp">
@@ -379,6 +382,9 @@
     </ClInclude>
     <ClInclude Include="..\sl\ast\functionArgTypes.hpp">
       <Filter>Header Files\sl\ast</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\StdStreamIO.hpp">
+      <Filter>Header Files\sl\vm</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
