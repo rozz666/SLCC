@@ -51,6 +51,9 @@
     <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl_ut\ValueStreamIO_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\sl_ut\ValueStream_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

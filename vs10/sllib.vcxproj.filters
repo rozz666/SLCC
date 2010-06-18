@@ -344,6 +344,9 @@
     <ClInclude Include="..\sl\test\ValueStream.hpp">
       <Filter>Header Files\sl\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\sl\test\ValueStreamIO.hpp">
+      <Filter>Header Files\sl\test</Filter>
+    </ClInclude>
     <ClInclude Include="..\sl\vm.hpp">
       <Filter>Header Files\sl</Filter>
     </ClInclude>
@@ -384,6 +387,9 @@
       <Filter>Header Files\sl\ast</Filter>
     </ClInclude>
     <ClInclude Include="..\sl\vm\StdStreamIO.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sl\vm\StreamIO.hpp">
       <Filter>Header Files\sl\vm</Filter>
     </ClInclude>
   </ItemGroup>

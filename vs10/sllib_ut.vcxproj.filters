@@ -383,5 +383,8 @@
     <ClInclude Include="..\sl\vm\StdStreamIO.hpp">
       <Filter>Header Files\sl\vm</Filter>
     </ClInclude>
+    <ClInclude Include="..\sl\vm\StreamIO.hpp">
+      <Filter>Header Files\sl\vm</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

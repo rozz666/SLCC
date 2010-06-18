@@ -23,6 +23,7 @@
     <ClCompile Include="..\sl_ut\sha1_ut.cpp" />
     <ClCompile Include="..\sl_ut\StdStreamIO_ut.cpp" />
     <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ValueStreamIO_ut.cpp" />
     <ClCompile Include="..\sl_ut\ValueStream_ut.cpp" />
   </ItemGroup>
   <ItemGroup>

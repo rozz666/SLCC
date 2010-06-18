@@ -200,6 +200,7 @@
     <ClInclude Include="..\sl\vm\opcodes.hpp" />
     <ClInclude Include="..\sl\vm\Program.hpp" />
     <ClInclude Include="..\sl\vm\StdStreamIO.hpp" />
+    <ClInclude Include="..\sl\vm\StreamIO.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
