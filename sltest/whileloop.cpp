@@ -6,6 +6,6 @@ template <>
 void sl::test::TestSuite<8>::run()
 {
     test("while loop", "whiletest.sl")
-        .match("50", "50\n")
-        .match("0", "0\n");
+        .match((values, 50), (values, 50))
+        .match((values, 0), (values, 0));
 }

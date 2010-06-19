@@ -27,9 +27,6 @@
     <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sl_ut\parseCST_ut.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sl_ut\FilePosition_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,13 +45,19 @@
     <ClCompile Include="..\sl_ut\StdStreamIO_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sl_ut\ValueStreamIO_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sl_ut\ValueStream_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\ValueList_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\parseCST_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

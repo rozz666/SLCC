@@ -6,8 +6,8 @@ template <>
 void sl::test::TestSuite<10>::run()
 {
     test("exact", "exactoverloading.sl")
-        .match("", "1\n2\n3\n4\n5\n6\n");
+        .expect((values, 1, 2, 3, 4, 5, 6));
 
     test("with conversions", "overloading.sl")
-        .match("", "7\n7\n8\n8\n8\n8\n9\n9\n");
+        .expect((values, 7, 7, 8, 8, 8, 8, 9, 9));
 }

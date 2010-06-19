@@ -6,5 +6,5 @@ template <>
 void sl::test::TestSuite<6>::run()
 {
     test("new delete", "newdelete.sl")
-        .match("", "1\n5\n2\n5\n3\n1\n1\n6\n");
+        .expect((values, 1, 5, 2, 5.0, 3, 1, 1, 6));
 }

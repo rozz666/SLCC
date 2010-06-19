@@ -7,8 +7,10 @@
 #include <boost/dynamic_bitset.hpp>
 #include <sl/vm/BytecodeBuffer.hpp>
 #include <sl/vm/Environment.hpp>
+#include <sl/vm/StdStreamIO.hpp>
 #include <sl/err/messages.hpp>
 #include <sl/test/Reporter.hpp>
+#include <sl/test/ValueStreamIO.hpp>
 #include <sl/ErrorLogger.hpp>
 #include <sl/parseCst.hpp>
 #include <sl/parseAst.hpp>
@@ -28,25 +30,29 @@ public:
     MatchOps(const sl::vm::BytecodeBuffer& bytecode, Reporter& reporter)
         : ignore_(false), bytecode_(&bytecode), reporter_(&reporter) { }
 
-    MatchOps& match(const std::string& input, const std::string& expectedOutput)
+    MatchOps& match(ValueStream& input, const ValueStream& expectedOutput)
     {
         if (ignore_) return *this;
 
-        std::istringstream is(input);
-        std::ostringstream os;
+        ValueStream output;
+        ValueStreamIO streamIO(input, output);
 
-        sl::vm::Environment env(1024, is, os);
+        sl::vm::Environment env(1024, streamIO);
 
         env.execute(&bytecode_->front(), 0);
 
-        std::string output = os.str();
-
         if (output != expectedOutput)
         {
-            reporter_->outputMismatch(output, expectedOutput);
+            reporter_->outputMismatch(boost::lexical_cast<std::string>(output), boost::lexical_cast<std::string>(expectedOutput));
         }
 
         return *this;
+    }
+
+    MatchOps& expect(const ValueStream& expectedOutput)
+    {
+        ValueStream empty;
+        return match(empty, expectedOutput);
     }
 
 private:
@@ -127,7 +133,7 @@ public:
         if (reporter_) reporter_->finishTest();
     }
 
-    MatchOps match(const std::string& input, const std::string& output)
+    MatchOps match(ValueStream& input, const ValueStream& expectedOutput)
     {
         if (!fileOk_) return MatchOps();
 
@@ -145,8 +151,14 @@ public:
             return MatchOps();
         }
 
-        return MatchOps(bytecode_, *reporter_).match(input, output);
-    }        
+        return MatchOps(bytecode_, *reporter_).match(input, expectedOutput);
+    }
+
+    MatchOps expect(const ValueStream& expectedOutput)
+    {
+        ValueStream empty;
+        return match(empty, expectedOutput);
+    }
 
     ExpectOps expect(const sl::err::Message& msg)
     { 

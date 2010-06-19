@@ -14,13 +14,14 @@ namespace vm = sl::vm;
 struct VM_Test_data : boost::noncopyable
 {
     static const std::size_t memorySize = 1024;
-    vm::Environment env;
-    vm::Environment origEnv;
     vm::CodeGenerator cg;
     std::stringstream inputStream;
     std::stringstream outputStream;
+    vm::StdStreamIO streamIO;
+    vm::Environment env;
+    vm::Environment origEnv;
     
-    VM_Test_data() : env(memorySize, inputStream, outputStream), origEnv(env) { }
+    VM_Test_data() : streamIO(inputStream, outputStream), env(memorySize, streamIO), origEnv(env) { }
 
     void run()
     {

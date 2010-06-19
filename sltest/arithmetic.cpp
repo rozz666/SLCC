@@ -6,37 +6,37 @@ template <>
 void sl::test::TestSuite<3>::run()
 {
     test("Plus", "plus.sl")
-        .match("10", "10\n")
-        .match("0", "0\n")
-        .match("-10", "-10\n");
+        .match((values, 10), (values, 10))
+        .match((values, 0), (values, 0))
+        .match((values, -10), (values, -10));
 
     test("Minus", "neg.sl")
-        .match("10", "-10\n")
-        .match("0", "0\n")
-        .match("-10", "10\n");
+        .match((values, 10), (values, -10))
+        .match((values, 0), (values, 0))
+        .match((values, -10), (values, 10));
 
     test("Add", "add.sl")
-        .match("1423 6245", "7668\n")
-        .match("-36 23", "-13\n")
-        .match("-55 -66", "-121\n");
+        .match((values, 1423, 6245), (values, 7668))
+        .match((values, -36, 23), (values, -13))
+        .match((values, -55, -66), (values, -121));
 
     test("Sub", "sub.sl")
-        .match("1423 6245", "-4822\n")
-        .match("-36 23", "-59\n")
-        .match("-55 -66", "11\n");
+        .match((values, 1423, 6245), (values, -4822))
+        .match((values, -36, 23), (values, -59))
+        .match((values, -55, -66), (values, 11));
 
     test("Mul", "mul.sl")
-        .match("1423 6245", "8886635\n")
-        .match("-36 23", "-828\n")
-        .match("-55 -66", "3630\n");
+        .match((values, 1423, 6245), (values, 8886635))
+        .match((values, -36, 23), (values, -828))
+        .match((values, -55, -66), (values, 3630));
 
     test("Div", "div.sl")
-        .match("123 5", "24\n")
-        .match("-36 3", "-12\n")
-        .match("-55 -6", "9\n");
+        .match((values, 123, 5), (values, 24))
+        .match((values, -36, 3), (values, -12))
+        .match((values, -55, -6), (values, 9));
 
     test("Mod", "mod.sl")
-        .match("123 5", "3\n")
-        .match("-37 3", "-1\n")
-        .match("-55 -6", "-1\n");
+        .match((values, 123, 5), (values, 3))
+        .match((values, -37, 3), (values, -1))
+        .match((values, -55, -6), (values, -1));
 }

@@ -17,12 +17,13 @@
     <ClCompile Include="..\sl_ut\FunctionTable_ut.cpp" />
     <ClCompile Include="..\sl_ut\main.cpp" />
     <ClCompile Include="..\sl_ut\Message_ut.cpp" />
+    <ClCompile Include="..\sl_ut\parseCST_ut.cpp" />
     <ClCompile Include="..\sl_ut\parseModules_ut.cpp" />
     <ClCompile Include="..\sl_ut\Environment_ut.cpp" />
-    <ClCompile Include="..\sl_ut\parseCST_ut.cpp" />
     <ClCompile Include="..\sl_ut\sha1_ut.cpp" />
     <ClCompile Include="..\sl_ut\StdStreamIO_ut.cpp" />
     <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ValueList_ut.cpp" />
     <ClCompile Include="..\sl_ut\ValueStreamIO_ut.cpp" />
     <ClCompile Include="..\sl_ut\ValueStream_ut.cpp" />
   </ItemGroup>

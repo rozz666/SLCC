@@ -6,7 +6,7 @@ template <>
 void sl::test::TestSuite<1>::run()
 {
     test("Identity", "identity.sl")
-        .match("10", "10\n")
-        .match("15", "15\n")
-        .match("-39", "-39\n");
+        .match((values, 10), (values, 10))
+        .match((values, 15), (values, 15))
+        .match((values, -39), (values, -39));
 }

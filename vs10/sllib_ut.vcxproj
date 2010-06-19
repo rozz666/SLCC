@@ -189,6 +189,7 @@
     <ClInclude Include="..\sl\test\TestOps.hpp" />
     <ClInclude Include="..\sl\test\TestSuite.hpp" />
     <ClInclude Include="..\sl\test\TestSuiteBase.hpp" />
+    <ClInclude Include="..\sl\test\ValueList.hpp" />
     <ClInclude Include="..\sl\test\ValueStream.hpp" />
     <ClInclude Include="..\sl\vm.hpp" />
     <ClInclude Include="..\sl\vm\BytecodeBuffer.hpp" />

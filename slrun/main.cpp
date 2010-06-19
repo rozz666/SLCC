@@ -30,7 +30,8 @@ int main(int argc, char **argv)
         namespace vm = sl::vm;
 
         sl::vm::BytecodeBuffer buf = readFile(argv[1]);
-        vm::Environment env(65536, std::cin, std::cout);
+        vm::StdStreamIO streamIO(std::cin, std::cout);
+        vm::Environment env(65536, streamIO);
 
         env.execute(&buf[0], 0);
     }

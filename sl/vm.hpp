@@ -9,5 +9,7 @@
 #include <sl/vm/FunctionCall.hpp>
 #include <sl/vm/Module.hpp>
 #include <sl/vm/Program.hpp>
+#include <sl/vm/StreamIO.hpp>
+#include <sl/vm/StdStreamIO.hpp>
 
 #endif /* SL_VM_VM_HPP */

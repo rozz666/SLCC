@@ -6,9 +6,9 @@ template <>
 void sl::test::TestSuite<7>::run()
 {
     test("if", "iftest.sl")
-        .match("-5 5", "5\n5\n5\n5\n")
-        .match("5 -5", "5\n5\n5\n5\n")
-        .match("10 20", "20\n20\n20\n20\n")
-        .match("20 10", "20\n20\n20\n20\n");
+        .match((values, -5, 5), (values, 5, 5, 5, 5))
+        .match((values, 5, -5), (values, 5, 5, 5, 5))
+        .match((values, 10, 20), (values, 20, 20, 20, 20))
+        .match((values, 20, 10), (values, 20, 20, 20, 20));
 
 }

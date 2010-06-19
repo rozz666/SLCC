@@ -6,13 +6,13 @@ template <>
 void sl::test::TestSuite<5>::run()
 {
     test("Swap", "swaptest.sl")
-        .match("20 50 6.25 -0.5 1 0", "50\n20\n-0.5\n6.25\n0\n1\n")
-        .match("-3 10 -0.125 0.125 0 1", "10\n-3\n0.125\n-0.125\n1\n0\n");
+        .match((values, 20, 50, 6.25, -0.5, 1, 0), (values, 50, 20, -0.5, 6.25, 0, 1))
+        .match((values, -3, 10, -0.125, 0.125, 0, 1), (values, 10, -3, 0.125, -0.125, 1, 0));
 
     test("Immediate swap", "imswap.sl")
-        .match("", "5\n6\n");
+        .expect((values, 5, 6));
 
     test("Passing by reference", "references.sl")
-        .match("10 10.5 1", "10\n10.5\n1\n")
-        .match("-22 -0.5 0", "-22\n-0.5\n0\n");
+        .match((values, 10, 10.5, 1), (values, 10, 10.5, 1))
+        .match((values, -22, -0.5, 0), (values, -22, -0.5, 0));
 }

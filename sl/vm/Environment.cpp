@@ -354,8 +354,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 
             case INPI:
             {
-                int_t val;
-                *inputStream >> val;
+                int_t val = streamIO_->getInt();
                 sp -= 4;
                 copy4(&val, memory + sp);
                 break;
@@ -363,8 +362,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
 
             case INPF:
             {
-                float_t val;
-                *inputStream >> val;
+                float_t val = streamIO_->getFloat();
                 sp -= 4;
                 copy4(&val, memory + sp);
                 break;
@@ -375,7 +373,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 int_t val;
                 copy4(memory + sp, &val);
                 sp += 4;
-                *outputStream << val << std::endl;
+                streamIO_->putInt(val);
                 break;
             }
 
@@ -384,7 +382,7 @@ void Environment::execute(const std::uint8_t *code, CodeAddr addr)
                 float_t val;
                 copy4(memory + sp, &val);
                 sp += 4;
-                *outputStream << val << std::endl;
+                streamIO_->putFloat(val);
                 break;
             }
 

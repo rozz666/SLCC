@@ -6,18 +6,18 @@ template <>
 void sl::test::TestSuite<4>::run()
 {
     test("Logical Not", "lnot.sl")
-        .match("0", "1\n")
-        .match("1", "0\n");
+        .match((values, 0), (values, 1))
+        .match((values, 1), (values, 0));
 
     test("Logical And", "land.sl")
-        .match("0 0", "0\n")
-        .match("1 0", "0\n")
-        .match("1 1", "1\n")
-        .match("0 1", "0\n");
+        .match((values, 0, 0), (values, 0))
+        .match((values, 1, 0), (values, 0))
+        .match((values, 1, 1), (values, 1))
+        .match((values, 0, 1), (values, 0));
 
     test("Logical Or", "lor.sl")
-        .match("0 0", "0\n")
-        .match("1 0", "1\n")
-        .match("1 1", "1\n")
-        .match("0 1", "1\n");
+        .match((values, 0, 0), (values, 0))
+        .match((values, 1, 0), (values, 1))
+        .match((values, 1, 1), (values, 1))
+        .match((values, 0, 1), (values, 1));
 }

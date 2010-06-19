@@ -4,6 +4,7 @@
 #include <sl/FilePosition.hpp>
 #include <sl/test/TestSuiteBase.hpp>
 #include <sl/test/Runner.hpp>
+#include <sl/test/ValueList.hpp>
 
 namespace sl
 {
@@ -30,6 +31,7 @@ public:
 protected:
 
     typedef sl::FilePosition at;
+    const ValueList values;
 
     void run();
 };

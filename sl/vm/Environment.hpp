@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <vector>
 #include <sl/vm/def.hpp>
+#include <sl/vm/StreamIO.hpp>
 
 namespace sl
 {
@@ -33,8 +34,8 @@ public:
         memory_.swap(right.memory_);
     }
 
-    explicit Environment(std::size_t memorySize, std::istream& inputStream, std::ostream& outputStream)
-        : sp_(memorySize), bp_(sp_), memory_(memorySize, 0xac), inputStream(&inputStream), outputStream(&outputStream) { }
+    explicit Environment(std::size_t memorySize, StreamIO& streamIO)
+        : sp_(memorySize), bp_(sp_), memory_(memorySize, 0xac), streamIO_(&streamIO) { }
 
     DataAddr sp() const { return sp_; }
     void sp(DataAddr val) { sp_ = val; }
@@ -51,8 +52,7 @@ private:
 
     DataAddr sp_, bp_;
     Memory memory_;
-    std::istream *inputStream;
-    std::ostream *outputStream;
+    StreamIO *streamIO_;
 };
 
 }
