@@ -60,6 +60,12 @@
     <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl_ut\Constant_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\Variable_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sl_ut\tut_color_console_reporter.hpp">

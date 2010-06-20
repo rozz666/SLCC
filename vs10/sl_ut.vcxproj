@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sl_ut\CodeGenerator_ut.cpp" />
+    <ClCompile Include="..\sl_ut\Constant_ut.cpp" />
     <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp" />
     <ClCompile Include="..\sl_ut\FilePosition_ut.cpp" />
     <ClCompile Include="..\sl_ut\FunctionTable_ut.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="..\sl_ut\ValueList_ut.cpp" />
     <ClCompile Include="..\sl_ut\ValueStreamIO_ut.cpp" />
     <ClCompile Include="..\sl_ut\ValueStream_ut.cpp" />
+    <ClCompile Include="..\sl_ut\Variable_ut.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sl_ut\tut_color_console_reporter.hpp" />
