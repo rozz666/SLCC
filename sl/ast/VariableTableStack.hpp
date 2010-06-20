@@ -25,17 +25,17 @@ public:
         return stack_.back().insert(var);
     }
 
-    const Variable *find(const std::string& name) const
+    boost::optional<Variable> find(const std::string& name) const
     {
         for (C::const_reverse_iterator it = stack_.rbegin(); it != stack_.rend(); ++it)
         {
-            if (const Variable *v = it->find(name)) return v;
+            if (boost::optional<Variable> v = it->find(name)) return v;
         }
 
-        return nullptr;
+        return boost::none;
     }
 
-    const Variable *findInScope(const std::string& name) const
+    boost::optional<Variable> findInScope(const std::string& name) const
     {
         return stack_.back().find(name);
     }

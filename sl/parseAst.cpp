@@ -17,9 +17,9 @@ struct ExpressionType : public boost::static_visitor<BasicType>
         return c.type();
     }
 
-    BasicType operator()(const ast::Variable *v) const
+    BasicType operator()(const ast::Variable& v) const
     {
-        return v->type();
+        return v.type();
     }
 
     BasicType operator()(const ast::FunctionCall& fc) const
@@ -46,9 +46,9 @@ struct ExpressionPos : public boost::static_visitor<FilePosition>
         return c.pos();
     }
 
-    FilePosition operator()(const ast::Variable *v) const
+    FilePosition operator()(const ast::Variable& v) const
     {
-        return v->pos();
+        return v.pos();
     }
 
     FilePosition operator()(const ast::FunctionCall& fc) const
@@ -114,15 +114,15 @@ public:
 
     boost::optional<ast::Expression> operator()(const cst::Identifier& v) const
     {
-        const ast::Variable *pv = vts_.find(v.str);
+        boost::optional<ast::Variable> var = vts_.find(v.str);
 
-        if (!pv)
+        if (!var)
         {
             errorLogger_ << err::unknown_identifier(v.pos, v.str);
             return boost::none;
         }
 
-        return pv;
+        return *var;
     }
 
     boost::optional<ast::Expression> operator()(const cst::FunctionCall& fc) const
@@ -289,7 +289,7 @@ public:
 
     boost::optional<ast::Statement> operator()(const cst::Assignment& assignment) const
     {
-        const ast::Variable *var = vts_.find(assignment.var.str);
+        boost::optional<ast::Variable> var = vts_.find(assignment.var.str);
         boost::optional<ast::Expression> expr = parseExpression(assignment.expr, vts_, ft_, errorLogger_);
 
         if (!var)
@@ -459,18 +459,17 @@ public:
 
     boost::optional<ast::Statement> operator()(const cst::VariableDelete& del) const
     {
-        if (const ast::Variable *v = vts_.findInScope(del.name.str))
-        {
-            vts_.eraseInScope(del.name.str);
+        boost::optional<ast::Variable> v = vts_.findInScope(del.name.str);
 
-            return ast::VariableDelete(*v);
-        }
-        else
+        if (!v)
         {
             errorLogger_ << err::unknown_identifier(del.name.pos, del.name.str);
+            return boost::none;
         }
 
-        return boost::none;
+        vts_.eraseInScope(del.name.str);
+
+        return ast::VariableDelete(*v);
     }
 
 private:
@@ -638,9 +637,10 @@ public:
         BOOST_FOREACH(const cst::FunctionParameter& fp, f.parameters)
         {
             auto p = params.find(fp.name.str);
+
             if (p == params.end())
             {
-                std::shared_ptr<ast::Variable> v(new ast::Variable(fp.name.str, fp.name.pos, fp.type, fp.ref));
+                ast::Variable v(fp.name.str, fp.name.pos, fp.type, fp.ref);
 
                 pc.push_back(v);
                 params.insert(std::make_pair(fp.name.str, fp.name.pos));
@@ -714,9 +714,9 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
 
         ast::VariableTableStack vts;
 
-        BOOST_FOREACH(const std::shared_ptr<ast::Variable>& p, df.parameters())
+        BOOST_FOREACH(const ast::Variable& p, df.parameters())
         {
-            vts.insert(*p);
+            vts.insert(p);
         }
 
         boost::optional<BasicType> fType = parseReturnType(f.second->type, vts, functionTable, errorLogger);
@@ -736,9 +736,9 @@ ast::Module parseModule(const sl::cst::Module& module, ErrorLogger& errorLogger)
 
         ast::VariableTableStack vts;
 
-        BOOST_FOREACH(const std::shared_ptr<ast::Variable>& p, df.parameters())
+        BOOST_FOREACH(const ast::Variable& p, df.parameters())
         {
-            vts.insert(*p);
+            vts.insert(p);
         }
 
         ast::CompoundStatement cs;

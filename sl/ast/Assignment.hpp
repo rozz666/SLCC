@@ -14,14 +14,14 @@ class Assignment
 {
 public:
 
-    Assignment(const Variable& var, const Expression& expr) : var_(&var), expr_(expr) { }
+    Assignment(const Variable& var, const Expression& expr) : var_(var), expr_(expr) { }
 
-    const Variable& var() const { return *var_; }
+    const Variable& var() const { return var_; }
     const Expression& expr() const { return expr_; }
 
 private:
 
-    const Variable *var_;
+    Variable var_;
     Expression expr_;
 };
 

@@ -18,7 +18,7 @@ class FunctionDef
 {
 public:
 
-    typedef std::vector<std::shared_ptr<Variable> > ParameterContainer;
+    typedef std::vector<Variable> ParameterContainer;
    
     FunctionDef(const std::string& name, const FilePosition& pos, ParameterContainer&& parameters) 
         : name_(name), suffix_(functionSuffix(parameters)), pos_(pos)

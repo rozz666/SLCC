@@ -16,19 +16,20 @@ namespace sl
 namespace ast
 {
 
+//TODO: replace with range
 template <typename Container>
 inline 
 typename boost::enable_if<
-    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, std::shared_ptr<Variable> >,
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, Variable>,
     std::string
 >::type
 functionSuffix(const Container& params)
 {
     std::string suffix;
 
-    BOOST_FOREACH(const std::shared_ptr<Variable>& v, params)
+    BOOST_FOREACH(const Variable& v, params)
     {
-        suffix += typeSuffix(v->type());
+        suffix += typeSuffix(v.type());
     }
 
     return suffix;

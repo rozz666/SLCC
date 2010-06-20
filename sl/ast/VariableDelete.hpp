@@ -12,13 +12,13 @@ class VariableDelete
 {
 public:
 
-    VariableDelete(const Variable& var) : var_(&var) { }
+    VariableDelete(const Variable& var) : var_(var) { }
 
-    const Variable& var() const { return *var_; }
+    const Variable& var() const { return var_; }
 
 private:
 
-    const Variable *var_;
+    Variable var_;
 };
 
 }

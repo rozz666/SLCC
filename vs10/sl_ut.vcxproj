@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClCompile Include="..\sl_ut\ast\Constant_ut.cpp" />
     <ClCompile Include="..\sl_ut\ast\FunctionTable_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ast\VariableDecl_ut.cpp" />
     <ClCompile Include="..\sl_ut\ast\Variable_ut.cpp" />
     <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp" />
     <ClCompile Include="..\sl_ut\err\Message_ut.cpp" />
@@ -75,7 +76,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -83,6 +84,7 @@
       <PreprocessorDefinitions>WIN32;SL_UNIT_TESTS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4512</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,6 +110,7 @@
       <PreprocessorDefinitions>WIN32;SL_UNIT_TESTS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4512</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

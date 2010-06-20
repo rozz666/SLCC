@@ -16,10 +16,11 @@ namespace sl
 namespace ast
 {
 
+//TODO: replace with range
 template <typename Container>
 inline 
 typename boost::enable_if<
-    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, std::shared_ptr<Variable> >,
+    boost::is_same<typename boost::remove_reference<typename Container::reference>::type, Variable>,
     std::string
 >::type
 strParameters(const Container& params)
@@ -29,11 +30,11 @@ strParameters(const Container& params)
 
     os << "(";
 
-    BOOST_FOREACH(const std::shared_ptr<Variable>& v, params)
+    BOOST_FOREACH(const Variable& v, params)
     {
         if (comma) os << ", ";
         comma = true;
-        os << typeName(v->type());
+        os << typeName(v.type());
     }
 
     os << ")";
@@ -41,6 +42,7 @@ strParameters(const Container& params)
     return os.str();
 }
 
+//TODO: replace with range
 template <typename Container>
 inline 
 typename boost::enable_if<

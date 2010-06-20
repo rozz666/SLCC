@@ -8,7 +8,7 @@ namespace ast
 
 struct IsLValue : public boost::static_visitor<bool>
 {
-    bool operator()(const Variable *) const { return true; }
+    bool operator()(const Variable& ) const { return true; }
 
     template <typename T>
     bool operator()(const T& ) const { return false; }

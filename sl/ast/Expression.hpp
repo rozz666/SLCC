@@ -15,7 +15,7 @@ class Cast;
 
 typedef boost::variant<
     Constant,
-    const Variable *,
+    Variable,
     boost::recursive_wrapper<FunctionCall>,
     boost::recursive_wrapper<Cast>
 > Expression;

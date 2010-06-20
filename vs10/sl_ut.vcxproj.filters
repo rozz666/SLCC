@@ -86,5 +86,8 @@
     <ClCompile Include="..\sl_ut\parseFile_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl_ut\ast\VariableDecl_ut.cpp">
+      <Filter>Source Files\ast</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

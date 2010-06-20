@@ -141,20 +141,20 @@ public:
 
     VariableTable(BasicType returnType) : addrOfReturn_(8), returnType_(returnType) { }
 
-    void insert(const ast::Variable *var, vm::BPAddr addr)
+    void insert(const ast::Variable& var, vm::BPAddr addr)
     {
         addr_.insert(std::make_pair(var, addr));
         
-        vm::BPAddr aor = addr + ast::typeSize(var->type());
+        vm::BPAddr aor = addr + ast::typeSize(var.type());
         if (aor > addrOfReturn_) addrOfReturn_ = aor;
     }
 
-    bool erase(const ast::Variable *var)
+    bool erase(const ast::Variable& var)
     {
         return addr_.erase(var) > 0;
     }
 
-    vm::BPAddr addrOf(const ast::Variable *var) const
+    vm::BPAddr addrOf(const ast::Variable& var) const
     {
         auto it = addr_.find(var);
 
@@ -167,7 +167,7 @@ public:
     BasicType returnType() const { return returnType_; }
 
 private:
-    typedef std::map<const ast::Variable *, vm::BPAddr> C;
+    typedef std::map<ast::Variable, vm::BPAddr> C;
     C addr_;
     vm::BPAddr addrOfReturn_;
     BasicType returnType_;
@@ -482,9 +482,9 @@ std::uint8_t parametersTotalSize(const ast::FunctionDef& fd)
 {
     std::uint32_t size = 0;
 
-    BOOST_FOREACH(const std::shared_ptr<ast::Variable>& p, fd.parameters())
+    BOOST_FOREACH(const ast::Variable& p, fd.parameters())
     {
-        size += ast::typeSize(p->type());
+        size += ast::typeSize(p.type());
     }
 
     SL_ASSERT(size <= std::numeric_limits<std::uint8_t>::max());
@@ -534,7 +534,7 @@ public:
 
         while (e != pc_.end())
         {
-            if ((*pd)->ref())
+            if (pd->ref())
             {
                 generateExpressionRef(*e, cg_, fam_, salloc_, vt_);
             }
@@ -617,9 +617,9 @@ public:
         c.value().apply_visitor(gc);
     }
 
-    void operator()(const ast::Variable *v) const
+    void operator()(const ast::Variable& v) const
     {
-        if (v->ref())
+        if (v.ref())
         {
             cg_.emit(vm::LLOAD4);
             cg_.emit(std::int16_t(vt_.addrOf(v)));
@@ -703,7 +703,7 @@ public:
         cg_.emit(tmpAddr);
     }
 
-    void operator()(const ast::Variable *v) const
+    void operator()(const ast::Variable& v) const
     {
         cg_.emit(vm::LADDR);
         cg_.emit(std::int16_t(vt_.addrOf(v)));
@@ -793,7 +793,7 @@ public:
         if (a.var().ref())
         {
             cg_.emit(vm::LLOAD4);
-            cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
+            cg_.emit(std::int16_t(vt_.addrOf(a.var())));
         }
 
         generateExpression(a.expr(), cg_, fam_, salloc_, vt_);
@@ -805,7 +805,7 @@ public:
         else
         {
             cg_.emit(vm::LSTORE4);
-            cg_.emit(std::int16_t(vt_.addrOf(&a.var())));
+            cg_.emit(std::int16_t(vt_.addrOf(a.var())));
         }
     }
 
@@ -835,22 +835,20 @@ public:
 
     void operator()(const ast::VariableDecl& vd) const
     {
-        vt_.insert(&vd.var(), salloc_.alloc(ast::typeSize(vd.var().type())) - ast::typeSize(vd.var().type()));
+        vt_.insert(vd.var(), salloc_.alloc(ast::typeSize(vd.var().type())) - ast::typeSize(vd.var().type()));
 
         if (vd.expr())
         {
             generateExpression(*vd.expr(), cg_, fam_, salloc_, vt_);
 
             cg_.emit(vm::LSTORE4);
-            cg_.emit(std::int16_t(vt_.addrOf(&vd.var())));
+            cg_.emit(std::int16_t(vt_.addrOf(vd.var())));
         }
     }
 
     void operator()(const ast::VariableDelete& vd) const
     {
-        // TODO: should be remove it from VT?
-        //vt_.erase(&vd.var());
-        salloc_.free(vt_.addrOf(&vd.var()) + ast::typeSize(vd.var().type()));
+        salloc_.free(vt_.addrOf(vd.var()) + ast::typeSize(vd.var().type()));
     }
 
 private:
@@ -868,9 +866,9 @@ void allocParameters(const ast::FunctionDef& f, VariableTable& vt)
 
     for (auto it = f.parameters().rbegin(); it != f.parameters().rend(); ++it)
     {
-        vt.insert(&**it, vm::BPAddr(off));
+        vt.insert(*it, vm::BPAddr(off));
 
-        off += ast::typeSize((*it)->type());
+        off += ast::typeSize(it->type());
     }
 }
 
@@ -934,7 +932,7 @@ public:
 
     void operator()(const ast::Constant& ) const { }
 
-    void operator()(const ast::Variable *) const { }
+    void operator()(const ast::Variable& ) const { }
 
     void operator()(const ast::FunctionCall& fc) const
     {

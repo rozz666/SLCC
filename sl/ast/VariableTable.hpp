@@ -12,25 +12,27 @@ namespace ast
 
 class VariableTable
 {
-    typedef std::unordered_map<std::string, const Variable *> C; 
+    typedef std::unordered_map<std::string, Variable> C; 
 
 public:
 
     bool insert(const Variable& var)
     {
-        return vars_.insert(std::make_pair(var.name(), &var)).second;
+        return vars_.insert(std::make_pair(var.name(), var)).second;
     }
 
-    const Variable *find(const std::string& name) const
+    boost::optional<Variable> find(const std::string& name) const
     {
         C::const_iterator it = vars_.find(name);
 
-        return (it != vars_.end()) ? it->second : nullptr;
+        if (it == vars_.end()) return boost::none;
+        
+        return it->second;
     }
 
     void erase(const std::string& name)
     {
-        vars_.erase(name);        
+        vars_.erase(name);
     }
 
 private:
