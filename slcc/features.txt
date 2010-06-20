@@ -1,5 +1,4 @@
 To Do:
-Create binary protocol for test I/O
 Write UTs for testing framework
 Modules
 Correct lexical parsing
@@ -27,3 +26,4 @@ while
 Overloaded functions matching
 passing by references
 objects can be moved in memory
+Create binary protocol for test I/O
