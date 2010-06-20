@@ -13,7 +13,7 @@ struct CodeGenerator_Test_data
 
 typedef test_group<CodeGenerator_Test_data> tg;
 typedef tg::object object;
-tg CG_group("Code generator");
+tg CG_group("vm.CodeGenerator");
 
 template <>
 template <>

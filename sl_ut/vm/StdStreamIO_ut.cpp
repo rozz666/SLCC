@@ -11,7 +11,7 @@ struct StdStreamIO_Test_data
 
 typedef test_group<StdStreamIO_Test_data> tg;
 typedef tg::object object;
-tg StdStreamIO_group("std stream I/O");
+tg StdStreamIO_group("vm.StdStreamIO");
 
 template <>
 template <>

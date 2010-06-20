@@ -10,7 +10,7 @@ struct FilePosition_Test_data
 
 typedef test_group<FilePosition_Test_data> tg;
 typedef tg::object object;
-tg FilePosition_group("File position");
+tg FilePosition_group("FilePosition");
 
 template <>
 template <>

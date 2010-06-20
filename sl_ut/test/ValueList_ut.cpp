@@ -11,7 +11,7 @@ struct ValueList_Test_data
 
 typedef test_group<ValueList_Test_data> tg;
 typedef tg::object object;
-tg ValueList_group("Value list wrapper");
+tg ValueList_group("test.ValueList");
 
 template <>
 template <>

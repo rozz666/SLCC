@@ -130,7 +130,7 @@ static bool operator==(const vm::Environment& left, const vm::Environment& right
 
 typedef test_group<VM_Test_data, 200> tg;
 typedef tg::object object;
-tg VM_group("Environment");
+tg VM_group("vm.Environment");
 
 template <>
 template <>

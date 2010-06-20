@@ -19,7 +19,7 @@ bool operator==(const sl::err::Message& left, const sl::err::Message& right)
 
 typedef test_group<ErrorLogger_Test_data> tg;
 typedef tg::object object;
-tg ErrorLogger_group("Error logger");
+tg ErrorLogger_group("ErrorLogger");
 
 template <>
 template <>

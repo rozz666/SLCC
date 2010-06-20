@@ -42,7 +42,7 @@ struct TestSuiteBase_Test_data
 
 typedef test_group<TestSuiteBase_Test_data> tg;
 typedef tg::object object;
-tg TestSuiteBase_group("TestSuiteBase");
+tg TestSuiteBase_group("test.TestSuiteBase");
 
 template <>
 template <>

@@ -11,7 +11,7 @@ struct sha1_Test_data
 
 typedef test_group<sha1_Test_data> tg;
 typedef tg::object object;
-tg sha1_group("SHA-1 test");
+tg sha1_group("SHA-1");
 
 template <>
 template <>

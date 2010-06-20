@@ -10,7 +10,7 @@ struct Variable_Test_data
 
 typedef test_group<Variable_Test_data> tg;
 typedef tg::object object;
-tg Variable_group("Variable");
+tg Variable_group("ast.Variable");
 
 template <>
 template <>

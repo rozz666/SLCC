@@ -52,7 +52,7 @@ struct FunctionTable_Test_data
 
 typedef test_group<FunctionTable_Test_data> tg;
 typedef tg::object object;
-tg FunctionTable_group("Function table");
+tg FunctionTable_group("ast.FunctionTable");
 
 template <>
 template <>

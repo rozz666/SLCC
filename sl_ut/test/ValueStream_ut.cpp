@@ -13,7 +13,7 @@ struct ValueStream_Test_data
 
 typedef test_group<ValueStream_Test_data> tg;
 typedef tg::object object;
-tg ValueStream_group("Value stream");
+tg ValueStream_group("test.ValueStream");
 
 template <>
 template <>

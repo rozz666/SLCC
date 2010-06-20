@@ -10,7 +10,7 @@ struct ValueStreamIO_Test_data
 
 typedef test_group<ValueStreamIO_Test_data> tg;
 typedef tg::object object;
-tg ValueStreamIO_group("value stream I/O");
+tg ValueStreamIO_group("test.ValueStreamIO");
 
 template <>
 template <>

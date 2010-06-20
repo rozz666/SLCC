@@ -61,7 +61,7 @@ struct parseCST_Test_data
 
 typedef test_group<parseCST_Test_data> tg;
 typedef tg::object object;
-tg parseCST_group("Parse CST");
+tg parseCST_group("parseFile");
 
 template <>
 template <>

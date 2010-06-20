@@ -10,7 +10,7 @@ struct Constant_Test_data
 
 typedef test_group<Constant_Test_data> tg;
 typedef tg::object object;
-tg Constant_group("Constant");
+tg Constant_group("ast.Constant");
 
 template <>
 template <>

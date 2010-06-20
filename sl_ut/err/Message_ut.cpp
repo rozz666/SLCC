@@ -11,7 +11,7 @@ struct Message_Test_data
 
 typedef test_group<Message_Test_data> tg;
 typedef tg::object object;
-tg Message_group("Message");
+tg Message_group("err.Message");
 
 template <>
 template <>

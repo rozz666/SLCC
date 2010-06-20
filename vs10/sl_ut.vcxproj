@@ -11,26 +11,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sl_ut\CodeGenerator_ut.cpp" />
-    <ClCompile Include="..\sl_ut\Constant_ut.cpp" />
-    <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp" />
-    <ClCompile Include="..\sl_ut\FilePosition_ut.cpp" />
-    <ClCompile Include="..\sl_ut\FunctionTable_ut.cpp" />
-    <ClCompile Include="..\sl_ut\main.cpp" />
-    <ClCompile Include="..\sl_ut\Message_ut.cpp" />
-    <ClCompile Include="..\sl_ut\parseCST_ut.cpp" />
-    <ClCompile Include="..\sl_ut\parseModules_ut.cpp" />
-    <ClCompile Include="..\sl_ut\Environment_ut.cpp" />
-    <ClCompile Include="..\sl_ut\sha1_ut.cpp" />
-    <ClCompile Include="..\sl_ut\StdStreamIO_ut.cpp" />
-    <ClCompile Include="..\sl_ut\TestSuiteBase_ut.cpp" />
-    <ClCompile Include="..\sl_ut\ValueList_ut.cpp" />
-    <ClCompile Include="..\sl_ut\ValueStreamIO_ut.cpp" />
-    <ClCompile Include="..\sl_ut\ValueStream_ut.cpp" />
-    <ClCompile Include="..\sl_ut\Variable_ut.cpp" />
+    <ClInclude Include="..\sl_ut\tut_color_console_reporter.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sl_ut\tut_color_console_reporter.hpp" />
+    <ClCompile Include="..\sl_ut\ast\Constant_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ast\FunctionTable_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ast\Variable_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ErrorLogger_ut.cpp" />
+    <ClCompile Include="..\sl_ut\err\Message_ut.cpp" />
+    <ClCompile Include="..\sl_ut\FilePosition_ut.cpp" />
+    <ClCompile Include="..\sl_ut\main.cpp" />
+    <ClCompile Include="..\sl_ut\parseFile_ut.cpp" />
+    <ClCompile Include="..\sl_ut\parseModules_ut.cpp" />
+    <ClCompile Include="..\sl_ut\sha1_ut.cpp" />
+    <ClCompile Include="..\sl_ut\test\TestSuiteBase_ut.cpp" />
+    <ClCompile Include="..\sl_ut\test\ValueList_ut.cpp" />
+    <ClCompile Include="..\sl_ut\test\ValueStreamIO_ut.cpp" />
+    <ClCompile Include="..\sl_ut\test\ValueStream_ut.cpp" />
+    <ClCompile Include="..\sl_ut\vm\CodeGenerator_ut.cpp" />
+    <ClCompile Include="..\sl_ut\vm\Environment_ut.cpp" />
+    <ClCompile Include="..\sl_ut\vm\StdStreamIO_ut.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DE4443B3-6721-4F2D-91D1-7B9200F5C76D}</ProjectGuid>
