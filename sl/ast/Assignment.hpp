@@ -8,8 +8,6 @@ namespace sl
 namespace ast
 {
 
-class Variable;
-
 class Assignment
 {
 public:

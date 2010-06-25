@@ -89,5 +89,14 @@
     <ClCompile Include="..\sl_ut\ast\VariableDecl_ut.cpp">
       <Filter>Source Files\ast</Filter>
     </ClCompile>
+    <ClCompile Include="..\sl_ut\ast\Assignment_ut.cpp">
+      <Filter>Source Files\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\ast\Cast_ut.cpp">
+      <Filter>Source Files\ast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sl_ut\ast\BuiltinFunction_ut.cpp">
+      <Filter>Source Files\ast</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -44,6 +44,8 @@ void object::test<2>()
     ensure_not("v4 < v1", v4 < v1);
     ensure_not("v1 < v5", v1 < v5);
     ensure_not("v5 < v1", v5 < v1);
+    ensure("v1 == v1", v1 == v1);
+    ensure_not("v1 == v2", v1 == v2);
 }
 
 }

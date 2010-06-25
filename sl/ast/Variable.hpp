@@ -34,6 +34,11 @@ inline bool operator<(const Variable& left, const Variable& right)
     return left.pos() < right.pos();
 }
 
+inline bool operator==(const Variable& left, const Variable& right)
+{
+    return left.pos() == right.pos();
+}
+
 }
 }
 #endif /* SL_AST_VARIABLE_HPP */

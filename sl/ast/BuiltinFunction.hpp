@@ -3,8 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <sl/basicTypes.hpp>
-#include <sl/ast/types.hpp>
+#include <sl/ast/functionSuffix.hpp>
 
 namespace sl
 {
@@ -15,21 +17,24 @@ class BuiltinFunction
 {
 public:
 
+    typedef boost::shared_ptr<const BuiltinFunction> Shared;
+    typedef boost::weak_ptr<const BuiltinFunction> Weak;
+
     BuiltinFunction(const std::string& name, BasicType type) : name_(name), type_(type) { }
 
     BuiltinFunction(const std::string& name, BasicType arg0, BasicType type)
-        : name_(name), suffix_(typeSuffix(arg0)), type_(type)
+        : name_(name), type_(type)
     {
         argTypes_.resize(1, arg0);
+        suffix_ = functionSuffix(argTypes_);
     }
 
     BuiltinFunction(const std::string& name, BasicType arg0, BasicType arg1, BasicType type) : name_(name), type_(type)
     {
-        suffix_ = typeSuffix(arg0);
-        suffix_ += typeSuffix(arg1);
         argTypes_.reserve(2);
         argTypes_.push_back(arg0);
         argTypes_.push_back(arg1);
+        suffix_ = functionSuffix(argTypes_);
     }
 
     const std::string& name() const { return name_; }

@@ -14,6 +14,9 @@
     <ClInclude Include="..\sl_ut\tut_color_console_reporter.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sl_ut\ast\Assignment_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ast\BuiltinFunction_ut.cpp" />
+    <ClCompile Include="..\sl_ut\ast\Cast_ut.cpp" />
     <ClCompile Include="..\sl_ut\ast\Constant_ut.cpp" />
     <ClCompile Include="..\sl_ut\ast\FunctionTable_ut.cpp" />
     <ClCompile Include="..\sl_ut\ast\VariableDecl_ut.cpp" />
