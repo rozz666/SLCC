@@ -17,9 +17,6 @@ class BuiltinFunction
 {
 public:
 
-    typedef boost::shared_ptr<const BuiltinFunction> Shared;
-    typedef boost::weak_ptr<const BuiltinFunction> Weak;
-
     BuiltinFunction(const std::string& name, BasicType type) : name_(name), type_(type) { }
 
     BuiltinFunction(const std::string& name, BasicType arg0, BasicType type)

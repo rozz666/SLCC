@@ -21,9 +21,8 @@ public:
     typedef std::vector<Variable> ParameterContainer;
    
     FunctionDef(const std::string& name, const FilePosition& pos, ParameterContainer&& parameters) 
-        : name_(name), suffix_(functionSuffix(parameters)), pos_(pos)
+        : name_(name), suffix_(functionSuffix(parameters)), pos_(pos), parameters_(parameters)
     {
-        parameters.swap(parameters_);
     }
 
     const std::string& name() const { return name_; }
